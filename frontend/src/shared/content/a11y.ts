@@ -5,4 +5,12 @@ export const a11y = {
     ru: "Перейти к содержимому",
     en: "Skip to content",
   } satisfies LocalizedString,
+  siteNav: {
+    ru: "Сайт",
+    en: "Site",
+  } satisfies LocalizedString,
+  sectionsNav: {
+    ru: "Разделы",
+    en: "Sections",
+  } satisfies LocalizedString,
 } as const;

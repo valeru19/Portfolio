@@ -24,7 +24,7 @@ export function SpiralNav() {
 
   return (
     <>
-      <nav className={styles.dots} aria-label="Sections">
+      <nav className={styles.dots} aria-label={t(content.a11y.sectionsNav)}>
         {visibleIds.map((id) => (
           <a
             key={id}

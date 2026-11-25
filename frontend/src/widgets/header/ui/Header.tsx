@@ -44,7 +44,7 @@ export function Header() {
         </span>
         <span>{t(content.meta.brand)}</span>
       </a>
-      <nav className={styles.actions} aria-label="Site">
+      <nav className={styles.actions} aria-label={t(content.a11y.siteNav)}>
         <ModeToggle />
         <LanguageToggle />
         <ThemeToggle />

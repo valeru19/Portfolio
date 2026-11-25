@@ -29,7 +29,7 @@ export function SpiralHud() {
 
   return (
     <>
-      <nav className={styles.dots} aria-label="Sections">
+      <nav className={styles.dots} aria-label={t(content.a11y.sectionsNav)}>
         {sectionIds.map((id, index) => (
           <button
             key={id}
