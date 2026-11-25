@@ -15,17 +15,11 @@ On some machines npm may ask to approve an `esbuild` (or Vite-related) **postins
 
 We do **not** use `npm audit fix --force` here: it can jump major versions and break the stack.
 
-### Current `npm audit` (devDependencies only)
+### Current `npm audit`
 
-As of step 2, `npm audit` reports issues only under the **Vitest** toolchain (not production runtime of the site):
+`npm audit` is clean after bumping Vitest to **4.1.12**.
 
-| Package | Severity | Notes |
-|---------|----------|--------|
-| `tinypool` (via `vitest`) | critical | Prototype pollution → RCE in worker options ([GHSA-5gmw-xhrv-c9v3](https://github.com/advisories/GHSA-5gmw-xhrv-c9v3), [GHSA-85c8-ppgw-ccpr](https://github.com/advisories/GHSA-85c8-ppgw-ccpr)) |
-| `@vitest/mocker` (via `vitest`) | moderate | Path traversal / mock registration ([GHSA-82fw-gwwq-j7x9](https://github.com/advisories/GHSA-82fw-gwwq-j7x9), [GHSA-qxg6-89mg-rqv8](https://github.com/advisories/GHSA-qxg6-89mg-rqv8)) |
-| `vitest` | (depends on above) | Fixed upstream in newer Vitest; a clean bump may require Vitest 4.1.11+ / 5.x — do that deliberately later, not with `--force` |
-
-These affect local/CI **test** tooling, not the static site served to visitors.
+Why not stay on 3.x: latest `3.2.7` still pulls `tinypool@1.1.1` and a vulnerable `@vitest/mocker`; there is no patched `tinypool` 1.x, so a major Vitest bump was required. `4.1.12` drops `tinypool` and includes mocker fixes from `4.1.11`/`4.1.12`. Vitest 5 was not needed.
 
 ## Scripts
 
