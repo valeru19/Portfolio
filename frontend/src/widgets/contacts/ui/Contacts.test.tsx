@@ -10,7 +10,7 @@ import { ThemeProvider } from "@/shared/theme";
 import { Contacts } from "./Contacts";
 
 describe("Contacts widget", () => {
-  it("renders five visible contact links and the copy-email control", () => {
+  it("renders six visible contact links and the copy-email control", () => {
     render(
       <ThemeProvider initialTheme="dark">
         <I18nProvider initialLang="en">
@@ -41,7 +41,10 @@ describe("Contacts widget", () => {
       "href",
       contactsConfig.linkedin.href,
     );
-    expect(screen.queryByRole("link", { name: /^VK$/i })).not.toBeInTheDocument();
+    const vk = screen.getByRole("link", { name: /^VK/i });
+    expect(vk).toHaveAttribute("href", contactsConfig.vk.href);
+    expect(vk).toHaveAttribute("rel", "noopener noreferrer");
+    expect(vk).toHaveAttribute("target", "_blank");
 
     expect(screen.getByRole("button", { name: content.contacts.copy.en })).toBeInTheDocument();
   });

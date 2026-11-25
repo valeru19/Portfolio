@@ -67,6 +67,7 @@ describe("htmlSeo plugin helpers", () => {
       contactsConfig.github.href,
       contactsConfig.hh.href,
       contactsConfig.linkedin.href,
+      contactsConfig.vk.href,
     ]);
     expect(jsonLd.sameAs?.some((url) => url.startsWith("mailto:"))).toBe(false);
   });
