@@ -50,23 +50,22 @@ describe("privacy contact channel", () => {
   });
 
   it("returns null when email, telegram and linkedin are hidden", () => {
+    email.hidden = true;
+    telegram.hidden = true;
+    linkedin.hidden = true;
     expect(privacyContactForDeletion()).toBeNull();
     expect(hasPrivacyContactChannel()).toBe(false);
   });
 
   it("prefers email, then telegram, then linkedin", () => {
-    linkedin.value = "linkedin.com/in/valeru";
-    linkedin.href = "https://linkedin.com/in/valeru";
+    email.hidden = true;
+    telegram.hidden = true;
     linkedin.hidden = false;
     expect(privacyContactForDeletion()?.id).toBe("linkedin");
 
-    telegram.value = "@valeru";
-    telegram.href = "https://t.me/valeru";
     telegram.hidden = false;
     expect(privacyContactForDeletion()?.id).toBe("telegram");
 
-    email.value = "me@example.com";
-    email.href = "mailto:me@example.com";
     email.hidden = false;
     expect(privacyContactForDeletion()?.id).toBe("email");
     expect(hasPrivacyContactChannel()).toBe(true);

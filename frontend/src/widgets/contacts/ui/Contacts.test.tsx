@@ -10,7 +10,7 @@ import { ThemeProvider } from "@/shared/theme";
 import { Contacts } from "./Contacts";
 
 describe("Contacts widget", () => {
-  it("does not render hidden/TODO contacts or the copy-email control", () => {
+  it("renders all six visible contact links and the copy-email control", () => {
     render(
       <ThemeProvider initialTheme="dark">
         <I18nProvider initialLang="en">
@@ -21,17 +21,32 @@ describe("Contacts widget", () => {
       </ThemeProvider>,
     );
 
-    expect(screen.getByRole("link", { name: /GitHub/i })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Email/i })).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: content.contacts.copy.en }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Email/i })).toHaveAttribute(
+      "href",
+      contactsConfig.email.href,
+    );
+    expect(screen.getByRole("link", { name: /Telegram/i })).toHaveAttribute(
+      "href",
+      contactsConfig.telegram.href,
+    );
+    expect(screen.getByRole("link", { name: /GitHub/i })).toHaveAttribute(
+      "href",
+      contactsConfig.github.href,
+    );
+    expect(screen.getByRole("link", { name: /hh\.ru/i })).toHaveAttribute(
+      "href",
+      contactsConfig.hh.href,
+    );
+    expect(screen.getByRole("link", { name: /LinkedIn/i })).toHaveAttribute(
+      "href",
+      contactsConfig.linkedin.href,
+    );
+    const vk = screen.getByRole("link", { name: /^VK/i });
+    expect(vk).toHaveAttribute("href", contactsConfig.vk.href);
+    expect(vk).toHaveAttribute("rel", "noopener noreferrer");
+    expect(vk).toHaveAttribute("target", "_blank");
 
-    for (const link of Object.values(contactsConfig)) {
-      const isHidden = "hidden" in link && link.hidden === true;
-      if (isHidden || link.href === "TODO") {
-        expect(screen.queryByText(link.value)).not.toBeInTheDocument();
-      }
-    }
+    expect(screen.getByRole("button", { name: content.contacts.copy.en })).toBeInTheDocument();
+    expect(screen.getAllByRole("link").length).toBeGreaterThanOrEqual(6);
   });
 });

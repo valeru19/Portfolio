@@ -3,7 +3,7 @@ import path from "node:path";
 
 import type { Plugin } from "vite";
 
-import { contactsConfig, isContactVisible } from "../src/shared/config/contacts";
+import { sameAsUrls } from "../src/shared/config/contacts";
 import { meta } from "../src/shared/content/meta";
 
 const OG_IMAGE_CANDIDATES = ["og-image.png", "og-image.jpg", "og-image.webp"] as const;
@@ -18,13 +18,6 @@ function escapeHtmlAttribute(value: string): string {
     .replaceAll('"', "&quot;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
-}
-
-function sameAsUrls(): string[] {
-  return Object.values(contactsConfig)
-    .filter(isContactVisible)
-    .filter((link) => /^https?:/i.test(link.href))
-    .map((link) => link.href);
 }
 
 export function findOgImage(publicDir: string, siteUrl: string): string | null {

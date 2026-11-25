@@ -20,11 +20,16 @@ describe("content", () => {
     }
   });
 
-  it("exposes only visible contacts (GitHub)", () => {
+  it("exposes all configured visible contacts", () => {
     const links = visibleContacts();
-    expect(links).toHaveLength(1);
-    expect(links[0]?.id).toBe("github");
-    expect(links[0]?.href).toBe("https://github.com/valeru19");
+    expect(links.map((link) => link.id)).toEqual([
+      "email",
+      "telegram",
+      "github",
+      "hh",
+      "linkedin",
+      "vk",
+    ]);
   });
 
   it("includes Portfolio project with code URL", () => {

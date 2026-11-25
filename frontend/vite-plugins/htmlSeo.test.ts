@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+import { contactsConfig } from "../src/shared/config/contacts";
 import { meta } from "../src/shared/content/meta";
 
 import { buildHeadTags, findOgImage, normalizeSiteUrl } from "./htmlSeo";
@@ -52,5 +53,25 @@ describe("htmlSeo plugin helpers", () => {
 
   it("normalizes trailing slash on site URL", () => {
     expect(normalizeSiteUrl("https://example.com/")).toBe("https://example.com");
+  });
+
+  it("puts only https contacts into JSON-LD sameAs (no mailto)", () => {
+    const html = buildHeadTags("https://valeru19.github.io/Portfolio", null);
+    const match = html.match(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
+    );
+    expect(match).not.toBeNull();
+    const jsonLd = JSON.parse(match?.[1] ?? "{}") as { sameAs?: string[] };
+    expect(jsonLd.sameAs).toEqual(
+      expect.arrayContaining([
+        contactsConfig.github.href,
+        contactsConfig.telegram.href,
+        contactsConfig.hh.href,
+        contactsConfig.linkedin.href,
+        contactsConfig.vk.href,
+      ]),
+    );
+    expect(jsonLd.sameAs).toHaveLength(5);
+    expect(jsonLd.sameAs?.some((url) => url.startsWith("mailto:"))).toBe(false);
   });
 });
