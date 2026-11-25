@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-
 import type { Lang, Localizable, LocalizedString, LocalizedStringList } from "./types";
 import { useI18n } from "./useI18n";
 
@@ -8,15 +6,18 @@ function pick(lang: Lang, value: Localizable): string | string[] {
   return value[lang];
 }
 
-export function useT() {
+export type TranslateFn = {
+  (value: LocalizedString): string;
+  (value: LocalizedStringList): string[];
+  (value: string): string;
+  (value: Localizable): string | string[];
+};
+
+export function useT(): TranslateFn {
   const { lang } = useI18n();
 
-  // Stable t() reference when lang is unchanged (safe to pass into memoized children later).
-  return useCallback(
-    (value: LocalizedString | LocalizedStringList | string): string | string[] =>
-      pick(lang, value),
-    [lang],
-  );
+  const translateFn = ((value: Localizable) => pick(lang, value)) as TranslateFn;
+  return translateFn;
 }
 
 export function translate(lang: Lang, value: LocalizedString): string;

@@ -1,1 +1,1 @@
-export {};
+export { Education } from "./ui/Education";

@@ -1,0 +1,35 @@
+.footer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px clamp(18px, 2.6vw, 36px) 64px;
+  color: var(--stage-fg);
+}
+
+.top {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: inherit;
+}
+
+.rights {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.privacy {
+  border-top: var(--frame) solid var(--border);
+  padding-top: 18px;
+}
+
+.privacy h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.privacy p {
+  margin: 0;
+  opacity: 0.75;
+  font-size: 0.92rem;
+}

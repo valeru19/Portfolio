@@ -1,1 +1,1 @@
-export {};
+export { Contacts } from "./ui/Contacts";

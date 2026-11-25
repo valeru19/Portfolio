@@ -1,0 +1,6 @@
+.section {
+  min-height: 70vh;
+  border-bottom: var(--frame) solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+}

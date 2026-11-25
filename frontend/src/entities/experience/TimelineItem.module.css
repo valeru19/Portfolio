@@ -1,0 +1,39 @@
+.item {
+  padding: 10px 12px;
+  border-bottom: var(--frame) solid currentColor;
+  background: transparent;
+}
+
+.item:last-child {
+  border-bottom: 0;
+}
+
+.role {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.company {
+  margin: 2px 0;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.dates {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+.points {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  opacity: 0.78;
+  font-size: 0.88rem;
+}
+
+.points li {
+  margin: 0 0 2px;
+}

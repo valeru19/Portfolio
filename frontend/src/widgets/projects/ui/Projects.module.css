@@ -1,0 +1,16 @@
+.mosaic {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: var(--frame) solid var(--border);
+  border-left: var(--frame) solid var(--border);
+}
+
+@media (min-width: 720px) {
+  .mosaic {
+    grid-template-columns: 1.2fr 1fr;
+  }
+
+  .mosaic :global([data-detail="full"]) {
+    grid-row: span 2;
+  }
+}

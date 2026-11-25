@@ -16,4 +16,5 @@ export const hero = {
     ru: "работы, которые я делаю",
     en: "the kind of work I do",
   } satisfies LocalizedString,
+  locationLabel: { ru: "Локация", en: "Location" } satisfies LocalizedString,
 } as const;

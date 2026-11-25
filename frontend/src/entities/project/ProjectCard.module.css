@@ -1,0 +1,49 @@
+.card {
+  padding: 14px;
+  border-bottom: var(--frame) solid var(--border);
+  border-right: var(--frame) solid var(--border);
+  background: color-mix(in srgb, currentColor 6%, var(--panel));
+  color: inherit;
+  min-height: 160px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: attr(data-index);
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-family: var(--mono);
+  font-size: 42px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--border) 16%, transparent);
+  line-height: 1;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.15rem;
+  position: relative;
+}
+
+.summary,
+.points {
+  margin: 8px 0 0;
+  color: inherit;
+  opacity: 0.72;
+  font-size: 0.92rem;
+  position: relative;
+}
+
+.points {
+  padding-left: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  position: relative;
+  flex-wrap: wrap;
+}

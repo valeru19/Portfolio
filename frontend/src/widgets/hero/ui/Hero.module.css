@@ -1,0 +1,95 @@
+.kicker {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.badge {
+  display: inline-block;
+  border: 2px solid var(--border);
+  padding: 5px 9px;
+  font-family: var(--mono);
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+
+.name {
+  margin: 0;
+  font-size: clamp(2.2rem, 6vw, 4.8rem);
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  font-weight: 700;
+  max-width: 11ch;
+}
+
+.role {
+  margin: 12px 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.sub {
+  margin: 12px 0 0;
+  color: inherit;
+  opacity: 0.72;
+  max-width: 36rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 0;
+  border: var(--frame) solid var(--border);
+  margin-top: 16px;
+}
+
+.metaGrid > div {
+  padding: 12px;
+  border-right: var(--frame) solid var(--border);
+  background: var(--panel-alt);
+}
+
+.metaGrid > div:last-child {
+  border-right: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.cellLabel {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.cellValue {
+  margin: 8px 0 0;
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .metaGrid > div {
+    border-right: 0;
+    border-bottom: var(--frame) solid var(--border);
+  }
+
+  .metaGrid > div:last-child {
+    border-bottom: 0;
+  }
+}

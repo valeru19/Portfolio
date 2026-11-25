@@ -1,36 +1,34 @@
-import { content } from "@/shared/content";
-import { useI18n, useT } from "@/shared/i18n";
+import { About } from "@/widgets/about";
+import { Contacts } from "@/widgets/contacts";
+import { Education } from "@/widgets/education";
+import { Experience } from "@/widgets/experience";
+import { Footer } from "@/widgets/footer";
+import { Header } from "@/widgets/header";
+import { Hero } from "@/widgets/hero";
+import { Projects } from "@/widgets/projects";
+import { SpiralNav } from "@/widgets/spiral-nav";
+import { Stack } from "@/widgets/stack";
 
-import { useTheme } from "./providers";
+import styles from "./App.module.css";
 
-/** Step 3 smoke UI — full sections arrive in step 4. */
 export function App() {
-  const { lang, setLang } = useI18n();
-  const { theme, toggleTheme } = useTheme();
-  const t = useT();
-  const projectsStat = content.about.stats.find((s) => s.id === "projects");
-
   return (
-    <main id="main">
-      <h1>{t(content.meta.name)}</h1>
-      <p>{t(content.meta.role)}</p>
-      <p data-testid="project-count">
-        {projectsStat ? (
-          <>
-            {projectsStat.value} {String(t(projectsStat.label))}
-          </>
-        ) : null}
-      </p>
-      <div>
-        <button type="button" onClick={() => setLang(lang === "ru" ? "en" : "ru")}>
-          {t(content.nav.langSwitch)}
-        </button>
-        <button type="button" onClick={toggleTheme}>
-          {theme === "light" ? t(content.nav.themeDark) : t(content.nav.themeLight)}
-        </button>
-      </div>
-      <p data-testid="lang">{lang}</p>
-      <p data-testid="theme">{theme}</p>
-    </main>
+    <div className={styles.page}>
+      <a className="sr-only" href="#main">
+        Skip to content
+      </a>
+      <Header />
+      <SpiralNav />
+      <main id="main">
+        <Hero />
+        <About />
+        <Stack />
+        <Experience />
+        <Projects />
+        <Education />
+        <Contacts />
+      </main>
+      <Footer />
+    </div>
   );
 }

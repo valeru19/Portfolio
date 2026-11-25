@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 
 import { content } from "@/shared/content";
 import { I18nProvider } from "@/shared/i18n";
+import { ThemeProvider } from "@/shared/theme";
 
 import { App } from "./App";
-import { ThemeProvider } from "./providers";
 
 describe("App", () => {
-  it("renders content through providers", () => {
+  it("renders static sections from content", () => {
     render(
       <ThemeProvider initialTheme="dark">
         <I18nProvider initialLang="ru">
@@ -18,11 +18,14 @@ describe("App", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: content.meta.name.ru }),
+      screen.getByRole("heading", { level: 1, name: content.meta.name.ru }),
     ).toBeInTheDocument();
-    expect(screen.getByTestId("project-count")).toHaveTextContent(
-      String(content.projects.items.length),
+    expect(screen.getByRole("heading", { name: content.about.title.ru })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: content.stack.title.ru })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /GitHub/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Skip to content" })).toHaveAttribute(
+      "href",
+      "#main",
     );
-    expect(screen.getByTestId("lang")).toHaveTextContent("ru");
   });
 });

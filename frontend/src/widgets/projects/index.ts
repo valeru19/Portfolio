@@ -1,1 +1,1 @@
-export {};
+export { Projects } from "./ui/Projects";

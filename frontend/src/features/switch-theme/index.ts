@@ -1,2 +1,2 @@
-/** Theme toggle UI lands in step 4; provider lives in `app/providers`. */
-export {};
+export { ThemeToggle } from "./ui/ThemeToggle";
+export { useTheme } from "@/shared/theme";

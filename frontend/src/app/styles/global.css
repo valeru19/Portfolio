@@ -1,4 +1,14 @@
+html {
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-padding-top: 52px;
+}
+
 body {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
   font-family: var(--font);
   color: var(--stage-fg);
   background: var(--stage-bg);

@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 
 import { I18nProvider } from "@/shared/i18n";
-
-import { ThemeProvider } from "./ThemeProvider";
+import { ThemeProvider } from "@/shared/theme";
 
 type Props = {
   children: ReactNode;

@@ -12,10 +12,14 @@ import { reviews } from "./reviews";
 import { spiral } from "./spiral";
 import { stack } from "./stack";
 
-export { pendingStackItems } from "./stack.pending";
 export type { ExperienceItem, TechLogo } from "./experience";
 export type { ProjectItem } from "./projects";
 export type { StackGroup, StackItem } from "./stack";
+export {
+  SECTION_INDEX_LABELS,
+  STATIC_SECTION_IDS,
+  type StaticSectionId,
+} from "./sectionIds";
 
 const projectCount = String(projects.items.length);
 

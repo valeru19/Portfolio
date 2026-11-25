@@ -1,1 +1,1 @@
-export {};
+export { TimelineItem } from "./TimelineItem";
