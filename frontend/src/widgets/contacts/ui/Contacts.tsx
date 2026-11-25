@@ -1,8 +1,11 @@
+import type { ReactNode } from "react";
+
+import { NavSection } from "@/features/section-navigation";
 import { visibleContacts } from "@/shared/config";
 import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
 import { assetUrl } from "@/shared/lib";
-import { Container, Section, SectionHead } from "@/shared/ui";
+import { Container, SectionHead } from "@/shared/ui";
 
 import styles from "./Contacts.module.css";
 
@@ -10,12 +13,17 @@ const CONTACT_LOGO: Record<string, string> = {
   github: "assets/github.png",
 };
 
-export function Contacts() {
+type Props = {
+  /** Rendered inside the contacts panel (e.g. Footer + privacy). */
+  endSlot?: ReactNode;
+};
+
+export function Contacts({ endSlot }: Props) {
   const t = useT();
   const links = visibleContacts();
 
   return (
-    <Section id="contacts" aria-labelledby="contacts-title">
+    <NavSection id="contacts" aria-labelledby="contacts-title">
       <Container>
         <SectionHead
           index={getSectionIndexLabel("contacts")}
@@ -42,6 +50,7 @@ export function Contacts() {
           ))}
         </div>
       </Container>
-    </Section>
+      {endSlot}
+    </NavSection>
   );
 }

@@ -1,0 +1,48 @@
+.accessibleSection {
+  min-height: 70vh;
+  border-bottom: var(--frame) solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+}
+
+.spiralSection {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border: var(--frame) solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  overflow: hidden;
+  border-radius: 0.01px;
+  cursor: pointer;
+  backface-visibility: hidden;
+  transition:
+    background-color 0.45s var(--ease),
+    color 0.45s var(--ease),
+    border-color 0.45s var(--ease);
+}
+
+.spiralSection.active {
+  cursor: default;
+  z-index: 3;
+}
+
+.spiralSection.is-far {
+  pointer-events: none;
+}
+
+.panelScroll {
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(18px, 2.6vw, 36px);
+  padding-top: 76px;
+  padding-bottom: 96px;
+  overscroll-behavior: contain;
+  pointer-events: none;
+  scrollbar-width: thin;
+}
+
+.spiralSection.active .panelScroll.is-scrollable {
+  overflow: auto;
+  pointer-events: auto;
+}

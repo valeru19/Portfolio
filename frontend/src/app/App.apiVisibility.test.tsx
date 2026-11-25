@@ -33,8 +33,8 @@ describe("App API section visibility", () => {
       screen.queryByRole("heading", { name: content.reviews.title.en }),
     ).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: content.apply.title.en })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: content.nav.reviews.en })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: content.nav.apply.en })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: content.nav.reviews.en })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: content.nav.apply.en })).not.toBeInTheDocument();
   });
 
   it("shows Reviews and Apply when VITE_API_BASE is set", () => {
@@ -51,7 +51,7 @@ describe("App API section visibility", () => {
 
     expect(screen.getByRole("heading", { name: content.reviews.title.en })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: content.apply.title.en })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: content.nav.reviews.en })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: content.nav.apply.en })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: content.nav.reviews.en })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: content.nav.apply.en })).toBeInTheDocument();
   });
 });

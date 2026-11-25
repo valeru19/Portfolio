@@ -1,6 +1,7 @@
 import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
-import { Container, Section, SectionHead } from "@/shared/ui";
+import { NavSection } from "@/features/section-navigation";
+import { Container, SectionHead } from "@/shared/ui";
 
 import styles from "./Education.module.css";
 
@@ -8,7 +9,7 @@ export function Education() {
   const t = useT();
 
   return (
-    <Section id="education" aria-labelledby="education-title">
+    <NavSection id="education" aria-labelledby="education-title">
       <Container>
         <SectionHead
           index={getSectionIndexLabel("education")}
@@ -25,6 +26,6 @@ export function Education() {
           ))}
         </div>
       </Container>
-    </Section>
+    </NavSection>
   );
 }

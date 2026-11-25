@@ -1,7 +1,8 @@
 import { ApplicationForm } from "@/features/submit-application";
 import { content, getSectionIndexLabel, getVisibleSectionIds } from "@/shared/content";
 import { useT } from "@/shared/i18n";
-import { Container, Section, SectionHead } from "@/shared/ui";
+import { NavSection } from "@/features/section-navigation";
+import { Container, SectionHead } from "@/shared/ui";
 
 import styles from "./Apply.module.css";
 
@@ -10,7 +11,7 @@ export function Apply() {
   const visibleIds = getVisibleSectionIds();
 
   return (
-    <Section id="apply" aria-labelledby="apply-title">
+    <NavSection id="apply" aria-labelledby="apply-title">
       <Container>
         <SectionHead
           index={getSectionIndexLabel("apply", visibleIds)}
@@ -22,6 +23,6 @@ export function Apply() {
           <ApplicationForm />
         </div>
       </Container>
-    </Section>
+    </NavSection>
   );
 }

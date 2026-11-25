@@ -5,6 +5,11 @@ html {
   scroll-padding-top: 52px;
 }
 
+html:not(.is-accessible) {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   height: auto;
   min-height: 100%;
@@ -17,6 +22,15 @@ body {
   transition:
     background-color 0.45s var(--ease),
     color 0.45s var(--ease);
+}
+
+html:not(.is-accessible) body {
+  height: 100%;
+  overflow: hidden;
+}
+
+html.is-accessible {
+  --nav-h: 52px;
 }
 
 :focus-visible {
@@ -33,4 +47,17 @@ body {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+body.is-spinning .spiralSection,
+body.is-spinning header,
+body.is-spinning [class*="counter"],
+body.is-spinning [class*="dot"] {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

@@ -1,7 +1,8 @@
 import { ProjectCard } from "@/entities/project";
 import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
-import { Container, Section, SectionHead } from "@/shared/ui";
+import { NavSection } from "@/features/section-navigation";
+import { Container, SectionHead } from "@/shared/ui";
 
 import styles from "./Projects.module.css";
 
@@ -9,7 +10,7 @@ export function Projects() {
   const t = useT();
 
   return (
-    <Section id="projects" aria-labelledby="projects-title">
+    <NavSection id="projects" aria-labelledby="projects-title">
       <Container>
         <SectionHead
           index={getSectionIndexLabel("projects")}
@@ -28,6 +29,6 @@ export function Projects() {
           ))}
         </div>
       </Container>
-    </Section>
+    </NavSection>
   );
 }

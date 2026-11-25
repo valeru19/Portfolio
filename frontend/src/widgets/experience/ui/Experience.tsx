@@ -2,7 +2,8 @@ import { TimelineItem } from "@/entities/experience";
 import { TechLogo } from "@/entities/tech";
 import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
-import { Container, Section, SectionHead } from "@/shared/ui";
+import { NavSection } from "@/features/section-navigation";
+import { Container, SectionHead } from "@/shared/ui";
 
 import styles from "./Experience.module.css";
 
@@ -10,7 +11,7 @@ export function Experience() {
   const t = useT();
 
   return (
-    <Section id="experience" aria-labelledby="experience-title">
+    <NavSection id="experience" aria-labelledby="experience-title">
       <Container>
         <SectionHead
           index={getSectionIndexLabel("experience")}
@@ -43,6 +44,6 @@ export function Experience() {
           </div>
         </div>
       </Container>
-    </Section>
+    </NavSection>
   );
 }

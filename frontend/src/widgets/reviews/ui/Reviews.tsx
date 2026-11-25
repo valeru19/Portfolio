@@ -3,7 +3,8 @@ import { ReviewForm } from "@/features/submit-review";
 import { messageForApiError } from "@/shared/api";
 import { content, getSectionIndexLabel, getVisibleSectionIds } from "@/shared/content";
 import { useI18n, useT } from "@/shared/i18n";
-import { Container, Section, SectionHead } from "@/shared/ui";
+import { NavSection } from "@/features/section-navigation";
+import { Container, SectionHead } from "@/shared/ui";
 
 import styles from "./Reviews.module.css";
 
@@ -16,7 +17,7 @@ export function Reviews() {
   const isEmpty = !isLoading && !isError && reviews.length === 0;
 
   return (
-    <Section id="reviews" aria-labelledby="reviews-title">
+    <NavSection id="reviews" aria-labelledby="reviews-title">
       <Container>
         <SectionHead
           index={getSectionIndexLabel("reviews", visibleIds)}
@@ -49,6 +50,6 @@ export function Reviews() {
           </div>
         </div>
       </Container>
-    </Section>
+    </NavSection>
   );
 }

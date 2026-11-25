@@ -22,6 +22,13 @@ export {
   getVisibleSectionIds,
   type SectionId,
 } from "./sectionIds";
+export {
+  SECTION_PALETTE_DARK,
+  SECTION_PALETTE_LIGHT,
+  paletteForTheme,
+  sectionPaletteAt,
+  type SectionPalette,
+} from "./sectionPalettes";
 
 const projectCount = String(projects.items.length);
 

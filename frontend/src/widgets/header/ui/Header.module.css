@@ -12,6 +12,23 @@
   color: var(--stage-fg);
 }
 
+.headerSpiral {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  left: auto;
+  height: auto;
+  padding: 0;
+  background: transparent;
+  border-bottom: 0;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.headerSpiral > * {
+  pointer-events: auto;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -22,6 +39,13 @@
   background: var(--stage-bg);
   border: var(--frame) solid var(--border);
   padding: 6px 10px 6px 6px;
+}
+
+.brandSpiral {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 55;
 }
 
 .monogram {

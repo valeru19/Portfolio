@@ -1,0 +1,123 @@
+.dots {
+  position: fixed;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  z-index: 40;
+  color: var(--stage-fg);
+}
+
+.dot,
+.dotActive {
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.dotActive {
+  background: currentColor;
+  transform: scale(1.2);
+}
+
+.counter {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 40;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  border: var(--frame) solid var(--border);
+  background: var(--stage-bg);
+  color: var(--stage-fg);
+  padding: 10px 12px;
+  font-weight: 600;
+}
+
+.controls {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  display: flex;
+  border: var(--frame) solid var(--border);
+}
+
+.next {
+  appearance: none;
+  border: 0;
+  min-width: 92px;
+  min-height: 88px;
+  padding: 0 12px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--stage-bg);
+  color: var(--stage-fg);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.next:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.phi {
+  width: 22px;
+  height: 22px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  position: relative;
+}
+
+.phi::before,
+.phi::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+}
+
+.phi::before {
+  width: 2px;
+  height: 10px;
+  left: 8px;
+  top: 4px;
+}
+
+.phi::after {
+  width: 8px;
+  height: 2px;
+  left: 8px;
+  top: 8px;
+}
+
+@media (max-width: 720px) {
+  .dots {
+    right: 10px;
+  }
+
+  .counter {
+    left: 10px;
+    bottom: 10px;
+  }
+
+  .controls {
+    right: 10px;
+    bottom: 10px;
+  }
+}

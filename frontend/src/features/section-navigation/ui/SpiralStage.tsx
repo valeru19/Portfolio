@@ -1,0 +1,34 @@
+import type { ReactNode } from "react";
+
+import { cn } from "@/shared/lib";
+
+import { useSpiralNavigationContext } from "../hooks/useSpiralNavigationContext";
+
+import styles from "./SpiralStage.module.css";
+
+type Props = {
+  children: ReactNode;
+};
+
+export function SpiralStage({ children }: Props) {
+  const { isAccessible, spiralRef, stageRef } = useSpiralNavigationContext();
+
+  return (
+    <main
+      id="main"
+      ref={(node) => {
+        stageRef.current = node;
+      }}
+      className={cn(styles.stage, isAccessible && styles.stageAccessible)}
+    >
+      <div
+        ref={(node) => {
+          spiralRef.current = node;
+        }}
+        className={cn(styles.spiral, isAccessible && styles.spiralAccessible)}
+      >
+        {children}
+      </div>
+    </main>
+  );
+}

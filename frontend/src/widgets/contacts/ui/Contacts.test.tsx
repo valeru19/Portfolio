@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { SpiralNavigationProvider } from "@/features/section-navigation";
 import { contactsConfig } from "@/shared/config";
 import { I18nProvider } from "@/shared/i18n";
 import { ThemeProvider } from "@/shared/theme";
@@ -12,7 +13,9 @@ describe("Contacts widget", () => {
     render(
       <ThemeProvider initialTheme="dark">
         <I18nProvider initialLang="en">
-          <Contacts />
+          <SpiralNavigationProvider sectionIds={["contacts"]}>
+            <Contacts />
+          </SpiralNavigationProvider>
         </I18nProvider>
       </ThemeProvider>,
     );

@@ -1,6 +1,7 @@
 import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
-import { Container, Section, SectionHead } from "@/shared/ui";
+import { NavSection } from "@/features/section-navigation";
+import { Container, SectionHead } from "@/shared/ui";
 
 import styles from "./About.module.css";
 
@@ -9,7 +10,7 @@ export function About() {
   const paragraphs = t(content.about.text);
 
   return (
-    <Section id="about" aria-labelledby="about-title">
+    <NavSection id="about" aria-labelledby="about-title">
       <Container>
         <SectionHead
           index={getSectionIndexLabel("about")}
@@ -32,6 +33,6 @@ export function About() {
           </div>
         </div>
       </Container>
-    </Section>
+    </NavSection>
   );
 }

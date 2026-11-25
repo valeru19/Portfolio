@@ -1,0 +1,35 @@
+.stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--stage-bg);
+  transition: background-color 0.55s var(--ease);
+}
+
+.stageAccessible {
+  position: static;
+  overflow: visible;
+  inset: auto;
+  padding-top: var(--nav-h, 52px);
+}
+
+.spiral {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.spiralAccessible {
+  position: static !important;
+  inset: auto;
+  width: auto;
+  height: auto;
+  transform: none !important;
+  display: block;
+}
+
+:global(body.is-spinning) .spiral {
+  will-change: transform;
+}

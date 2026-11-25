@@ -1,7 +1,8 @@
 import { TechLogo, TechTag } from "@/entities/tech";
 import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
-import { Container, Section, SectionHead } from "@/shared/ui";
+import { NavSection } from "@/features/section-navigation";
+import { Container, SectionHead } from "@/shared/ui";
 
 import styles from "./Stack.module.css";
 
@@ -33,7 +34,7 @@ export function Stack() {
   );
 
   return (
-    <Section id="stack" aria-labelledby="stack-title">
+    <NavSection id="stack" aria-labelledby="stack-title">
       <Container>
         <SectionHead
           index={getSectionIndexLabel("stack")}
@@ -66,6 +67,6 @@ export function Stack() {
           ))}
         </div>
       </Container>
-    </Section>
+    </NavSection>
   );
 }

@@ -34,6 +34,26 @@
   height: 36px;
 }
 
+:global(body:not(.is-spinning):not(.is-accessible)) .tileCompact img {
+  animation: logo-float 4.2s ease-in-out infinite;
+}
+
+@keyframes logo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(body:not(.is-spinning):not(.is-accessible)) .tileCompact img {
+    animation: none;
+  }
+}
+
 .tile span,
 .tileCompact span {
   font-family: var(--mono);
