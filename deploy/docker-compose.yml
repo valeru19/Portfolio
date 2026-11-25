@@ -1,0 +1,28 @@
+services:
+  api:
+    build: ../backend
+    restart: unless-stopped
+    env_file: ../backend/.env
+    volumes:
+      - portfolio-data:/app/data
+    # Ports are not published — only Caddy reaches the API on the internal network.
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
+
+volumes:
+  portfolio-data:
+  caddy-data:
+  caddy-config:
