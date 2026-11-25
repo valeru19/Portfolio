@@ -8,7 +8,7 @@ import { meta } from "../src/shared/content/meta";
 
 const OG_IMAGE_CANDIDATES = ["og-image.png", "og-image.jpg", "og-image.webp"] as const;
 
-function normalizeSiteUrl(raw: string): string {
+export function normalizeSiteUrl(raw: string): string {
   return raw.replace(/\/$/, "");
 }
 
@@ -27,7 +27,7 @@ function sameAsUrls(): string[] {
     .map((link) => link.href);
 }
 
-function findOgImage(publicDir: string, siteUrl: string): string | null {
+export function findOgImage(publicDir: string, siteUrl: string): string | null {
   for (const fileName of OG_IMAGE_CANDIDATES) {
     if (fs.existsSync(path.join(publicDir, fileName))) {
       return `${siteUrl}/${fileName}`;
@@ -36,7 +36,8 @@ function findOgImage(publicDir: string, siteUrl: string): string | null {
   return null;
 }
 
-function buildHeadTags(siteUrl: string, ogImageUrl: string | null): string {
+/** Builds the SEO head fragment injected into dist/index.html at build time. */
+export function buildHeadTags(siteUrl: string, ogImageUrl: string | null): string {
   const title = meta.title.ru;
   const description = meta.description.ru;
   const ogDescription = meta.ogDescription.ru;
@@ -60,6 +61,9 @@ function buildHeadTags(siteUrl: string, ogImageUrl: string | null): string {
     `<meta property="og:description" content="${escapeHtmlAttribute(ogDescription)}" />`,
     `<meta property="og:locale" content="ru_RU" />`,
     `<meta property="og:locale:alternate" content="en_US" />`,
+    `<meta name="twitter:card" content="summary" />`,
+    `<meta name="twitter:title" content="${escapeHtmlAttribute(title)}" />`,
+    `<meta name="twitter:description" content="${escapeHtmlAttribute(ogDescription)}" />`,
   ];
 
   if (canonical) {
