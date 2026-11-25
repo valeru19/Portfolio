@@ -28,11 +28,13 @@ export function I18nProvider({ children, initialLang }: Props) {
     document.documentElement.lang = lang;
   }, [lang]);
 
+  // Stable identity so consumers depending on setLang do not re-render every paint.
   const setLang = useCallback((next: Lang) => {
     setLangState(next);
     safeSetItem(STORAGE_LANG, next);
   }, []);
 
+  // Memoize context value object — same reason as setLang above.
   const value = useMemo(() => ({ lang, setLang }), [lang, setLang]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

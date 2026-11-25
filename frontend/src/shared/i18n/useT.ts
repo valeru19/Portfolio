@@ -11,6 +11,7 @@ function pick(lang: Lang, value: Localizable): string | string[] {
 export function useT() {
   const { lang } = useI18n();
 
+  // Stable t() reference when lang is unchanged (safe to pass into memoized children later).
   return useCallback(
     (value: LocalizedString | LocalizedStringList | string): string | string[] =>
       pick(lang, value),
