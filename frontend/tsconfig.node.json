@@ -15,7 +15,18 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
-  "include": ["vite.config.ts", "eslint.config.js"]
+  "include": [
+    "vite.config.ts",
+    "vite-plugins/**/*.ts",
+    "src/shared/content/meta.ts",
+    "src/shared/config/contacts.ts",
+    "src/shared/i18n/types.ts",
+    "eslint.config.js"
+  ]
 }

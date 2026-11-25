@@ -1,4 +1,4 @@
-import type { LocalizedString } from "@/shared/i18n";
+import type { LocalizedString } from "../i18n/types";
 
 export const meta = {
   name: {
