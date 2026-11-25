@@ -56,13 +56,6 @@ export const contactsConfig = {
     value: LINKEDIN_PROFILE_DISPLAY,
     href: linkedInProfileHref(),
   } satisfies ContactLink,
-
-  vk: {
-    id: "vk",
-    label: "VK",
-    value: "vk.ru/page-777107_28406709",
-    href: "https://vk.ru/page-777107_28406709",
-  } satisfies ContactLink,
 } as const;
 
 export function isContactVisible(link: ContactLink): boolean {
@@ -94,7 +87,7 @@ export type PrivacyContactId = (typeof PRIVACY_CONTACT_PRIORITY)[number];
 
 /**
  * First visible contact suitable for “delete/update my data” requests.
- * GitHub / hh.ru / VK are not used here — they are not personal reply channels.
+ * GitHub / hh.ru are not used here — they are not personal reply channels.
  */
 export function privacyContactForDeletion(): ContactLink | null {
   for (const id of PRIVACY_CONTACT_PRIORITY) {

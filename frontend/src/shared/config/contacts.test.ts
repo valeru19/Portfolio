@@ -10,7 +10,7 @@ import {
 } from "./contacts";
 
 describe("contactsConfig", () => {
-  it("exposes six visible contacts including VK and email", () => {
+  it("exposes five visible contacts without VK or phone", () => {
     const links = visibleContacts();
     expect(links.map((link) => link.id)).toEqual([
       "email",
@@ -18,8 +18,9 @@ describe("contactsConfig", () => {
       "github",
       "hh",
       "linkedin",
-      "vk",
     ]);
+    expect(links.some((link) => link.id === "vk")).toBe(false);
+    expect(JSON.stringify(contactsConfig).toLowerCase()).not.toContain("tel:");
   });
 
   it("builds a valid LinkedIn href with encoded Cyrillic slug", () => {
@@ -35,15 +36,22 @@ describe("contactsConfig", () => {
   it("keeps mailto out of JSON-LD sameAs and includes https contacts", () => {
     const urls = sameAsUrls();
     expect(urls.some((url) => url.startsWith("mailto:"))).toBe(false);
-    expect(urls).toContain(contactsConfig.github.href);
-    expect(urls).toContain(contactsConfig.telegram.href);
-    expect(urls).toContain(contactsConfig.hh.href);
-    expect(urls).toContain(contactsConfig.linkedin.href);
-    expect(urls).toContain(contactsConfig.vk.href);
-    expect(urls).toHaveLength(5);
+    expect(urls).toEqual([
+      contactsConfig.telegram.href,
+      contactsConfig.github.href,
+      contactsConfig.hh.href,
+      contactsConfig.linkedin.href,
+    ]);
   });
 
-  it("exposes the hh.ru resume URL for the hero CTA", () => {
+  it("uses the exact contact hrefs provided for the site", () => {
+    expect(contactsConfig.email.href).toBe("mailto:wal.era.kozhin01@gmail.com");
+    expect(contactsConfig.email.value).toBe("wal.era.kozhin01@gmail.com");
+    expect(contactsConfig.telegram.href).toBe("https://t.me/comfortable_kitten");
+    expect(contactsConfig.github.href).toBe("https://github.com/valeru19");
+    expect(contactsConfig.hh.href).toBe(
+      "https://spb.hh.ru/resume/ee683c75ff10f7d8690039ed1f4b5679303742",
+    );
     expect(hhResumeHref()).toBe(contactsConfig.hh.href);
   });
 });

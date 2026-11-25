@@ -20,7 +20,7 @@ describe("content", () => {
     }
   });
 
-  it("exposes all configured visible contacts", () => {
+  it("exposes configured visible contacts without VK", () => {
     const links = visibleContacts();
     expect(links.map((link) => link.id)).toEqual([
       "email",
@@ -28,7 +28,6 @@ describe("content", () => {
       "github",
       "hh",
       "linkedin",
-      "vk",
     ]);
   });
 

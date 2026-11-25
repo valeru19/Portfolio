@@ -62,16 +62,12 @@ describe("htmlSeo plugin helpers", () => {
     );
     expect(match).not.toBeNull();
     const jsonLd = JSON.parse(match?.[1] ?? "{}") as { sameAs?: string[] };
-    expect(jsonLd.sameAs).toEqual(
-      expect.arrayContaining([
-        contactsConfig.github.href,
-        contactsConfig.telegram.href,
-        contactsConfig.hh.href,
-        contactsConfig.linkedin.href,
-        contactsConfig.vk.href,
-      ]),
-    );
-    expect(jsonLd.sameAs).toHaveLength(5);
+    expect(jsonLd.sameAs).toEqual([
+      contactsConfig.telegram.href,
+      contactsConfig.github.href,
+      contactsConfig.hh.href,
+      contactsConfig.linkedin.href,
+    ]);
     expect(jsonLd.sameAs?.some((url) => url.startsWith("mailto:"))).toBe(false);
   });
 });
