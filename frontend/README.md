@@ -47,3 +47,16 @@ npm run test
 - `vite.config.ts` — `base: "/Portfolio/"` for GitHub Pages
 
 CI and Pages: see root `DEPLOY.md` and `.github/workflows/frontend.yml`.
+
+## First publish checklist
+
+1. GitHub → **Settings → Pages → Source: GitHub Actions**.
+2. **Settings → Secrets and variables → Actions → Variables**:
+   - `VITE_SITE_URL=https://valeru19.github.io/Portfolio`
+   - leave `VITE_API_BASE` empty for the first deploy (forms stay hidden).
+3. Push `main` and wait for the workflow; open the Pages URL.
+4. When the backend is ready:
+   - serve the API over **HTTPS** only (GitHub Pages cannot call plain `http://`);
+   - set backend `CORS_ORIGINS=https://valeru19.github.io` (no `/Portfolio` path);
+   - set repo var `VITE_API_BASE` to that HTTPS API URL and redeploy;
+   - forms also need a visible reply contact in `contacts.ts` (email, else Telegram, else LinkedIn).

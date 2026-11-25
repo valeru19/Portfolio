@@ -2,13 +2,26 @@
 
 Сайт разделён на `frontend/` (статика после Vite build) и `backend/` (API). GitHub Pages обслуживает только фронт; для заявок и отзывов нужен запущенный backend и непустой `VITE_API_BASE`.
 
+## Первая публикация (чеклист)
+
+1. **Settings → Pages → Source: GitHub Actions**.
+2. **Settings → Secrets and variables → Actions → Variables**:
+   - `VITE_SITE_URL=https://valeru19.github.io/Portfolio` (со слэшем на конце или без — нормализуется).
+   - `VITE_API_BASE` пока **не задавайте** — сайт соберётся, формы «Заявка»/«Отзывы» останутся скрытыми.
+3. Push в `main` (или `workflow_dispatch`) → дождитесь зелёного workflow → откройте Pages URL.
+4. Когда будет бэкенд:
+   - только **HTTPS** (страница на Pages не сможет ходить на `http://` — смешанный контент блокируется);
+   - в `CORS_ORIGINS` бэкенда: `https://valeru19.github.io` **без** пути `/Portfolio`;
+   - задайте `VITE_API_BASE` (тот же HTTPS URL API) и пересоберите фронт (новый push / re-run workflow);
+   - формы появятся только если в `contacts.ts` есть видимый канал связи (email → Telegram → LinkedIn).
+
 ## Frontend — GitHub Pages (рекомендуемый путь)
 
 Workflow: `.github/workflows/frontend.yml`
 
 1. В репозитории: **Settings → Pages → Source: GitHub Actions**.
 2. **Settings → Secrets and variables → Actions → Variables** задайте:
-   - `VITE_SITE_URL` — например `https://<user>.github.io/Portfolio` (без завершающего `/` или с ним — плагин нормализует).
+   - `VITE_SITE_URL` — например `https://valeru19.github.io/Portfolio` (без завершающего `/` или с ним — плагин нормализует).
    - `VITE_API_BASE` — URL бэкенда **или оставьте пустым** (формы скрыты, сборка всё равно проходит).
 3. Push в `main` запускает: `lint` → `typecheck` → `test` → `build` → публикация `frontend/dist`.
 4. В `vite.config.ts` задано `base: "/Portfolio/"` — имя репозитория должно совпадать, либо поменяйте `base`.
