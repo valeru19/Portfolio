@@ -4,6 +4,7 @@ import { useT } from "@/shared/i18n";
 
 import { useSpiralNavigationContext } from "../hooks/useSpiralNavigationContext";
 import { formatSectionCounter } from "../model/sectionIndex";
+import { SPIRAL_DOM_ATTR } from "../model/panelStateAttrs";
 
 import styles from "./SpiralHud.module.css";
 
@@ -29,7 +30,11 @@ export function SpiralHud() {
 
   return (
     <>
-      <nav className={styles.dots} aria-label={t(content.a11y.sectionsNav)}>
+      <nav
+        className={styles.dots}
+        aria-label={t(content.a11y.sectionsNav)}
+        {...{ [SPIRAL_DOM_ATTR.hud]: "" }}
+      >
         {sectionIds.map((id, index) => (
           <button
             key={id}
@@ -41,10 +46,10 @@ export function SpiralHud() {
           />
         ))}
       </nav>
-      <p className={styles.counter} aria-live="polite">
+      <p className={styles.counter} aria-live="polite" {...{ [SPIRAL_DOM_ATTR.hud]: "" }}>
         <span>{current}</span> <span>{t(content.spiral.of)}</span> <span>{total}</span>
       </p>
-      <div className={styles.controls}>
+      <div className={styles.controls} {...{ [SPIRAL_DOM_ATTR.hud]: "" }}>
         <button type="button" className={styles.next} onClick={goNext}>
           <span className={styles.phi} aria-hidden="true" />
           <span>{t(content.spiral.scroll)}</span>

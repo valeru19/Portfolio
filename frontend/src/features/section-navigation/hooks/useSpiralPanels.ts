@@ -5,6 +5,7 @@ import { sectionPaletteAt } from "@/shared/content/sectionPalettes";
 import type { Theme } from "@/shared/theme";
 
 import { applyPaletteToDocument } from "../lib/applyPaletteToDocument";
+import { PANEL_STATE_ATTR, setPanelStateAttr } from "../model/panelStateAttrs";
 
 export type PanelNodes = {
   section: HTMLElement;
@@ -46,8 +47,12 @@ export function useSpiralPanels({
         const nodes = panelsRef.current.get(id);
         if (!nodes) return;
         const isOn = i === index;
-        nodes.section.classList.toggle("active", isOn);
-        nodes.section.classList.toggle("is-far", !isOn && (i < index - 1 || i > index + 2));
+        setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.active, isOn);
+        setPanelStateAttr(
+          nodes.section,
+          PANEL_STATE_ATTR.far,
+          !isOn && (i < index - 1 || i > index + 2),
+        );
         nodes.section.style.opacity = "1";
         nodes.section.style.visibility = "visible";
       });
@@ -57,7 +62,7 @@ export function useSpiralPanels({
 
   const clearScrollable = useCallback(() => {
     panelsRef.current.forEach(({ scroll }) => {
-      scroll.classList.remove("is-scrollable");
+      setPanelStateAttr(scroll, PANEL_STATE_ATTR.scrollable, false);
       scroll.style.overflow = "";
       scroll.style.pointerEvents = "";
       scroll.scrollTop = 0;
@@ -68,7 +73,7 @@ export function useSpiralPanels({
     if (isAccessible) return;
     const idx = currentIndexRef.current;
     panelsRef.current.forEach(({ scroll }, id) => {
-      scroll.classList.remove("is-scrollable");
+      setPanelStateAttr(scroll, PANEL_STATE_ATTR.scrollable, false);
       scroll.style.overflow = "";
       scroll.style.pointerEvents = "";
       if (sectionIds.indexOf(id) !== idx) scroll.scrollTop = 0;
@@ -80,8 +85,7 @@ export function useSpiralPanels({
     settleTimerRef.current = window.setTimeout(() => {
       if (isAccessible || spinningFlagRef.current || currentIndexRef.current !== idx) return;
       if (active.scroll.scrollHeight > active.scroll.clientHeight + 2) {
-        // Inline styles: CSS-module :global hooks can miss; transforms need a sure overflow.
-        active.scroll.classList.add("is-scrollable");
+        setPanelStateAttr(active.scroll, PANEL_STATE_ATTR.scrollable, true);
         active.scroll.style.overflow = "auto";
         active.scroll.style.pointerEvents = "auto";
       }

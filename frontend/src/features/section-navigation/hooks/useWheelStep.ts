@@ -8,6 +8,7 @@ import {
   panelCanConsumeWheel,
   type ScrollBoxMetrics,
 } from "../model/panelScroll";
+import { PANEL_STATE_ATTR } from "../model/panelStateAttrs";
 import {
   INITIAL_WHEEL_LOCK_STATE,
   clearWheelAccumulation,
@@ -29,16 +30,11 @@ function metricsFromElement(el: HTMLElement | null): ScrollBoxMetrics | null {
     scrollTop: el.scrollTop,
     scrollHeight: el.scrollHeight,
     clientHeight: el.clientHeight,
-    isScrollableClass: el.classList.contains("is-scrollable"),
+    hasScrollableAttr: el.hasAttribute(PANEL_STATE_ATTR.scrollable),
   };
 }
 
-export function useWheelStep({
-  enabled,
-  getIsBusy,
-  getActiveScrollBox,
-  onStep,
-}: Options): void {
+export function useWheelStep({ enabled, getIsBusy, getActiveScrollBox, onStep }: Options): void {
   const stateRef = useRef<WheelLockState>(INITIAL_WHEEL_LOCK_STATE);
   const decayTimerRef = useRef<number | null>(null);
   const onStepRef = useRef(onStep);

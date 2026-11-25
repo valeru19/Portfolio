@@ -1,22 +1,18 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  nextScrollTopAfterWheel,
-  panelAtScrollEdge,
-  panelCanConsumeWheel,
-} from "./panelScroll";
+import { nextScrollTopAfterWheel, panelAtScrollEdge, panelCanConsumeWheel } from "./panelScroll";
 
 describe("panelScroll", () => {
   const tall = {
     scrollTop: 0,
     scrollHeight: 1200,
     clientHeight: 600,
-    isScrollableClass: true,
+    hasScrollableAttr: true,
   };
 
-  it("consumes wheel only when the scrollable class is present and content overflows", () => {
+  it("consumes wheel only when data-scrollable is set and content overflows", () => {
     expect(panelCanConsumeWheel(tall)).toBe(true);
-    expect(panelCanConsumeWheel({ ...tall, isScrollableClass: false })).toBe(false);
+    expect(panelCanConsumeWheel({ ...tall, hasScrollableAttr: false })).toBe(false);
     expect(panelCanConsumeWheel({ ...tall, scrollHeight: 601 })).toBe(false);
   });
 

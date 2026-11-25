@@ -4,6 +4,7 @@ import type { SectionId } from "@/shared/content";
 import { cn } from "@/shared/lib";
 
 import { useSpiralNavigationContext } from "../hooks/useSpiralNavigationContext";
+import { SPIRAL_DOM_ATTR } from "../model/panelStateAttrs";
 
 import styles from "./NavSection.module.css";
 
@@ -55,6 +56,7 @@ export function NavSection({ id, children, className, ...aria }: Props) {
       ref={sectionRef}
       id={id}
       className={cn(styles.spiralSection, className)}
+      {...{ [SPIRAL_DOM_ATTR.section]: "" }}
       onClick={onSectionClick}
       {...aria}
     >

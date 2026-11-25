@@ -49,10 +49,11 @@ html.is-accessible {
   border: 0;
 }
 
-body.is-spinning [class*="spiralSection"],
-body.is-spinning header,
-body.is-spinning [class*="counter"],
-body.is-spinning [class*="dot"] {
+body.is-spinning [data-spiral-root],
+body.is-spinning [data-spiral-section],
+body.is-spinning [data-spiral-hud],
+body.is-spinning [data-spiral-hud] *,
+body.is-spinning header {
   transition: none !important;
 }
 

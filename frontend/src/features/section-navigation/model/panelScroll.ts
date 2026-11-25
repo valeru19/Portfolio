@@ -2,14 +2,14 @@ export type ScrollBoxMetrics = {
   scrollTop: number;
   scrollHeight: number;
   clientHeight: number;
-  isScrollableClass: boolean;
+  hasScrollableAttr: boolean;
 };
 
 const SCROLL_OVERFLOW_SLACK_PX = 2;
 const SCROLL_EDGE_EPSILON_PX = 3;
 
 export function panelCanConsumeWheel(box: ScrollBoxMetrics | null): boolean {
-  if (!box || !box.isScrollableClass) return false;
+  if (!box || !box.hasScrollableAttr) return false;
   return box.scrollHeight > box.clientHeight + SCROLL_OVERFLOW_SLACK_PX;
 }
 

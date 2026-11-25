@@ -3,6 +3,7 @@ import { useEffect, type MutableRefObject } from "react";
 import type { SectionId } from "@/shared/content";
 
 import { rotationForSectionIndex } from "../model/geometry";
+import { PANEL_STATE_ATTR, setPanelStateAttr } from "../model/panelStateAttrs";
 
 type PanelNodes = {
   section: HTMLElement;
@@ -65,9 +66,9 @@ export function useSpiralDomEffects({
         section.style.height = "";
         section.style.opacity = "1";
         section.style.visibility = "visible";
-        section.classList.remove("is-far");
-        section.classList.add("active");
-        scroll.classList.remove("is-scrollable");
+        setPanelStateAttr(section, PANEL_STATE_ATTR.far, false);
+        setPanelStateAttr(section, PANEL_STATE_ATTR.active, true);
+        setPanelStateAttr(scroll, PANEL_STATE_ATTR.scrollable, false);
         scroll.style.overflow = "";
         scroll.style.pointerEvents = "";
       });
