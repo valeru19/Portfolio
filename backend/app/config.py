@@ -20,7 +20,10 @@ def _resolve_database_url(raw: str | None) -> str:
     url = (raw or default).strip() or default
     if not url.startswith("sqlite:///"):
         return url
-    path = Path(url.removeprefix("sqlite:///"))
+    path_part = url.removeprefix("sqlite:///")
+    if path_part == ":memory:":
+        return "sqlite:///:memory:"
+    path = Path(path_part)
     if not path.is_absolute():
         path = (BASE_DIR / path).resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
