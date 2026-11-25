@@ -6,6 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# data/ holds the SQLite file; owned by non-root so the process can write when a volume is mounted.
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin appuser \
     && mkdir -p /app/data \
     && chown -R appuser:appuser /app
@@ -16,6 +17,8 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY app ./app
 
 USER appuser
+
+VOLUME ["/app/data"]
 
 EXPOSE 8000
 
