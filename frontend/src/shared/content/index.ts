@@ -1,3 +1,4 @@
+import { a11y } from "./a11y";
 import { about as aboutSource } from "./about";
 import { apply } from "./apply";
 import { contacts } from "./contacts";
@@ -42,6 +43,7 @@ const about = {
 /** Typed site content (former legacy `CONTENT`), minus API base (see `shared/config/env`). */
 export const content = {
   meta,
+  a11y,
   nav,
   hero,
   about,

@@ -1,5 +1,6 @@
 import { SpiralHud, SpiralNavigationProvider, SpiralStage } from "@/features/section-navigation";
-import { getVisibleSectionIds } from "@/shared/content";
+import { content, getVisibleSectionIds } from "@/shared/content";
+import { useT } from "@/shared/i18n";
 import { About } from "@/widgets/about";
 import { Apply } from "@/widgets/apply";
 import { Contacts } from "@/widgets/contacts";
@@ -15,6 +16,7 @@ import { Stack } from "@/widgets/stack";
 import styles from "./App.module.css";
 
 export function App() {
+  const t = useT();
   const sectionIds = getVisibleSectionIds();
   const showFormSections = sectionIds.includes("apply");
 
@@ -22,7 +24,7 @@ export function App() {
     <SpiralNavigationProvider sectionIds={sectionIds}>
       <div className={styles.page}>
         <a className="sr-only" href="#main">
-          Skip to content
+          {t(content.a11y.skipToContent)}
         </a>
         <Header />
         <SpiralHud />
