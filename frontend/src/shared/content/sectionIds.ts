@@ -1,4 +1,4 @@
-import { isApiConfigured } from "@/shared/config";
+import { hasPrivacyContactChannel, isApiConfigured } from "@/shared/config";
 
 /** All possible section anchors in page order. */
 export const ALL_SECTION_IDS = [
@@ -17,8 +17,22 @@ export type SectionId = (typeof ALL_SECTION_IDS)[number];
 
 const API_ONLY_SECTIONS = new Set<SectionId>(["reviews", "apply"]);
 
-export function getVisibleSectionIds(apiEnabled = isApiConfigured()): SectionId[] {
-  return ALL_SECTION_IDS.filter((id) => apiEnabled || !API_ONLY_SECTIONS.has(id));
+export type SectionVisibilityOptions = {
+  apiEnabled?: boolean;
+  /** Email / Telegram / LinkedIn channel required for forms that collect personal data. */
+  hasContactChannel?: boolean;
+};
+
+export function getVisibleSectionIds(options: SectionVisibilityOptions = {}): SectionId[] {
+  const apiEnabled = options.apiEnabled ?? isApiConfigured();
+  const contactChannelAvailable =
+    options.hasContactChannel ?? hasPrivacyContactChannel();
+  const formsVisible = apiEnabled && contactChannelAvailable;
+
+  return ALL_SECTION_IDS.filter((id) => {
+    if (!API_ONLY_SECTIONS.has(id)) return true;
+    return formsVisible;
+  });
 }
 
 export function getSectionIndexLabel(

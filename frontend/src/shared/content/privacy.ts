@@ -19,9 +19,12 @@ export const privacy = {
       "By submitting a form, you consent to this processing.",
     ],
   } satisfies LocalizedStringList,
-  /** Shown only when email contact is visible (not TODO). */
-  emailLine: {
-    ru: "Чтобы удалить или изменить свои данные, напишите на {email}.",
-    en: "To delete or update your data, write to {email}.",
+  /**
+   * Shown when email, Telegram or LinkedIn is visible (priority order).
+   * Placeholder `{contact}` is replaced with the contact value.
+   */
+  contactLine: {
+    ru: "Чтобы удалить или изменить свои данные, напишите: {contact}.",
+    en: "To delete or update your data, write to {contact}.",
   } satisfies LocalizedString,
 } as const;

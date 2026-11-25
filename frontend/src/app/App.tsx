@@ -1,5 +1,4 @@
 import { SpiralHud, SpiralNavigationProvider, SpiralStage } from "@/features/section-navigation";
-import { isApiConfigured } from "@/shared/config";
 import { getVisibleSectionIds } from "@/shared/content";
 import { About } from "@/widgets/about";
 import { Apply } from "@/widgets/apply";
@@ -16,8 +15,8 @@ import { Stack } from "@/widgets/stack";
 import styles from "./App.module.css";
 
 export function App() {
-  const showApiSections = isApiConfigured();
   const sectionIds = getVisibleSectionIds();
+  const showFormSections = sectionIds.includes("apply");
 
   return (
     <SpiralNavigationProvider sectionIds={sectionIds}>
@@ -34,8 +33,8 @@ export function App() {
           <Experience />
           <Projects />
           <Education />
-          {showApiSections ? <Reviews /> : null}
-          {showApiSections ? <Apply /> : null}
+          {showFormSections ? <Reviews /> : null}
+          {showFormSections ? <Apply /> : null}
           <Contacts endSlot={<Footer />} />
         </SpiralStage>
       </div>

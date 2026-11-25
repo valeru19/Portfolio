@@ -80,4 +80,26 @@ export function privacyEmailAddress(): string | null {
   return isContactVisible(email) ? email.value : null;
 }
 
+/** Prefer email, then Telegram, then LinkedIn for privacy / form contact channel. */
+export const PRIVACY_CONTACT_PRIORITY = ["email", "telegram", "linkedin"] as const;
+
+export type PrivacyContactId = (typeof PRIVACY_CONTACT_PRIORITY)[number];
+
+/**
+ * First visible contact suitable for “delete/update my data” requests.
+ * GitHub / hh.ru are not used here — they are not personal reply channels.
+ */
+export function privacyContactForDeletion(): ContactLink | null {
+  for (const id of PRIVACY_CONTACT_PRIORITY) {
+    const link = contactsConfig[id];
+    if (isContactVisible(link)) return link;
+  }
+  return null;
+}
+
+/** Forms that collect personal data require a reply channel from the priority list. */
+export function hasPrivacyContactChannel(): boolean {
+  return privacyContactForDeletion() !== null;
+}
+
 export const privacyAnchorId = "privacy";

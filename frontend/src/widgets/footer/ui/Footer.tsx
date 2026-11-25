@@ -1,4 +1,4 @@
-import { privacyAnchorId, privacyEmailAddress } from "@/shared/config";
+import { privacyAnchorId, privacyContactForDeletion } from "@/shared/config";
 import { content } from "@/shared/content";
 import { useT } from "@/shared/i18n";
 
@@ -6,9 +6,9 @@ import styles from "./Footer.module.css";
 
 export function Footer() {
   const t = useT();
-  const email = privacyEmailAddress();
+  const privacyContact = privacyContactForDeletion();
   const paragraphs = t(content.privacy.paragraphs);
-  const emailLineTemplate = t(content.privacy.emailLine);
+  const contactLineTemplate = t(content.privacy.contactLine);
 
   return (
     <footer className={styles.footer}>
@@ -21,7 +21,9 @@ export function Footer() {
         {paragraphs.slice(0, 1).map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
-        {email ? <p>{emailLineTemplate.replace("{email}", email)}</p> : null}
+        {privacyContact ? (
+          <p>{contactLineTemplate.replace("{contact}", privacyContact.value)}</p>
+        ) : null}
         {paragraphs.slice(1).map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
