@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import secrets
-import time
-from collections import defaultdict, deque
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
@@ -13,6 +11,7 @@ from sqlalchemy.orm import Session
 from .config import settings
 from .database import Base, engine, get_db
 from .models import Application, Review
+from .rate_limit import enforce_rate_limit
 from .schemas import (
     ApplicationCreate,
     ApplicationOut,
@@ -35,34 +34,6 @@ app.add_middleware(
 )
 
 DbDep = Annotated[Session, Depends(get_db)]
-
-_rate_buckets: dict[str, deque[float]] = defaultdict(deque)
-
-
-def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    if request.client:
-        return request.client.host
-    return "unknown"
-
-
-def enforce_rate_limit(request: Request) -> None:
-    ip = _client_ip(request)
-    now = time.monotonic()
-    window = settings.rate_limit_window_seconds
-    bucket = _rate_buckets[ip]
-
-    while bucket and now - bucket[0] > window:
-        bucket.popleft()
-
-    if len(bucket) >= settings.rate_limit_max_requests:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Too many requests. Please try again later.",
-        )
-    bucket.append(now)
 
 
 def require_admin(x_admin_key: Annotated[str | None, Header()] = None) -> None:

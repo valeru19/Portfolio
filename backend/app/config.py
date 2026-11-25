@@ -49,6 +49,12 @@ class Settings:
     database_url: str = _resolve_database_url(os.getenv("DATABASE_URL"))
     rate_limit_window_seconds: int = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
     rate_limit_max_requests: int = int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "10"))
+    trust_proxy: bool = os.getenv("TRUST_PROXY", "false").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
 
 
 settings = Settings()
