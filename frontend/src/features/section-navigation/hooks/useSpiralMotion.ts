@@ -4,19 +4,15 @@ import type { SectionId } from "@/shared/content";
 
 import { loadGsap } from "../lib/loadGsap";
 import {
-  computeSpiralLayout,
-  panelRotationAtIndex,
-  panelScaleAtIndex,
-  snapRotationToSection,
-  spiralScaleFromRotation,
-} from "../model/geometry";
+  animationDurationMs,
+  applySpiralLayoutToPanels,
+  paintSpiralElement,
+} from "../lib/spiralTransform";
+import { snapRotationToSection } from "../model/geometry";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
 import { clampSectionIndex } from "../model/sectionIndex";
 
-type PanelNodes = {
-  section: HTMLElement;
-  scroll: HTMLElement;
-};
+import type { PanelNodes } from "./useSpiralPanels";
 
 type GsapLike = Awaited<ReturnType<typeof loadGsap>>;
 
@@ -59,13 +55,7 @@ export function useSpiralMotion({
     (rotationDeg: number) => {
       const spiral = spiralRef.current;
       if (!spiral) return;
-      const scale = spiralScaleFromRotation(rotationDeg);
-      const gsap = gsapRef.current;
-      if (gsap) {
-        gsap.set(spiral, { rotation: rotationDeg, scale, force3D: true });
-      } else {
-        spiral.style.transform = `rotate(${rotationDeg}deg) scale(${scale}) translate3d(0,0,0)`;
-      }
+      paintSpiralElement(spiral, rotationDeg, gsapRef.current);
       rotationRef.current = rotationDeg;
     },
     [spiralRef],
@@ -75,30 +65,7 @@ export function useSpiralMotion({
     if (isAccessible) return;
     const spiral = spiralRef.current;
     if (!spiral) return;
-    const layout = computeSpiralLayout(window.innerWidth, window.innerHeight);
-    spiral.style.transformOrigin = layout.transformOrigin;
-    const gsap = gsapRef.current;
-    if (gsap) gsap.set(spiral, { transformOrigin: layout.transformOrigin });
-
-    sectionIds.forEach((id, index) => {
-      const nodes = panelsRef.current.get(id);
-      if (!nodes) return;
-      nodes.section.style.width = `${layout.panelWidth}px`;
-      nodes.section.style.height = `${layout.panelHeight}px`;
-      nodes.section.style.transformOrigin = layout.transformOrigin;
-      const rotation = panelRotationAtIndex(index);
-      const scale = panelScaleAtIndex(index);
-      if (gsap) {
-        gsap.set(nodes.section, {
-          transformOrigin: layout.transformOrigin,
-          rotation,
-          scale,
-          force3D: true,
-        });
-      } else {
-        nodes.section.style.transform = `rotate(${rotation}deg) scale(${scale}) translate3d(0,0,0)`;
-      }
-    });
+    applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
   }, [isAccessible, panelsRef, sectionIds, spiralRef]);
 
   const finishScroll = useCallback(
@@ -164,16 +131,14 @@ export function useSpiralMotion({
 
       const gsap = await ensureGsap();
       buildSpiral();
-
       if (!gsap) {
         finishScroll(snapped);
         return;
       }
 
       const state = { r: rotationRef.current };
-      const dist = Math.abs(snapped - state.r);
       const goingBack = snapped > state.r;
-      const duration = Math.min(goingBack ? 0.52 : 0.48, Math.max(0.36, 0.3 + dist / 300));
+      const duration = animationDurationMs(Math.abs(snapped - state.r), goingBack);
 
       tweenRef.current = gsap.to(state, {
         r: snapped,
@@ -212,7 +177,6 @@ export function useSpiralMotion({
   return {
     rotationRef,
     spinningRef,
-    gsapRef,
     paintSpiralTransform,
     buildSpiral,
     animateToRotation,

@@ -1,4 +1,10 @@
-import { ModeToggle, useSpiralNavigationContext } from "@/features/section-navigation";
+import { useRef } from "react";
+
+import {
+  ModeToggle,
+  useAccessibleHeaderHide,
+  useSpiralNavigationContext,
+} from "@/features/section-navigation";
 import { LanguageToggle } from "@/features/switch-language";
 import { ThemeToggle } from "@/features/switch-theme";
 import { content } from "@/shared/content";
@@ -9,10 +15,22 @@ import styles from "./Header.module.css";
 
 export function Header() {
   const t = useT();
+  const headerRef = useRef<HTMLElement | null>(null);
   const { isAccessible, goTo } = useSpiralNavigationContext();
+  const isHeaderHidden = useAccessibleHeaderHide({
+    enabled: isAccessible,
+    headerRef,
+  });
 
   return (
-    <header className={cn(styles.header, !isAccessible && styles.headerSpiral)}>
+    <header
+      ref={headerRef}
+      className={cn(
+        styles.header,
+        isAccessible ? styles.headerAccessible : styles.headerSpiral,
+        isAccessible && isHeaderHidden && styles.headerHidden,
+      )}
+    >
       <a
         className={cn(styles.brand, !isAccessible && styles.brandSpiral)}
         href="#hero"

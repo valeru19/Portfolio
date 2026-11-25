@@ -1,3 +1,4 @@
+export { useAccessibleHeaderHide } from "./hooks/useAccessibleHeaderHide";
 export { useAccessibleMode } from "./hooks/useAccessibleMode";
 export { useKeyboardStep } from "./hooks/useKeyboardStep";
 export { useSpiralNavigation } from "./hooks/useSpiralNavigation";
@@ -7,6 +8,7 @@ export {
 } from "./hooks/useSpiralNavigationContext";
 export { useTouchStep } from "./hooks/useTouchStep";
 export { useWheelStep } from "./hooks/useWheelStep";
+export { nextAccessibleHeaderHidden } from "./model/accessibleHeaderHide";
 export { ModeToggle } from "./ui/ModeToggle";
 export { NavSection } from "./ui/NavSection";
 export { SpiralHud } from "./ui/SpiralHud";

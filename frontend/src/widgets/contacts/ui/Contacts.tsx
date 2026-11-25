@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 
+import { CopyEmailControl } from "@/features/copy-email";
 import { NavSection } from "@/features/section-navigation";
-import { visibleContacts } from "@/shared/config";
+import { privacyEmailAddress, visibleContacts } from "@/shared/config";
 import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
 import { assetUrl } from "@/shared/lib";
@@ -21,6 +22,7 @@ type Props = {
 export function Contacts({ endSlot }: Props) {
   const t = useT();
   const links = visibleContacts();
+  const email = privacyEmailAddress();
 
   return (
     <NavSection id="contacts" aria-labelledby="contacts-title">
@@ -49,6 +51,7 @@ export function Contacts({ endSlot }: Props) {
             </a>
           ))}
         </div>
+        {email ? <CopyEmailControl email={email} /> : null}
       </Container>
       {endSlot}
     </NavSection>

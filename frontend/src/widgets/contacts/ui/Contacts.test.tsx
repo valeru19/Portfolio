@@ -3,13 +3,14 @@ import { describe, expect, it } from "vitest";
 
 import { SpiralNavigationProvider } from "@/features/section-navigation";
 import { contactsConfig } from "@/shared/config";
+import { content } from "@/shared/content";
 import { I18nProvider } from "@/shared/i18n";
 import { ThemeProvider } from "@/shared/theme";
 
 import { Contacts } from "./Contacts";
 
 describe("Contacts widget", () => {
-  it("does not render hidden/TODO contacts in the DOM as links", () => {
+  it("does not render hidden/TODO contacts or the copy-email control", () => {
     render(
       <ThemeProvider initialTheme="dark">
         <I18nProvider initialLang="en">
@@ -22,9 +23,9 @@ describe("Contacts widget", () => {
 
     expect(screen.getByRole("link", { name: /GitHub/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Email/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Telegram/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /LinkedIn/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /hh\.ru/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: content.contacts.copy.en }),
+    ).not.toBeInTheDocument();
 
     for (const link of Object.values(contactsConfig)) {
       const isHidden = "hidden" in link && link.hidden === true;
