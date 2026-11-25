@@ -84,6 +84,7 @@ export const experience = {
     { id: "csharp", name: "C#", src: "assets/csharp.png" },
     { id: "fastapi", name: "FastAPI", src: "assets/fastapi.png" },
     { id: "sqlalchemy", name: "SQLAlchemy", src: "assets/sqlalchemy-sa.png" },
+    { id: "alembic", name: "Alembic", src: "assets/alembic.png" },
     { id: "celery", name: "Celery", src: "assets/celery.png" },
     { id: "maven", name: "Maven", src: "assets/maven.png" },
     { id: "html5", name: "HTML5", src: "assets/html5.png" },

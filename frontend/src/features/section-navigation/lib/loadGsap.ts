@@ -10,8 +10,11 @@ export function loadGsap(): Promise<GsapModule["gsap"]> {
   if (!gsapLoadPromise) {
     gsapLoadPromise = import("gsap").then((mod) => {
       const gsap = mod.gsap;
+      // Cap catch-up after a stall so a long task doesn't teleport the spiral.
       gsap.ticker.lagSmoothing(500, 33);
-      gsap.config({ force3D: true });
+      // "auto": promote while tweening, release the layer after — permanent
+      // force3D:true keeps every panel on the GPU and causes layer thrash.
+      gsap.config({ force3D: "auto" });
       return gsap;
     });
   }

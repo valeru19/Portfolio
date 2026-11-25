@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { nextScrollTopAfterWheel, panelAtScrollEdge, panelCanConsumeWheel } from "./panelScroll";
+import {
+  lerpScrollTop,
+  nextScrollTopAfterWheel,
+  panelAtScrollEdge,
+  panelCanConsumeWheel,
+} from "./panelScroll";
 
 describe("panelScroll", () => {
   const tall = {
@@ -26,5 +31,14 @@ describe("panelScroll", () => {
     expect(nextScrollTopAfterWheel(tall, 120)).toBe(120);
     expect(nextScrollTopAfterWheel({ ...tall, scrollTop: 550 }, 120)).toBe(600);
     expect(nextScrollTopAfterWheel({ ...tall, scrollTop: 40 }, -80)).toBe(0);
+  });
+
+  it("softens panel scroll when a factor below 1 is applied", () => {
+    expect(nextScrollTopAfterWheel(tall, 100, 0.38)).toBeCloseTo(38);
+  });
+
+  it("lerps toward target and snaps when close", () => {
+    expect(lerpScrollTop(0, 100, 0.16)).toBeCloseTo(16);
+    expect(lerpScrollTop(99.8, 100, 0.16)).toBe(100);
   });
 });

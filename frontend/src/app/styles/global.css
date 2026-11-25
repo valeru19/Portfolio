@@ -20,8 +20,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition:
-    background-color 0.45s var(--ease),
-    color 0.45s var(--ease);
+    background-color 0.7s var(--ease),
+    color 0.7s var(--ease);
 }
 
 html:not(.is-accessible) body {
@@ -49,8 +49,10 @@ html.is-accessible {
   border: 0;
 }
 
+/* During a spiral turn: kill paint-heavy color transitions on stage/body/chrome.
+   Mid-turn palette snaps are cheaper than overlapping 0.7s paints every section. */
+body.is-spinning,
 body.is-spinning [data-spiral-root],
-body.is-spinning [data-spiral-section],
 body.is-spinning [data-spiral-hud],
 body.is-spinning [data-spiral-hud] *,
 body.is-spinning header {

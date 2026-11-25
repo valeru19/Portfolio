@@ -1,5 +1,5 @@
 .sub {
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   color: inherit;
   opacity: 0.72;
   font-size: 0.95rem;
@@ -7,70 +7,73 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: var(--frame) solid var(--border);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-.card {
-  padding: 14px;
-  min-height: 90px;
-  text-decoration: none;
-  color: #fff6ec;
-  border-right: var(--frame) solid var(--border);
-  border-bottom: var(--frame) solid var(--border);
-  background: #1f130c;
+.iconButton {
+  appearance: none;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 112px;
+  padding: 16px 12px;
+  text-decoration: none;
+  /* Use panel-scoped tokens (set on the section) so light theme keeps contrast. */
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 10%, var(--panel));
+  border: var(--frame) solid var(--border);
+  cursor: pointer;
+  transition:
+    background-color 0.2s var(--ease),
+    color 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    transform 0.2s var(--ease);
 }
 
-.card:nth-child(2n) {
-  border-right: 0;
+.iconButton:hover,
+.iconButton:focus-visible {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  transform: translateY(-2px);
 }
 
-.card:hover,
-.card:focus-visible {
-  background: var(--stage-fg);
-  color: var(--stage-bg);
+.icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
 }
 
-.label {
+.iconFallback {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 2px solid currentColor;
+}
+
+.iconLabel {
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: inherit;
-  opacity: 0.72;
-}
-
-.value {
-  font-weight: 700;
-  word-break: break-all;
-  font-size: 0.98rem;
-}
-
-.logo {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  margin-bottom: 8px;
-  filter: brightness(0) invert(1);
-  opacity: 0.92;
-}
-
-.card:hover .logo,
-.card:focus-visible .logo {
-  filter: none;
+  text-align: center;
+  color: currentColor;
   opacity: 1;
 }
 
 @media (max-width: 560px) {
   .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .card,
-  .card:nth-child(2n) {
-    border-right: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

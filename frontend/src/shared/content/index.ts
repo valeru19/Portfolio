@@ -28,6 +28,7 @@ export {
   SECTION_PALETTE_LIGHT,
   paletteForTheme,
   sectionPaletteAt,
+  sectionPaletteForId,
   type SectionPalette,
 } from "./sectionPalettes";
 

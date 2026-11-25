@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 
 import type { SectionId } from "@/shared/content";
 import { useTheme } from "@/shared/theme";
@@ -33,26 +33,59 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   const stageRef = useRef<HTMLElement | null>(null);
   const currentIndexRef = useRef(0);
   const targetIndexRef = useRef(0);
+  const pendingIndexRef = useRef(0);
   const spinningFlagRef = useRef(false);
+  const animateToRotationRef = useRef<(rotation: number) => Promise<void>>(async () => undefined);
 
   currentIndexRef.current = currentIndex;
   targetIndexRef.current = targetIndex;
 
-  const { panelsRef, applyColors, markActive, clearScrollable, settleActivePanel, registerPanel } =
-    useSpiralPanels({
-      sectionIds,
-      theme,
-      isAccessible,
-      currentIndexRef,
-      spinningFlagRef,
+  const {
+    panelsRef,
+    applyColors,
+    markActive,
+    clearScrollable,
+    warmAround,
+    settleActivePanel,
+    registerPanel,
+  } = useSpiralPanels({
+    sectionIds,
+    theme,
+    isAccessible,
+    currentIndexRef,
+    spinningFlagRef,
+  });
+
+  const onProgress = useCallback((index: number) => {
+    // Mid-turn HUD only — keep spinning lock + pending target intact.
+    // startTransition keeps the GSAP frame off the React sync path.
+    currentIndexRef.current = index;
+    startTransition(() => {
+      setCurrentIndex(index);
     });
+  }, []);
 
   const onSettled = useCallback((index: number) => {
-    spinningFlagRef.current = false;
+    currentIndexRef.current = index;
     setCurrentIndex(index);
+
+    const pending = clampSectionIndex(pendingIndexRef.current, sectionCount);
+    if (pending !== index) {
+      // Intent queue: continue to the latest requested section without thrash.
+      targetIndexRef.current = pending;
+      setTargetIndex(pending);
+      spinningFlagRef.current = true;
+      setIsSpinning(true);
+      void animateToRotationRef.current(rotationForSectionIndex(pending));
+      return;
+    }
+
+    spinningFlagRef.current = false;
+    targetIndexRef.current = index;
+    pendingIndexRef.current = index;
     setTargetIndex(index);
     setIsSpinning(false);
-  }, []);
+  }, [sectionCount]);
 
   const {
     rotationRef,
@@ -69,18 +102,26 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     spiralRef,
     panelsRef,
     onSettled,
+    onProgress,
     markActive,
     applyColors,
     clearScrollable,
+    warmAround,
     settleActivePanel,
   });
+
+  animateToRotationRef.current = animateToRotation;
 
   const goTo = useCallback(
     (index: number) => {
       const next = clampSectionIndex(index, sectionCount);
+      pendingIndexRef.current = next;
+      targetIndexRef.current = next;
       setTargetIndex(next);
+
       if (isAccessible) {
         setCurrentIndex(next);
+        currentIndexRef.current = next;
         applyColors(next, true);
         const id = sectionIds[next];
         const nodes = id ? panelsRef.current.get(id) : undefined;
@@ -90,30 +131,42 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
         });
         return;
       }
+
+      // While a turn is in flight, only update pending — never kill/restart.
+      if (spinningFlagRef.current || spinningRef.current) {
+        return;
+      }
+
       spinningFlagRef.current = true;
       setIsSpinning(true);
       void animateToRotation(rotationForSectionIndex(next));
     },
-    [animateToRotation, applyColors, isAccessible, panelsRef, sectionCount, sectionIds],
+    [animateToRotation, applyColors, isAccessible, panelsRef, sectionCount, sectionIds, spinningRef],
   );
 
   const goNext = useCallback(() => {
-    goTo(stepSectionIndex(targetIndexRef.current, 1, sectionCount));
+    const next = stepSectionIndex(pendingIndexRef.current, 1, sectionCount);
+    if (next === pendingIndexRef.current) return;
+    goTo(next);
   }, [goTo, sectionCount]);
 
   const goPrev = useCallback(() => {
-    goTo(stepSectionIndex(targetIndexRef.current, -1, sectionCount));
+    const next = stepSectionIndex(pendingIndexRef.current, -1, sectionCount);
+    if (next === pendingIndexRef.current) return;
+    goTo(next);
   }, [goTo, sectionCount]);
 
   const getActiveScrollBox = useCallback(() => {
-    const idx = spinningRef.current ? targetIndexRef.current : currentIndexRef.current;
+    const idx = spinningRef.current ? pendingIndexRef.current : currentIndexRef.current;
     const id = sectionIds[idx];
     return id ? (panelsRef.current.get(id)?.scroll ?? null) : null;
   }, [panelsRef, sectionIds, spinningRef]);
 
   const onStep = useCallback(
     (direction: 1 | -1) => {
-      goTo(stepSectionIndex(targetIndexRef.current, direction, sectionCount));
+      const next = stepSectionIndex(pendingIndexRef.current, direction, sectionCount);
+      if (next === pendingIndexRef.current) return;
+      goTo(next);
     },
     [goTo, sectionCount],
   );

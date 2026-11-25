@@ -12,8 +12,9 @@
   --nav-h: 0px;
   --phi: 0.618033;
   --axis: 0.7237;
-  --font: "Space Grotesk", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --stage-bg: #0c0c0c;
   --stage-fg: #f2f2f2;

@@ -51,6 +51,7 @@ export const stack = {
         { label: "Redis", logo: "redis" },
         { label: "Docker Compose", logo: "docker" },
         { label: "Nginx", logo: "nginx" },
+        { label: "Alembic", logo: "alembic" },
         { label: "GitHub", logo: "github" },
       ],
     },

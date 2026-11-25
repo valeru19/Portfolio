@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0c0c0c" />
@@ -9,8 +9,14 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230a0a0a'/%3E%3Crect x='4' y='4' width='56' height='56' fill='none' stroke='%232dd4bf' stroke-width='3'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui' font-size='18' font-weight='800' fill='%232dd4bf'%3EVK%3C/text%3E%3C/svg%3E"
     />
-    <script>
-      (function () {
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  <script>
+    (function () {
         try {
           var theme = localStorage.getItem("valeru-theme");
           if (theme !== "dark" && theme !== "light") {
@@ -20,11 +26,11 @@
         } catch (e) {
           document.documentElement.setAttribute("data-theme", "dark");
         }
-      })();
-    </script>
+    })();
+  </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/app/main.tsx"></script>
-  </body>
+</body>
 </html>

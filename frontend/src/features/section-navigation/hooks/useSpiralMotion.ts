@@ -5,6 +5,7 @@ import type { SectionId } from "@/shared/content";
 import { loadGsap } from "../lib/loadGsap";
 import {
   animationDurationMs,
+  animationEase,
   applySpiralLayoutToPanels,
   paintSpiralElement,
 } from "../lib/spiralTransform";
@@ -23,10 +24,12 @@ type Options = {
   spiralRef: MutableRefObject<HTMLDivElement | null>;
   panelsRef: MutableRefObject<Map<SectionId, PanelNodes>>;
   onSettled: (index: number) => void;
-  markActive: (index: number) => void;
+  onProgress?: (index: number) => void;
+  markActive: (index: number, options?: { incomingIndex?: number }) => void;
   applyColors: (index: number, force?: boolean) => void;
   clearScrollable: () => void;
-  settleActivePanel: () => void;
+  warmAround: (index: number) => void;
+  settleActivePanel: (forIndex?: number) => void;
 };
 
 export function useSpiralMotion({
@@ -36,15 +39,19 @@ export function useSpiralMotion({
   spiralRef,
   panelsRef,
   onSettled,
+  onProgress,
   markActive,
   applyColors,
   clearScrollable,
+  warmAround,
   settleActivePanel,
 }: Options) {
   const rotationRef = useRef(0);
   const gsapRef = useRef<GsapLike | null>(null);
   const tweenRef = useRef<{ kill: () => void } | null>(null);
   const spinningRef = useRef(false);
+  const motionGenRef = useRef(0);
+  const settleRafRef = useRef(0);
 
   const setSpinning = useCallback((on: boolean) => {
     spinningRef.current = on;
@@ -55,7 +62,7 @@ export function useSpiralMotion({
     (rotationDeg: number) => {
       const spiral = spiralRef.current;
       if (!spiral) return;
-      paintSpiralElement(spiral, rotationDeg, gsapRef.current);
+      paintSpiralElement(spiral, rotationDeg);
       rotationRef.current = rotationDeg;
     },
     [spiralRef],
@@ -67,32 +74,6 @@ export function useSpiralMotion({
     if (!spiral) return;
     applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
   }, [isAccessible, panelsRef, sectionIds, spiralRef]);
-
-  const finishScroll = useCallback(
-    (targetRotation: number) => {
-      const snapped = snapRotationToSection(targetRotation, sectionCount);
-      rotationRef.current = snapped;
-      paintSpiralTransform(snapped);
-      const index = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
-      markActive(index);
-      applyColors(index);
-      buildSpiral();
-      paintSpiralTransform(snapped);
-      setSpinning(false);
-      window.setTimeout(settleActivePanel, 48);
-      onSettled(index);
-    },
-    [
-      applyColors,
-      buildSpiral,
-      markActive,
-      onSettled,
-      paintSpiralTransform,
-      sectionCount,
-      setSpinning,
-      settleActivePanel,
-    ],
-  );
 
   const ensureGsap = useCallback(async () => {
     if (prefersReducedMotion()) return null;
@@ -106,6 +87,50 @@ export function useSpiralMotion({
     }
   }, []);
 
+  const finishScroll = useCallback(
+    (targetRotation: number, options?: { rebuild?: boolean }) => {
+      const snapped = snapRotationToSection(targetRotation, sectionCount);
+      const index = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
+      const rebuild = options?.rebuild ?? false;
+
+      // Sync compositor pose first — one clean frame before any DOM settle work.
+      paintSpiralTransform(snapped);
+      markActive(index);
+      applyColors(index);
+      onProgress?.(index);
+
+      const runSettle = () => {
+        if (rebuild) {
+          buildSpiral();
+          paintSpiralTransform(snapped);
+        }
+        warmAround(index);
+        setSpinning(false);
+        onSettled(index);
+        settleActivePanel(index);
+      };
+
+      // Double-rAF: let the last transform commit to the compositor, then do
+      // React/DOM settle so the hitch isn't in the same frame as the motion.
+      if (settleRafRef.current) cancelAnimationFrame(settleRafRef.current);
+      settleRafRef.current = requestAnimationFrame(() => {
+        settleRafRef.current = requestAnimationFrame(runSettle);
+      });
+    },
+    [
+      applyColors,
+      buildSpiral,
+      markActive,
+      onProgress,
+      onSettled,
+      paintSpiralTransform,
+      sectionCount,
+      setSpinning,
+      settleActivePanel,
+      warmAround,
+    ],
+  );
+
   const animateToRotation = useCallback(
     async (targetRotation: number) => {
       if (isAccessible) return;
@@ -114,49 +139,80 @@ export function useSpiralMotion({
       const alreadyThere = Math.abs(snapped - rotationRef.current) < 0.05;
 
       if (alreadyThere && !spinningRef.current) {
-        finishScroll(snapped);
+        finishScroll(snapped, { rebuild: false });
         return;
       }
 
+      const gen = ++motionGenRef.current;
       tweenRef.current?.kill();
+      tweenRef.current = null;
+      if (settleRafRef.current) {
+        cancelAnimationFrame(settleRafRef.current);
+        settleRafRef.current = 0;
+      }
       clearScrollable();
       setSpinning(true);
-      markActive(destIndex);
+
+      const fromIndex = clampSectionIndex(Math.round(-rotationRef.current / 90), sectionCount);
+      const startR = rotationRef.current;
+      const goingBack = snapped > startR;
+      const distanceDeg = Math.abs(snapped - startR);
+      // Rebuild matrices only after reverse / long jumps (scale-down blank fix).
+      // Single forward 90° hops leave panel matrices untouched — skipping rebuild
+      // removes the micro-hitch at the end of every step.
+      const needsRebuild = goingBack || distanceDeg > 135;
+
+      if (goingBack) {
+        markActive(destIndex, {
+          incomingIndex: fromIndex !== destIndex ? fromIndex : undefined,
+        });
+      } else {
+        markActive(fromIndex, {
+          incomingIndex: fromIndex !== destIndex ? destIndex : undefined,
+        });
+      }
+      warmAround(destIndex);
+      // Destination palette up front — no mid-turn CSS-var writes (those paint).
       applyColors(destIndex);
 
       if (prefersReducedMotion()) {
-        finishScroll(snapped);
+        if (gen !== motionGenRef.current) return;
+        finishScroll(snapped, { rebuild: needsRebuild });
         return;
       }
 
       const gsap = await ensureGsap();
-      buildSpiral();
+      if (gen !== motionGenRef.current) return;
+
       if (!gsap) {
-        finishScroll(snapped);
+        finishScroll(snapped, { rebuild: needsRebuild });
         return;
       }
 
-      const state = { r: rotationRef.current };
-      const goingBack = snapped > state.r;
-      const duration = animationDurationMs(Math.abs(snapped - state.r), goingBack);
+      const state = { r: startR };
+      const duration = animationDurationMs(distanceDeg, goingBack);
+      const ease = animationEase(distanceDeg, goingBack);
 
       tweenRef.current = gsap.to(state, {
         r: snapped,
         duration,
-        ease: goingBack ? "power2.out" : "power3.out",
+        ease,
         overwrite: true,
+        // Hot path: ONLY write the spiral transform. No colors, markActive,
+        // React, or warm — those are what caused the remaining micro-stutters.
         onUpdate: () => {
+          if (gen !== motionGenRef.current) return;
           paintSpiralTransform(state.r);
         },
         onComplete: () => {
+          if (gen !== motionGenRef.current) return;
           tweenRef.current = null;
-          finishScroll(snapped);
+          finishScroll(snapped, { rebuild: needsRebuild });
         },
       });
     },
     [
       applyColors,
-      buildSpiral,
       clearScrollable,
       ensureGsap,
       finishScroll,
@@ -165,12 +221,18 @@ export function useSpiralMotion({
       paintSpiralTransform,
       sectionCount,
       setSpinning,
+      warmAround,
     ],
   );
 
   const killMotion = useCallback(() => {
+    motionGenRef.current += 1;
     tweenRef.current?.kill();
     tweenRef.current = null;
+    if (settleRafRef.current) {
+      cancelAnimationFrame(settleRafRef.current);
+      settleRafRef.current = 0;
+    }
     setSpinning(false);
   }, [setSpinning]);
 

@@ -16,33 +16,62 @@
   border-radius: 0.01px;
   cursor: pointer;
   backface-visibility: hidden;
-  transition:
-    background-color 0.45s var(--ease),
-    color 0.45s var(--ease),
-    border-color 0.45s var(--ease);
+  -webkit-font-smoothing: antialiased;
+  /* Below active — later DOM siblings (next page) must not paint over the current one. */
+  z-index: 1;
+  /* Do NOT will-change every panel — only the parent .spiral animates per frame.
+     Layerizing all arms during a spin causes GPU memory thrash (web.dev). */
+  contain: layout style;
 }
 
 .spiralSection[data-active] {
   cursor: default;
-  z-index: 3;
+  z-index: 5;
 }
 
 .spiralSection[data-far] {
   pointer-events: none;
 }
 
+.spiralSection[data-far] .panelScroll {
+  content-visibility: auto;
+  contain: layout paint;
+  contain-intrinsic-size: auto 480px;
+}
+
 .panelScroll {
   height: 100%;
+  /* never toggle overflow via :not(.is-spinning) — that blanks panels on reverse scale */
   overflow: hidden;
   padding: clamp(18px, 2.6vw, 36px);
   padding-top: 76px;
   padding-bottom: 96px;
   overscroll-behavior: contain;
   pointer-events: none;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
+  scroll-behavior: auto;
+  border-radius: 0.01px;
+  -webkit-font-smoothing: antialiased;
 }
 
 .spiralSection[data-active] .panelScroll[data-scrollable] {
-  overflow: auto;
+  /* scroll (not auto): gutter reserved; thumb ready as soon as the panel activates */
+  overflow-x: hidden;
+  overflow-y: scroll;
   pointer-events: auto;
+}
+
+.panelScroll[data-scrollable]::-webkit-scrollbar {
+  width: 10px;
+}
+
+.panelScroll[data-scrollable]::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text) 45%, transparent);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.panelScroll[data-scrollable]::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--border) 35%, transparent);
 }

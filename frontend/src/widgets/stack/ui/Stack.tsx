@@ -12,6 +12,7 @@ const STRIP_LOGO_IDS = [
   "csharp",
   "fastapi",
   "sqlalchemy",
+  "alembic",
   "celery",
   "maven",
   "html5",

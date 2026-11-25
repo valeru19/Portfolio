@@ -1,3 +1,5 @@
+import { ALL_SECTION_IDS, type SectionId } from "./sectionIds";
+
 export type SectionPalette = {
   bg: string;
   fg: string;
@@ -8,7 +10,11 @@ export type SectionPalette = {
   muted: string;
 };
 
-/** Order matches spiral sections: hero → contacts (9 slots). */
+/**
+ * Order matches ALL_SECTION_IDS (hero → contacts, 9 slots).
+ * Look up by section id — not by visible spiral index — so hiding reviews/apply
+ * does not shift contacts onto the reviews palette.
+ */
 export const SECTION_PALETTE_DARK: readonly SectionPalette[] = [
   {
     bg: "#121516",
@@ -19,14 +25,15 @@ export const SECTION_PALETTE_DARK: readonly SectionPalette[] = [
     border: "#dfe8e5",
     muted: "#93a09c",
   },
+  // about — warm dark (never paper-white in dark theme)
   {
-    bg: "#f2ebe3",
-    fg: "#1c1814",
-    panel: "#faf6f1",
-    accent: "#c47a4a",
-    accentInk: "#fff7f0",
-    border: "#1c1814",
-    muted: "#6f655c",
+    bg: "#1c1814",
+    fg: "#f4efe8",
+    panel: "#26211c",
+    accent: "#e0a078",
+    accentInk: "#1c140e",
+    border: "#e8ddd0",
+    muted: "#b0a498",
   },
   {
     bg: "#4f8f7a",
@@ -46,14 +53,15 @@ export const SECTION_PALETTE_DARK: readonly SectionPalette[] = [
     border: "#d5dceb",
     muted: "#97a3b6",
   },
+  // projects — warm dark
   {
-    bg: "#f5e9e5",
-    fg: "#271c1a",
-    panel: "#fbf3f0",
-    accent: "#d06b6b",
-    accentInk: "#fff5f4",
-    border: "#271c1a",
-    muted: "#7a5f5b",
+    bg: "#2a1f1e",
+    fg: "#f8eeea",
+    panel: "#352826",
+    accent: "#e08a8a",
+    accentInk: "#2a1414",
+    border: "#f0ddd8",
+    muted: "#b89b96",
   },
   {
     bg: "#5c6b9a",
@@ -73,23 +81,25 @@ export const SECTION_PALETTE_DARK: readonly SectionPalette[] = [
     border: "#ece9dc",
     muted: "#a3a090",
   },
+  // apply — cool dark
   {
-    bg: "#e7eef3",
-    fg: "#152029",
-    panel: "#f3f7fa",
-    accent: "#3d7ea6",
-    accentInk: "#f4f9fc",
-    border: "#152029",
-    muted: "#5c6b76",
+    bg: "#152029",
+    fg: "#e7eef3",
+    panel: "#1a2833",
+    accent: "#5a9ec4",
+    accentInk: "#0c1822",
+    border: "#c5d4e0",
+    muted: "#8aa0b0",
   },
+  // contacts — deep terracotta (not paper-white)
   {
-    bg: "#c9a07a",
-    fg: "#1f130c",
-    panel: "#c9a07a",
-    accent: "#fff6ec",
+    bg: "#3a2418",
+    fg: "#fff6ec",
+    panel: "#4a2e1c",
+    accent: "#e0b089",
     accentInk: "#1f130c",
-    border: "#24160e",
-    muted: "#3a2418",
+    border: "#e8c9a8",
+    muted: "#c4a080",
   },
 ];
 
@@ -181,8 +191,15 @@ export function paletteForTheme(theme: "dark" | "light"): readonly SectionPalett
   return theme === "light" ? SECTION_PALETTE_LIGHT : SECTION_PALETTE_DARK;
 }
 
+/** Palette for a full-list index (0 = hero … 8 = contacts). */
 export function sectionPaletteAt(theme: "dark" | "light", index: number): SectionPalette {
   const list = paletteForTheme(theme);
   const safeIndex = Math.min(Math.max(index, 0), list.length - 1);
   return list[safeIndex];
+}
+
+/** Palette for a section id — stable when some sections are hidden from the spiral. */
+export function sectionPaletteForId(theme: "dark" | "light", sectionId: SectionId): SectionPalette {
+  const index = ALL_SECTION_IDS.indexOf(sectionId);
+  return sectionPaletteAt(theme, index < 0 ? 0 : index);
 }

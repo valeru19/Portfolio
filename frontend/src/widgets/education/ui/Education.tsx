@@ -17,13 +17,17 @@ export function Education() {
           title={t(content.education.title)}
         />
         <div className={styles.list}>
-          {content.education.items.map((item) => (
-            <article key={t(item.degree)} className={styles.item}>
-              <h3 className={styles.degree}>{t(item.degree)}</h3>
-              <p className={styles.school}>{t(item.school)}</p>
-              <p className={styles.dates}>{t(item.dates)}</p>
-            </article>
-          ))}
+          {content.education.items.map((item) => {
+            const school = t(item.school).trim();
+            const dates = t(item.dates).trim();
+            return (
+              <article key={t(item.degree)} className={styles.item}>
+                <h3 className={styles.degree}>{t(item.degree)}</h3>
+                {school ? <p className={styles.school}>{school}</p> : null}
+                {dates ? <p className={styles.dates}>{dates}</p> : null}
+              </article>
+            );
+          })}
         </div>
       </Container>
     </NavSection>

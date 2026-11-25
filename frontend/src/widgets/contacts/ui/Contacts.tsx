@@ -10,8 +10,13 @@ import { Container, SectionHead } from "@/shared/ui";
 
 import styles from "./Contacts.module.css";
 
-const CONTACT_LOGO: Record<string, string> = {
+const CONTACT_ICON: Record<string, string> = {
+  email: "assets/email.png",
+  telegram: "assets/telegram.png",
   github: "assets/github.png",
+  hh: "assets/hh.png",
+  linkedin: "assets/linkedin.png",
+  vk: "assets/vk.png",
 };
 
 type Props = {
@@ -34,22 +39,28 @@ export function Contacts({ endSlot }: Props) {
         />
         <p className={styles.sub}>{t(content.contacts.subtitle)}</p>
         <div className={styles.grid}>
-          {links.map((link) => (
-            <a
-              key={link.id}
-              className={styles.card}
-              href={link.href}
-              {...(/^https?:/i.test(link.href)
-                ? { target: "_blank", rel: "noopener noreferrer" }
-                : {})}
-            >
-              {CONTACT_LOGO[link.id] ? (
-                <img className={styles.logo} src={assetUrl(CONTACT_LOGO[link.id])} alt="" />
-              ) : null}
-              <span className={styles.label}>{link.label}</span>
-              <span className={styles.value}>{link.value}</span>
-            </a>
-          ))}
+          {links.map((link) => {
+            const iconSrc = CONTACT_ICON[link.id];
+            const isExternal = /^https?:/i.test(link.href);
+            return (
+              <a
+                key={link.id}
+                className={styles.iconButton}
+                href={link.href}
+                aria-label={`${link.label}: ${link.value}`}
+                {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              >
+                {iconSrc ? (
+                  <img className={styles.icon} src={assetUrl(iconSrc)} alt="" />
+                ) : (
+                  <span className={styles.iconFallback} aria-hidden="true">
+                    {link.label.slice(0, 2)}
+                  </span>
+                )}
+                <span className={styles.iconLabel}>{link.label}</span>
+              </a>
+            );
+          })}
         </div>
         {email ? <CopyEmailControl email={email} /> : null}
       </Container>

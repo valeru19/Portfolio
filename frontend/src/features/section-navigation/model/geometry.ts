@@ -1,4 +1,10 @@
-import { ASPECT, AXIS, SECTION_ROTATION_STEP_DEG, SMALL_SCREEN_MAX_WIDTH } from "./constants";
+import {
+  ASPECT,
+  AXIS,
+  PANEL_SIZE_RATIO,
+  SECTION_ROTATION_STEP_DEG,
+  SMALL_SCREEN_MAX_WIDTH,
+} from "./constants";
 
 export type SpiralLayout = {
   originX: number;
@@ -18,15 +24,18 @@ export function computeSpiralLayout(viewportWidth: number, viewportHeight: numbe
   let panelHeight: number;
 
   if (isSmallScreen && !isLandscape) {
+    // Portrait phone: φ-cell is full CSS width; origin in the spiral unit winW/φ.
     originX = Math.floor((viewportWidth / ASPECT) * ASPECT * (1 - AXIS));
     originY = Math.floor((viewportWidth / ASPECT) * AXIS);
     panelWidth = viewportWidth;
     panelHeight = viewportWidth;
   } else {
+    // Desktop / landscape: panel = φ × width so adjacent 90° arms tessellate
+    // without overlap (larger ratios make current/prev/next stack on each other).
     originX = Math.floor(viewportWidth * AXIS);
     originY = Math.floor(viewportWidth * ASPECT * AXIS);
-    panelWidth = viewportWidth * ASPECT;
-    panelHeight = viewportWidth * ASPECT;
+    panelWidth = viewportWidth * PANEL_SIZE_RATIO;
+    panelHeight = viewportWidth * PANEL_SIZE_RATIO;
   }
 
   return {

@@ -9,13 +9,27 @@ import {
   trimRotation,
 } from "./geometry";
 import { clampSectionIndex, stepSectionIndex } from "./sectionIndex";
-import { ASPECT } from "./constants";
+import { ASPECT, PANEL_SIZE_RATIO } from "./constants";
 
 describe("spiral geometry", () => {
-  it("computes desktop layout with AXIS origin", () => {
+  it("computes desktop layout with AXIS origin and φ-sized panels", () => {
     const layout = computeSpiralLayout(1200, 800);
+    expect(layout.panelWidth).toBeCloseTo(1200 * PANEL_SIZE_RATIO);
     expect(layout.panelWidth).toBeCloseTo(1200 * ASPECT);
     expect(layout.originX).toBe(Math.floor(1200 * 0.7237));
+  });
+
+  it("uses full-width φ cells on portrait phones", () => {
+    const layout = computeSpiralLayout(390, 844);
+    expect(layout.panelWidth).toBe(390);
+    expect(layout.panelHeight).toBe(390);
+    expect(layout.originX).toBe(Math.floor(390 * (1 - 0.7237)));
+  });
+
+  it("keeps landscape tablets on the desktop φ branch (not full-width squares)", () => {
+    const layout = computeSpiralLayout(900, 500);
+    expect(layout.panelWidth).toBeCloseTo(900 * ASPECT);
+    expect(layout.originX).toBe(Math.floor(900 * 0.7237));
   });
 
   it("maps rotation to section index within bounds", () => {

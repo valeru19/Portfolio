@@ -5,25 +5,36 @@ export const education = {
   items: [
     {
       degree: {
-        ru: "Бакалавриат «Информационные системы и технологии»",
-        en: "Bachelor’s in Information Systems and Technologies",
+        ru: "Бакалавриат — Информационные системы и технологии",
+        en: "Bachelor’s — Information Systems and Technologies",
       },
       school: {
         ru: "Пермский национальный исследовательский политехнический университет",
         en: "Perm National Research Polytechnic University",
       },
-      dates: { ru: "до 2026", en: "until 2026" },
+      dates: { ru: "2022–2026", en: "2022–2026" },
     },
     {
       degree: {
-        ru: "Магистратура «Машинное обучение»",
-        en: "Master’s in Machine Learning",
+        ru: "Магистратура (в процессе) — Математическая кибернетика",
+        en: "Master’s (in progress) — Mathematical Cybernetics",
       },
       school: {
         ru: "Пермский национальный исследовательский политехнический университет",
         en: "Perm National Research Polytechnic University",
       },
       dates: { ru: "с 2026", en: "from 2026" },
+    },
+    {
+      degree: {
+        ru: "Дополнительная профессиональная переподготовка — Машинное обучение и компьютерное зрение",
+        en: "Professional retraining — Machine Learning and Computer Vision",
+      },
+      school: {
+        ru: "Пермский национальный исследовательский политехнический университет",
+        en: "Perm National Research Polytechnic University",
+      },
+      dates: { ru: "2025–2026", en: "2025–2026" },
     },
   ],
 } as const;

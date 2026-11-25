@@ -32,24 +32,42 @@
 .tileCompact img {
   max-width: 56px;
   height: 36px;
+  /* OS row stays still — float + overflow:hidden leaves Chrome ghost stripes. */
+  animation: none;
 }
 
-:global(body:not(.is-spinning):not(.is-accessible)) .tileCompact img {
+.tile img {
+  /* Keep the animation attached and pause while spinning so it does not
+     restart from 0% (that looked like logos blinking back in). */
   animation: logo-float 4.2s ease-in-out infinite;
+  animation-play-state: running;
+}
+
+.tile:nth-child(2n) img {
+  animation-delay: -1.4s;
+}
+
+.tile:nth-child(3n) img {
+  animation-delay: -2.8s;
+}
+
+:global(body.is-spinning) .tile img,
+:global(body.is-accessible) .tile img {
+  animation-play-state: paused;
 }
 
 @keyframes logo-float {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
   50% {
-    transform: translateY(-5px);
+    transform: translate3d(0, -3px, 0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :global(body:not(.is-spinning):not(.is-accessible)) .tileCompact img {
+  .tile img {
     animation: none;
   }
 }
