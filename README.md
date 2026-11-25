@@ -18,6 +18,8 @@ python -m venv .venv
 
 pip install -r requirements.txt
 copy .env.example .env   # или: cp .env.example .env
+# Обязательно задайте свой ADMIN_KEY в .env (не change-me-admin-key) —
+# иначе приложение не стартует.
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
@@ -93,7 +95,7 @@ npm run test
 
 ## Модерация (admin)
 
-Ключ: `ADMIN_KEY` из `backend/.env`.
+Ключ: `ADMIN_KEY` из `backend/.env` (обязателен при старте; плейсхолдер `change-me-admin-key` запрещён).
 
 ```bash
 curl -H "X-Admin-Key: change-me-admin-key" http://127.0.0.1:8000/api/applications
