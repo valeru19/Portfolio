@@ -10,11 +10,13 @@ export function panelCanConsumeWheel(box: ScrollBoxMetrics | null): boolean {
   return box.scrollHeight > box.clientHeight + 2;
 }
 
+const SCROLL_EDGE_EPSILON_PX = 3;
+
 /** True when further wheel in `deltaY` direction should leave the panel. */
 export function panelAtScrollEdge(box: ScrollBoxMetrics, deltaY: number): boolean {
   const maxScroll = Math.max(0, box.scrollHeight - box.clientHeight);
-  const atTop = box.scrollTop <= 1;
-  const atBottom = box.scrollTop >= maxScroll - 1;
+  const atTop = box.scrollTop <= SCROLL_EDGE_EPSILON_PX;
+  const atBottom = box.scrollTop >= maxScroll - SCROLL_EDGE_EPSILON_PX;
   if (deltaY > 0) return atBottom;
   if (deltaY < 0) return atTop;
   return true;

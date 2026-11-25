@@ -22,12 +22,13 @@
     border-color 0.45s var(--ease);
 }
 
-.spiralSection.active {
+/* active / is-far / is-scrollable are toggled from hooks as global class names. */
+.spiralSection:global(.active) {
   cursor: default;
   z-index: 3;
 }
 
-.spiralSection.is-far {
+.spiralSection:global(.is-far) {
   pointer-events: none;
 }
 
@@ -42,7 +43,7 @@
   scrollbar-width: thin;
 }
 
-.spiralSection.active .panelScroll.is-scrollable {
+.spiralSection:global(.active) .panelScroll:global(.is-scrollable) {
   overflow: auto;
   pointer-events: auto;
 }

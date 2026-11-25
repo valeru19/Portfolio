@@ -49,7 +49,7 @@ html.is-accessible {
   border: 0;
 }
 
-body.is-spinning .spiralSection,
+body.is-spinning [class*="spiralSection"],
 body.is-spinning header,
 body.is-spinning [class*="counter"],
 body.is-spinning [class*="dot"] {
