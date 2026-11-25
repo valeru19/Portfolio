@@ -118,9 +118,14 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     [goTo, sectionCount],
   );
 
+  const getIsBusy = useCallback(
+    () => spinningFlagRef.current || spinningRef.current || isSpinning,
+    [isSpinning, spinningRef],
+  );
+
   useWheelStep({
     enabled: !isAccessible,
-    isSpinning,
+    getIsBusy,
     getActiveScrollBox,
     onStep,
   });

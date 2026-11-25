@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import { WHEEL_ACC_DECAY_MS } from "../model/constants";
 import {
+  nextScrollTopAfterWheel,
   normalizeWheelDeltaY,
   panelAtScrollEdge,
   panelCanConsumeWheel,
@@ -16,7 +17,8 @@ import {
 
 type Options = {
   enabled: boolean;
-  isSpinning: boolean;
+  /** Prefer a ref-backed getter so the listener stays stable across spins. */
+  getIsBusy: () => boolean;
   getActiveScrollBox: () => HTMLElement | null;
   onStep: (direction: 1 | -1) => void;
 };
@@ -31,32 +33,48 @@ function metricsFromElement(el: HTMLElement | null): ScrollBoxMetrics | null {
   };
 }
 
-export function useWheelStep({ enabled, isSpinning, getActiveScrollBox, onStep }: Options): void {
+export function useWheelStep({
+  enabled,
+  getIsBusy,
+  getActiveScrollBox,
+  onStep,
+}: Options): void {
   const stateRef = useRef<WheelLockState>(INITIAL_WHEEL_LOCK_STATE);
   const decayTimerRef = useRef<number | null>(null);
   const onStepRef = useRef(onStep);
+  const getIsBusyRef = useRef(getIsBusy);
+  const getActiveScrollBoxRef = useRef(getActiveScrollBox);
   onStepRef.current = onStep;
+  getIsBusyRef.current = getIsBusy;
+  getActiveScrollBoxRef.current = getActiveScrollBox;
 
   useEffect(() => {
     if (!enabled) return;
 
     const onWheel = (event: WheelEvent) => {
       const dy = normalizeWheelDeltaY(event.deltaY, event.deltaMode, window.innerHeight);
-      const scrollBox = getActiveScrollBox();
+      const isBusy = getIsBusyRef.current();
+      const scrollBox = getActiveScrollBoxRef.current();
       const metrics = metricsFromElement(scrollBox);
+      const target = event.target;
+      const targetInsidePanel =
+        scrollBox != null &&
+        target instanceof Node &&
+        (scrollBox === target || scrollBox.contains(target));
 
-      if (
-        !isSpinning &&
-        panelCanConsumeWheel(metrics) &&
-        scrollBox?.contains(event.target as Node)
-      ) {
-        if (metrics && !panelAtScrollEdge(metrics, dy)) return;
+      if (!isBusy && panelCanConsumeWheel(metrics) && targetInsidePanel && metrics) {
+        if (!panelAtScrollEdge(metrics, dy)) {
+          // Drive scroll manually — native wheel scroll fails under spiral transforms.
+          event.preventDefault();
+          scrollBox.scrollTop = nextScrollTopAfterWheel(metrics, dy);
+          return;
+        }
       }
 
       event.preventDefault();
 
       const { state, step } = reduceWheelStep(stateRef.current, dy, performance.now(), {
-        isBusy: isSpinning,
+        isBusy,
       });
       stateRef.current = state;
 
@@ -75,5 +93,5 @@ export function useWheelStep({ enabled, isSpinning, getActiveScrollBox, onStep }
       document.removeEventListener("wheel", onWheel);
       if (decayTimerRef.current != null) window.clearTimeout(decayTimerRef.current);
     };
-  }, [enabled, isSpinning, getActiveScrollBox]);
+  }, [enabled]);
 }

@@ -59,6 +59,7 @@ export function useSpiralPanels({
     panelsRef.current.forEach(({ scroll }) => {
       scroll.classList.remove("is-scrollable");
       scroll.style.overflow = "";
+      scroll.style.pointerEvents = "";
       scroll.scrollTop = 0;
     });
   }, []);
@@ -68,6 +69,8 @@ export function useSpiralPanels({
     const idx = currentIndexRef.current;
     panelsRef.current.forEach(({ scroll }, id) => {
       scroll.classList.remove("is-scrollable");
+      scroll.style.overflow = "";
+      scroll.style.pointerEvents = "";
       if (sectionIds.indexOf(id) !== idx) scroll.scrollTop = 0;
     });
     const activeId = sectionIds[idx];
@@ -77,7 +80,10 @@ export function useSpiralPanels({
     settleTimerRef.current = window.setTimeout(() => {
       if (isAccessible || spinningFlagRef.current || currentIndexRef.current !== idx) return;
       if (active.scroll.scrollHeight > active.scroll.clientHeight + 2) {
+        // Inline styles: CSS-module :global hooks can miss; transforms need a sure overflow.
         active.scroll.classList.add("is-scrollable");
+        active.scroll.style.overflow = "auto";
+        active.scroll.style.pointerEvents = "auto";
       }
     }, 90);
   }, [currentIndexRef, isAccessible, sectionIds, spinningFlagRef]);

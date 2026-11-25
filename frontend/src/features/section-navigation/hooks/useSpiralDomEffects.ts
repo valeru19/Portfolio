@@ -68,6 +68,8 @@ export function useSpiralDomEffects({
         section.classList.remove("is-far");
         section.classList.add("active");
         scroll.classList.remove("is-scrollable");
+        scroll.style.overflow = "";
+        scroll.style.pointerEvents = "";
       });
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
