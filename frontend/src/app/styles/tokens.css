@@ -1,0 +1,33 @@
+:root {
+  --bg: #0c0c0c;
+  --panel: #141414;
+  --panel-alt: #1c1c1c;
+  --text: #f2f2f2;
+  --muted: #9a9a9a;
+  --border: #e8e8e8;
+  --accent: #45b8a8;
+  --accent-ink: #062824;
+  --danger: #e2554c;
+  --frame: 5px;
+  --nav-h: 0px;
+  --phi: 0.618033;
+  --axis: 0.7237;
+  --font: "Space Grotesk", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --stage-bg: #0c0c0c;
+  --stage-fg: #f2f2f2;
+}
+
+[data-theme="light"] {
+  --bg: #f0efed;
+  --panel: #fafaf9;
+  --panel-alt: #e8e6e3;
+  --text: #1a1a1a;
+  --muted: #6b6b6b;
+  --border: #1a1a1a;
+  --accent: #1a8a7c;
+  --accent-ink: #ffffff;
+  --stage-bg: #f0efed;
+  --stage-fg: #1a1a1a;
+}
