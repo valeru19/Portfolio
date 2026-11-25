@@ -20,6 +20,14 @@ export const reviews = {
   text: { ru: "Текст отзыва", en: "Review text" } satisfies LocalizedString,
   rating: { ru: "Оценка", en: "Rating" } satisfies LocalizedString,
   submit: { ru: "Отправить отзыв", en: "Submit review" } satisfies LocalizedString,
+  privacyConsent: {
+    ru: "Согласен на обработку моих персональных данных (имя) для публикации отзыва после проверки.",
+    en: "I agree to the processing of my personal data (name) to publish the review after moderation.",
+  } satisfies LocalizedString,
+  privacyLink: {
+    ru: "Политика обработки данных",
+    en: "Privacy policy",
+  } satisfies LocalizedString,
   success: {
     ru: "Спасибо! Отзыв отправлен и появится после проверки.",
     en: "Thanks! Your review was submitted and will appear after moderation.",
@@ -27,6 +35,10 @@ export const reviews = {
   error: {
     ru: "Не удалось отправить отзыв. Попробуйте позже.",
     en: "Could not submit the review. Please try again later.",
+  } satisfies LocalizedString,
+  loading: {
+    ru: "Загрузка отзывов…",
+    en: "Loading reviews…",
   } satisfies LocalizedString,
   loadError: {
     ru: "Не удалось загрузить отзывы.",

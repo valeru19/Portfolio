@@ -1,0 +1,12 @@
+.sub {
+  margin: 0 0 12px;
+  color: inherit;
+  opacity: 0.72;
+  font-size: 0.95rem;
+}
+
+.shell {
+  border: var(--frame) solid var(--border);
+  padding: 14px;
+  background: color-mix(in srgb, currentColor 8%, var(--panel));
+}

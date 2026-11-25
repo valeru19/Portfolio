@@ -1,11 +1,11 @@
-export { getApiBase, getSiteUrl } from "./env";
 export {
   contactsConfig,
   hhResumeHref,
   isContactVisible,
   privacyAnchorId,
-  privacyTodoNote,
+  privacyEmailAddress,
   visibleContacts,
   type ContactLink,
 } from "./contacts";
+export { getApiBase, getSiteUrl, isApiConfigured } from "./env";
 export { STORAGE_LANG, STORAGE_MODE, STORAGE_THEME } from "./storageKeys";

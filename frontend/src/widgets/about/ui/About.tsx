@@ -1,4 +1,4 @@
-import { content, SECTION_INDEX_LABELS } from "@/shared/content";
+import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
 import { Container, Section, SectionHead } from "@/shared/ui";
 
@@ -12,7 +12,7 @@ export function About() {
     <Section id="about" aria-labelledby="about-title">
       <Container>
         <SectionHead
-          index={SECTION_INDEX_LABELS.about}
+          index={getSectionIndexLabel("about")}
           titleId="about-title"
           title={t(content.about.title)}
         />

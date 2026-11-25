@@ -1,5 +1,5 @@
 import { ProjectCard } from "@/entities/project";
-import { content, SECTION_INDEX_LABELS } from "@/shared/content";
+import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
 import { Container, Section, SectionHead } from "@/shared/ui";
 
@@ -12,7 +12,7 @@ export function Projects() {
     <Section id="projects" aria-labelledby="projects-title">
       <Container>
         <SectionHead
-          index={SECTION_INDEX_LABELS.projects}
+          index={getSectionIndexLabel("projects")}
           titleId="projects-title"
           title={t(content.projects.title)}
         />

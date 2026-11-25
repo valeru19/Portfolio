@@ -23,9 +23,6 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: content.about.title.ru })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: content.stack.title.ru })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /GitHub/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Skip to content" })).toHaveAttribute(
-      "href",
-      "#main",
-    );
+    expect(screen.getByRole("link", { name: "Skip to content" })).toHaveAttribute("href", "#main");
   });
 });

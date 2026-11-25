@@ -9,11 +9,7 @@ type Props = {
 
 export function TechTag({ label, logoId, logoSrc }: Props) {
   return (
-    <Tag
-      logoId={logoId}
-      logoSrc={logoSrc ? assetUrl(logoSrc) : undefined}
-      logoAlt=""
-    >
+    <Tag logoId={logoId} logoSrc={logoSrc ? assetUrl(logoSrc) : undefined} logoAlt="">
       {label}
     </Tag>
   );

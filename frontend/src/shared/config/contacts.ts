@@ -1,5 +1,3 @@
-import type { LocalizedString } from "@/shared/i18n";
-
 export type ContactLink = {
   id: string;
   label: string;
@@ -22,7 +20,7 @@ export const contactsConfig = {
     href: "https://github.com/valeru19",
   } satisfies ContactLink,
 
-  // TODO: replace with real email when provided
+  // TODO: replace with real email when provided — privacy email line stays hidden until then
   email: {
     id: "email",
     label: "Email",
@@ -76,9 +74,10 @@ export function hhResumeHref(): string | null {
   return isContactVisible(hh) ? hh.href : null;
 }
 
-export const privacyAnchorId = "privacy";
+/** Public email address for privacy text, or null while still TODO. */
+export function privacyEmailAddress(): string | null {
+  const email = contactsConfig.email;
+  return isContactVisible(email) ? email.value : null;
+}
 
-export const privacyTodoNote: LocalizedString = {
-  ru: "TODO: текст политики обработки персональных данных будет добавлен отдельно.",
-  en: "TODO: privacy policy text will be provided separately.",
-};
+export const privacyAnchorId = "privacy";

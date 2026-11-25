@@ -49,10 +49,7 @@ export function ThemeProvider({ children, initialTheme }: Props) {
   }, [setTheme, theme]);
 
   // Memoize context value object — same reason as setTheme above.
-  const value = useMemo(
-    () => ({ theme, setTheme, toggleTheme }),
-    [theme, setTheme, toggleTheme],
-  );
+  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

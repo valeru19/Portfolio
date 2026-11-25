@@ -1,0 +1,43 @@
+.sub {
+  margin: 0 0 12px;
+  color: inherit;
+  opacity: 0.72;
+  font-size: 0.95rem;
+}
+
+.layout {
+  display: grid;
+  border: var(--frame) solid currentColor;
+}
+
+.list {
+  min-height: 120px;
+}
+
+.hint {
+  padding: 14px;
+  color: inherit;
+  opacity: 0.72;
+  margin: 0;
+}
+
+.formCard {
+  padding: 14px;
+  background: color-mix(in srgb, currentColor 8%, var(--panel));
+  color: inherit;
+}
+
+.formTitle {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+}
+
+@media (min-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .list {
+    border-right: var(--frame) solid var(--border);
+  }
+}

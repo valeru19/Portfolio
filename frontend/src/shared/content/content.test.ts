@@ -14,9 +14,7 @@ describe("content", () => {
 
   it("keeps pending techs out of rendered stack groups", () => {
     const pendingIds = new Set(pendingStackItems.map((p) => p.id));
-    const logos = content.stack.groups.flatMap((g) =>
-      g.items.map((i) => i.logo).filter(Boolean),
-    );
+    const logos = content.stack.groups.flatMap((g) => g.items.map((i) => i.logo).filter(Boolean));
     for (const id of pendingIds) {
       expect(logos).not.toContain(id);
     }

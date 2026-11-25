@@ -1,0 +1,29 @@
+.card {
+  padding: 12px 14px;
+  border-bottom: var(--frame) solid var(--border);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.rating {
+  font-family: var(--mono);
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.text {
+  margin: 6px 0 0;
+  color: inherit;
+  opacity: 0.72;
+  font-size: 0.95rem;
+}

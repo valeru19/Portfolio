@@ -20,12 +20,7 @@ const baseProject: ProjectItem = {
 function renderCard(project: ProjectItem) {
   return render(
     <I18nProvider initialLang="en">
-      <ProjectCard
-        project={project}
-        indexLabel="01"
-        codeLabel="Code"
-        demoLabel="Demo"
-      />
+      <ProjectCard project={project} indexLabel="01" codeLabel="Code" demoLabel="Demo" />
     </I18nProvider>,
   );
 }

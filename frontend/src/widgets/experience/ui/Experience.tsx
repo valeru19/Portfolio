@@ -1,6 +1,6 @@
 import { TimelineItem } from "@/entities/experience";
 import { TechLogo } from "@/entities/tech";
-import { content, SECTION_INDEX_LABELS } from "@/shared/content";
+import { content, getSectionIndexLabel } from "@/shared/content";
 import { useT } from "@/shared/i18n";
 import { Container, Section, SectionHead } from "@/shared/ui";
 
@@ -13,7 +13,7 @@ export function Experience() {
     <Section id="experience" aria-labelledby="experience-title">
       <Container>
         <SectionHead
-          index={SECTION_INDEX_LABELS.experience}
+          index={getSectionIndexLabel("experience")}
           titleId="experience-title"
           title={t(content.experience.title)}
         />
