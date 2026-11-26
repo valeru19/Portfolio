@@ -12,7 +12,9 @@ type Props = {
 export function Tag({ children, logoSrc, logoAlt = "", logoId }: Props) {
   return (
     <span className={styles.tag} data-logo={logoId}>
-      {logoSrc ? <img src={logoSrc} alt={logoAlt} width={16} height={16} /> : null}
+      {logoSrc ? (
+        <img src={logoSrc} alt={logoAlt} width={16} height={16} decoding="async" loading="lazy" />
+      ) : null}
       {children}
     </span>
   );

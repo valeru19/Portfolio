@@ -12,7 +12,14 @@ type Props = {
 export function TechLogo({ id, name, src, compact = false }: Props) {
   return (
     <div className={compact ? styles.tileCompact : styles.tile} data-logo={id}>
-      <img src={assetUrl(src)} alt="" />
+      <img
+        src={assetUrl(src)}
+        alt=""
+        width={72}
+        height={44}
+        decoding="async"
+        loading="lazy"
+      />
       <span>{name}</span>
     </div>
   );

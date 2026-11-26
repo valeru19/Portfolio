@@ -36,23 +36,25 @@
   animation: none;
 }
 
+/* Float только у активной панели — иначе размытые слои зря перерисовываются. */
 .tile img {
-  /* Анимацию не снимаем, а паузим на spin — иначе
-     рестарт с 0% выглядел как мигание логотипов. */
+  animation: none;
+}
+
+:global([data-active]) .tile img {
   animation: logo-float 4.2s ease-in-out infinite;
   animation-play-state: running;
 }
 
-.tile:nth-child(2n) img {
+:global([data-active]) .tile:nth-child(2n) img {
   animation-delay: -1.4s;
 }
 
-.tile:nth-child(3n) img {
+:global([data-active]) .tile:nth-child(3n) img {
   animation-delay: -2.8s;
 }
 
-:global(body.is-spinning) .tile img,
-:global(body.is-accessible) .tile img {
+:global(body.is-spinning) [data-active] .tile img {
   animation-play-state: paused;
 }
 

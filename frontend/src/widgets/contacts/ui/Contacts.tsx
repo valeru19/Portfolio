@@ -51,7 +51,15 @@ export function Contacts({ endSlot }: Props) {
                 {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               >
                 {iconSrc ? (
-                  <img className={styles.icon} src={assetUrl(iconSrc)} alt="" />
+                  <img
+                    className={styles.icon}
+                    src={assetUrl(iconSrc)}
+                    alt=""
+                    width={40}
+                    height={40}
+                    decoding="async"
+                    loading="lazy"
+                  />
                 ) : (
                   <span className={styles.iconFallback} aria-hidden="true">
                     {link.label.slice(0, 2)}
