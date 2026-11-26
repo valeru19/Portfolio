@@ -17,9 +17,10 @@ describe("animationDurationMs", () => {
   });
 
   it("allows longer reverse multi jumps for smoother Наверх", () => {
-    const longBack = animationDurationMs(720, true);
-    expect(longBack).toBeGreaterThanOrEqual(1.15);
-    expect(longBack).toBeLessThanOrEqual(2.15);
+    const longBack = animationDurationMs(540, true);
+    expect(longBack).toBeGreaterThanOrEqual(1.35);
+    expect(longBack).toBeLessThanOrEqual(2.7);
+    expect(longBack).toBeGreaterThan(animationDurationMs(540, false));
   });
 });
 

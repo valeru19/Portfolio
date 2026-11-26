@@ -113,17 +113,17 @@ export function animationDurationMs(distanceDeg: number, goingBack: boolean): nu
     const floor = goingBack ? 0.55 : 0.52;
     return Math.min(ceiling, Math.max(floor, 0.48 + distanceDeg / 500));
   }
-  // Прыжок через несколько секций. Reverse длиннее и ровнее (шаг 17): меньше
-  // «рывков» в начале, где scale-up × эффекты били по кадрам.
-  const perStep = goingBack ? 0.28 : 0.22;
-  const floor = goingBack ? 1.15 : 0.9;
-  const ceiling = goingBack ? 2.15 : 1.7;
+  // Прыжок через несколько секций. Reverse длиннее: разгон до середины пути,
+  // затем торможение (sine.inOut), без укорочения длительности.
+  const perStep = goingBack ? 0.34 : 0.22;
+  const floor = goingBack ? 1.35 : 0.9;
+  const ceiling = goingBack ? 2.7 : 1.7;
   return Math.min(ceiling, Math.max(floor, 0.55 + steps * perStep));
 }
 
 /**
  * 1 шаг: sine.inOut (LOCKED).
- * Длинный reverse: sine.inOut — ровнее power2.out (шаг 17).
+ * Длинный reverse: sine.inOut — ускорение к половине, замедление после.
  * Длинный forward: power2.out.
  */
 export function animationEase(distanceDeg: number, goingBack: boolean): string {
