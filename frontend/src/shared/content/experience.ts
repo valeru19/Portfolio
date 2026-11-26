@@ -20,8 +20,12 @@ export const experience = {
     en: "Technology stack",
   } satisfies LocalizedString,
   osTitle: {
-    ru: "ОС, в которых уверенно работаю",
-    en: "Operating systems I use confidently",
+    ru: "ОС",
+    en: "Operating systems",
+  } satisfies LocalizedString,
+  distroTitle: {
+    ru: "Дистрибутивы Linux",
+    en: "Linux distributions",
   } satisfies LocalizedString,
   items: [
     {
@@ -100,8 +104,14 @@ export const experience = {
   ] satisfies TechLogo[],
   osLogos: [
     { id: "windows", name: "Windows", src: "assets/windows.png" },
+    { id: "linux", name: "Linux", src: "assets/linux.png" },
+    { id: "macos", name: "macOS", src: "assets/macos.png" },
+  ] satisfies TechLogo[],
+  distroLogos: [
     { id: "ubuntu", name: "Ubuntu", src: "assets/ubuntu.png" },
     { id: "debian", name: "Debian", src: "assets/debian.png" },
     { id: "fedora", name: "Fedora", src: "assets/fedora.png" },
+    { id: "linux-mint", name: "Linux Mint", src: "assets/linux-mint.webp" },
+    { id: "arch-linux", name: "Arch Linux", src: "assets/arch-linux.png" },
   ] satisfies TechLogo[],
 } as const;

@@ -12,9 +12,14 @@
   cursor: pointer;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
   background: var(--accent);
   color: var(--accent-ink);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
 .btn:focus-visible {

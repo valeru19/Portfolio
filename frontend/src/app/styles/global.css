@@ -15,6 +15,11 @@ body {
   min-height: 100%;
   overflow: visible;
   font-family: var(--font);
+  font-size: 1.02rem;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  font-optical-sizing: auto;
   color: var(--stage-fg);
   background: var(--stage-bg);
   -webkit-font-smoothing: antialiased;
@@ -24,6 +29,11 @@ body {
     color 0.7s var(--ease);
 }
 
+/* Проза секций: чуть плотнее leading, чем UI-хром на mono. */
+p {
+  line-height: 1.58;
+}
+
 html:not(.is-accessible) body {
   height: 100%;
   overflow: hidden;
@@ -31,6 +41,15 @@ html:not(.is-accessible) body {
 
 html.is-accessible {
   --nav-h: 52px;
+  height: 100%;
+  overflow: hidden;
+  scroll-behavior: auto;
+  scroll-snap-type: none;
+}
+
+html.is-accessible body {
+  height: 100%;
+  overflow: hidden;
 }
 
 :focus-visible {
@@ -49,16 +68,90 @@ html.is-accessible {
   border: 0;
 }
 
-/* Во время поворота спирали: глушим тяжёлые color-transition у stage/body/chrome.
-   Мгновенный snap палитры дешевле, чем накладывающиеся 0.7s paint на каждую секцию. */
+/* Радиус Apple-squircle (%, px). Blur tween отключён — см. NavSection.module.css. */
+@property --panel-radius {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 0.01px;
+}
+
+/* Интерполяция blur на from/dest во время flip (без mid-turn JS). */
+@property --panel-blur {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+/*
+  Смена spiral ↔ accessible:
+  — сцена fade через data-mode-phase (opacity/translate, compositor-only);
+  — у детей transitions глушим, чтобы карточки не tween'или позы при class swap.
+*/
+html.is-mode-switching,
+html.is-mode-switching body {
+  cursor: wait;
+}
+
+html.is-mode-switching [data-spiral-stage] {
+  pointer-events: none;
+}
+
+html.is-mode-switching [data-spiral-stage] *,
+html.is-mode-switching header {
+  transition: none !important;
+  animation: none !important;
+}
+
+[data-spiral-stage][data-mode-phase="exit"] {
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
+}
+
+[data-spiral-stage][data-mode-phase="enter"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-spiral-stage][data-mode-phase="exit"],
+  [data-spiral-stage][data-mode-phase="enter"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/*
+  Во время поворота:
+  — hot path = transform спирали;
+  — blur статичен (роли from/dest snap в JS в старте шага);
+  — никаких filter:none / steps mid-spin: дают мерцание на land и под rotate.
+*/
 body.is-spinning,
 body.is-spinning [data-spiral-root],
+body.is-spinning [data-spiral-stage],
 body.is-spinning [data-spiral-section],
-body.is-spinning [data-spiral-section] *,
 body.is-spinning [data-spiral-hud],
-body.is-spinning [data-spiral-hud] *,
 body.is-spinning header {
   transition: none !important;
+}
+
+/* Глушим filter-transition у blur-слоя на spin (leave/ahead не мигает на land).
+   WAAPI пишет inline filter на from/dest — CSS var для остальных статичен. */
+body.is-spinning .panelBlurLayer,
+body.is-spinning [data-panel-blur-layer] {
+  transition: none !important;
+}
+
+/* Mid-spin: не даём content-visibility:auto пересобирать far-панели на reverse scale-up. */
+body.is-spinning [data-panel-scroll] {
+  content-visibility: visible !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

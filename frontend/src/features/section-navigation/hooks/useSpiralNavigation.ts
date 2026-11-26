@@ -3,8 +3,15 @@ import { startTransition, useCallback, useEffect, useRef, useState } from "react
 import type { SectionId } from "@/shared/content";
 import { useTheme } from "@/shared/theme";
 
+import {
+  ACCESSIBLE_CARD_TRANSITION_MS,
+  ACCESSIBLE_WHEEL_STEP_LOCK_MS,
+  ACCESSIBLE_WHEEL_THRESHOLD,
+  MODE_TRANSITION_ENTER_MS,
+  MODE_TRANSITION_EXIT_MS,
+} from "../model/constants";
 import { rotationForSectionIndex } from "../model/geometry";
-import type { SpiralNavigationValue } from "../model/navigationContext";
+import type { ModeTransitionPhase, SpiralNavigationValue } from "../model/navigationContext";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
 import { clampSectionIndex, stepSectionIndex } from "../model/sectionIndex";
 
@@ -22,12 +29,15 @@ type Options = {
 
 export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationValue {
   const { theme } = useTheme();
-  const { isAccessible, toggleAccessible } = useAccessibleMode();
+  const { isAccessible, setAccessible } = useAccessibleMode();
   const sectionCount = sectionIds.length;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [targetIndex, setTargetIndex] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [modeTransitionPhase, setModeTransitionPhase] = useState<ModeTransitionPhase>("idle");
+  const modeTransitionGenRef = useRef(0);
+  const modeTimerRef = useRef(0);
 
   const spiralRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLElement | null>(null);
@@ -36,14 +46,19 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   const pendingIndexRef = useRef(0);
   const spinningFlagRef = useRef(false);
   const animateToRotationRef = useRef<(rotation: number) => Promise<void>>(async () => undefined);
+  const goToRef = useRef<(index: number) => void>(() => undefined);
 
   currentIndexRef.current = currentIndex;
   targetIndexRef.current = targetIndex;
+
+  const cardBusyRef = useRef(false);
+  const cardBusyTimerRef = useRef(0);
 
   const {
     panelsRef,
     applyColors,
     markActive,
+    markAccessibleCards,
     clearScrollable,
     warmAround,
     settleActivePanel,
@@ -67,15 +82,15 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
 
   const onSettled = useCallback((index: number) => {
     currentIndexRef.current = index;
-    setCurrentIndex(index);
 
     const pending = clampSectionIndex(pendingIndexRef.current, sectionCount);
     if (pending !== index) {
-      // Очередь намерений: едем к последней запрошенной секции без thrash.
+      // Очередь намерений: едем дальше без React commit на промежуточном land.
       targetIndexRef.current = pending;
-      setTargetIndex(pending);
       spinningFlagRef.current = true;
-      setIsSpinning(true);
+      startTransition(() => {
+        setCurrentIndex(index);
+      });
       void animateToRotationRef.current(rotationForSectionIndex(pending));
       return;
     }
@@ -83,8 +98,12 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     spinningFlagRef.current = false;
     targetIndexRef.current = index;
     pendingIndexRef.current = index;
-    setTargetIndex(index);
-    setIsSpinning(false);
+    // Один React commit на финальный land (HUD). startTransition — не блокировать позу.
+    startTransition(() => {
+      setCurrentIndex(index);
+      setTargetIndex(index);
+      setIsSpinning(false);
+    });
   }, [sectionCount]);
 
   const {
@@ -117,18 +136,34 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
       const next = clampSectionIndex(index, sectionCount);
       pendingIndexRef.current = next;
       targetIndexRef.current = next;
-      setTargetIndex(next);
 
       if (isAccessible) {
-        setCurrentIndex(next);
+        if (next === currentIndexRef.current && !cardBusyRef.current) {
+          markAccessibleCards(next);
+          return;
+        }
+        // Во время анимации карточки коалесцируем в pending — применим на land.
+        if (cardBusyRef.current) {
+          return;
+        }
         currentIndexRef.current = next;
+        setTargetIndex(next);
+        setCurrentIndex(next);
         applyColors(next, true);
-        const id = sectionIds[next];
-        const nodes = id ? panelsRef.current.get(id) : undefined;
-        nodes?.section.scrollIntoView({
-          behavior: prefersReducedMotion() ? "auto" : "smooth",
-          block: "start",
-        });
+        markAccessibleCards(next);
+
+        if (!prefersReducedMotion()) {
+          cardBusyRef.current = true;
+          if (cardBusyTimerRef.current) window.clearTimeout(cardBusyTimerRef.current);
+          cardBusyTimerRef.current = window.setTimeout(() => {
+            cardBusyRef.current = false;
+            cardBusyTimerRef.current = 0;
+            const pending = clampSectionIndex(pendingIndexRef.current, sectionCount);
+            if (pending !== currentIndexRef.current) {
+              goToRef.current(pending);
+            }
+          }, ACCESSIBLE_CARD_TRANSITION_MS);
+        }
         return;
       }
 
@@ -137,12 +172,22 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
         return;
       }
 
+      // Без setState на старте твина: targetIndex/isSpinning в React никто в UI
+      // не читает на каждом кадре, а commit всего дерева давал подёргивание.
       spinningFlagRef.current = true;
-      setIsSpinning(true);
       void animateToRotation(rotationForSectionIndex(next));
     },
-    [animateToRotation, applyColors, isAccessible, panelsRef, sectionCount, sectionIds, spinningRef],
+    [
+      animateToRotation,
+      applyColors,
+      isAccessible,
+      markAccessibleCards,
+      sectionCount,
+      spinningRef,
+    ],
   );
+
+  goToRef.current = goTo;
 
   const goNext = useCallback(() => {
     const next = stepSectionIndex(pendingIndexRef.current, 1, sectionCount);
@@ -172,26 +217,97 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   );
 
   const getIsBusy = useCallback(
-    () => spinningFlagRef.current || spinningRef.current || isSpinning,
-    [isSpinning, spinningRef],
+    () =>
+      modeTransitionPhase !== "idle" ||
+      spinningFlagRef.current ||
+      spinningRef.current ||
+      (isAccessible && cardBusyRef.current),
+    [isAccessible, modeTransitionPhase, spinningRef],
   );
 
+  const inputEnabled = modeTransitionPhase === "idle";
+
   useWheelStep({
-    enabled: !isAccessible,
+    enabled: inputEnabled,
     getIsBusy,
     getActiveScrollBox,
     onStep,
+    // Карточки: нативный overflow-скролл + один щелчок = шаг секции.
+    nativePanelScroll: isAccessible,
+    stepThreshold: isAccessible ? ACCESSIBLE_WHEEL_THRESHOLD : undefined,
+    stepLockMs: isAccessible ? ACCESSIBLE_WHEEL_STEP_LOCK_MS : undefined,
   });
-  useTouchStep({ enabled: !isAccessible, onStep });
-  useKeyboardStep({ enabled: !isAccessible, onStep });
+  useTouchStep({ enabled: inputEnabled, onStep });
+  useKeyboardStep({ enabled: inputEnabled, onStep });
 
   useEffect(() => {
     applyColors(currentIndexRef.current, true);
   }, [theme, applyColors]);
 
+  useEffect(() => {
+    return () => {
+      if (cardBusyTimerRef.current) window.clearTimeout(cardBusyTimerRef.current);
+      if (modeTimerRef.current) window.clearTimeout(modeTimerRef.current);
+      modeTransitionGenRef.current += 1;
+      stageRef.current?.removeAttribute("data-mode-phase");
+      document.documentElement.classList.remove("is-mode-switching");
+    };
+  }, []);
+
+  const setStageModePhase = useCallback((phase: ModeTransitionPhase) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    if (phase === "idle") stage.removeAttribute("data-mode-phase");
+    else stage.setAttribute("data-mode-phase", phase);
+  }, []);
+
+  const toggleAccessible = useCallback(() => {
+    if (modeTransitionPhase !== "idle") return;
+
+    const nextAccessible = !isAccessible;
+    const gen = ++modeTransitionGenRef.current;
+    if (modeTimerRef.current) {
+      window.clearTimeout(modeTimerRef.current);
+      modeTimerRef.current = 0;
+    }
+
+    document.documentElement.classList.add("is-mode-switching");
+    spinningFlagRef.current = false;
+    killMotion();
+
+    const unlock = () => {
+      if (gen !== modeTransitionGenRef.current) return;
+      setStageModePhase("idle");
+      setModeTransitionPhase("idle");
+      document.documentElement.classList.remove("is-mode-switching");
+      modeTimerRef.current = 0;
+    };
+
+    // Reduced motion: без fade, только глушим card transitions на 2 кадра.
+    if (prefersReducedMotion()) {
+      setAccessible(nextAccessible);
+      setModeTransitionPhase("enter");
+      requestAnimationFrame(() => {
+        requestAnimationFrame(unlock);
+      });
+      return;
+    }
+
+    // Лёгкий fade сцены (data-mode-phase): exit → swap под opacity 0 → enter.
+    // Без filter/morph/remount — иначе снова фризы.
+    setStageModePhase("exit");
+    setModeTransitionPhase("exit");
+    modeTimerRef.current = window.setTimeout(() => {
+      if (gen !== modeTransitionGenRef.current) return;
+      setAccessible(nextAccessible);
+      setStageModePhase("enter");
+      setModeTransitionPhase("enter");
+      modeTimerRef.current = window.setTimeout(unlock, MODE_TRANSITION_ENTER_MS);
+    }, MODE_TRANSITION_EXIT_MS);
+  }, [isAccessible, killMotion, modeTransitionPhase, setAccessible, setStageModePhase]);
+
   useSpiralDomEffects({
     isAccessible,
-    sectionIds,
     spiralRef,
     panelsRef,
     rotationRef,
@@ -202,10 +318,10 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     buildSpiral,
     paintSpiralTransform,
     markActive,
+    markAccessibleCards,
     applyColors,
     settleActivePanel,
     setIsSpinning,
-    setCurrentIndex,
     setTargetIndex,
     spinningFlagRef,
     pendingIndexRef,
@@ -217,6 +333,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     targetIndex,
     isAccessible,
     isSpinning,
+    modeTransitionPhase,
     goTo,
     goNext,
     goPrev,
@@ -224,5 +341,6 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     registerPanel,
     spiralRef,
     stageRef,
+    currentIndexRef,
   };
 }

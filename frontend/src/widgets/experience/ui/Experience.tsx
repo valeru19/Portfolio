@@ -42,6 +42,12 @@ export function Experience() {
               <TechLogo key={logo.id} id={logo.id} name={logo.name} src={logo.src} compact />
             ))}
           </div>
+          <h3 className={styles.logosTitle}>{t(content.experience.distroTitle)}</h3>
+          <div className={styles.distroGrid}>
+            {content.experience.distroLogos.map((logo) => (
+              <TechLogo key={logo.id} id={logo.id} name={logo.name} src={logo.src} compact />
+            ))}
+          </div>
         </div>
       </Container>
     </NavSection>

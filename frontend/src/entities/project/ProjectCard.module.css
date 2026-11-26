@@ -23,16 +23,22 @@
 
 .name {
   margin: 0;
+  font-family: var(--font);
   font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
   position: relative;
 }
 
 .summary,
 .points {
   margin: 8px 0 0;
+  font-family: var(--font);
   color: inherit;
-  opacity: 0.72;
-  font-size: 0.92rem;
+  opacity: 0.8;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
   position: relative;
 }
 

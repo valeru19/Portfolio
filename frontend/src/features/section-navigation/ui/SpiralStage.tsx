@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/shared/lib";
 
-import { useSpiralNavigationContext } from "../hooks/useSpiralNavigationContext";
+import { useSpiralNavigationApi } from "../hooks/useSpiralNavigationContext";
 import { SPIRAL_DOM_ATTR } from "../model/panelStateAttrs";
 
 import styles from "./SpiralStage.module.css";
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function SpiralStage({ children }: Props) {
-  const { isAccessible, spiralRef, stageRef } = useSpiralNavigationContext();
+  const { isAccessible, spiralRef, stageRef } = useSpiralNavigationApi();
 
   return (
     <main
@@ -21,6 +21,7 @@ export function SpiralStage({ children }: Props) {
         stageRef.current = node;
       }}
       className={cn(styles.stage, isAccessible && styles.stageAccessible)}
+      {...{ [SPIRAL_DOM_ATTR.stage]: "" }}
     >
       <div
         ref={(node) => {

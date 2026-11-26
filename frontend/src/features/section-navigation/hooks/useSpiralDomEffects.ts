@@ -1,4 +1,4 @@
-import { useEffect, type MutableRefObject } from "react";
+import { useEffect, useLayoutEffect, type MutableRefObject } from "react";
 
 import type { SectionId } from "@/shared/content";
 
@@ -12,7 +12,6 @@ type PanelNodes = {
 
 type Options = {
   isAccessible: boolean;
-  sectionIds: SectionId[];
   spiralRef: MutableRefObject<HTMLDivElement | null>;
   panelsRef: MutableRefObject<Map<SectionId, PanelNodes>>;
   rotationRef: MutableRefObject<number>;
@@ -23,19 +22,38 @@ type Options = {
   buildSpiral: () => void;
   paintSpiralTransform: (rotationDeg: number) => void;
   markActive: (index: number) => void;
+  markAccessibleCards: (index: number) => void;
   applyColors: (index: number, force?: boolean) => void;
   settleActivePanel: (forIndex?: number) => void;
   setIsSpinning: (value: boolean) => void;
-  setCurrentIndex: (value: number) => void;
   setTargetIndex: (value: number) => void;
   spinningFlagRef: MutableRefObject<boolean>;
   pendingIndexRef: MutableRefObject<number>;
 };
 
-/** Смена режима, rebuild на resize, scroll-spy в accessible. */
+function clearSpiralInlineStyles(
+  spiral: HTMLDivElement | null,
+  panels: Map<SectionId, PanelNodes>,
+): void {
+  if (spiral) spiral.style.transform = "";
+  panels.forEach(({ section, scroll }) => {
+    section.style.transform = "";
+    section.style.width = "";
+    section.style.height = "";
+    section.style.zIndex = "";
+    section.style.filter = "";
+    section.style.removeProperty("--panel-blur");
+    section.style.opacity = "";
+    section.style.visibility = "";
+    setPanelStateAttr(section, PANEL_STATE_ATTR.far, false);
+    setPanelStateAttr(section, PANEL_STATE_ATTR.ahead, false);
+    scroll.style.overflow = "";
+  });
+}
+
+/** Смена режима, rebuild на resize. */
 export function useSpiralDomEffects({
   isAccessible,
-  sectionIds,
   spiralRef,
   panelsRef,
   rotationRef,
@@ -46,56 +64,51 @@ export function useSpiralDomEffects({
   buildSpiral,
   paintSpiralTransform,
   markActive,
+  markAccessibleCards,
   applyColors,
   settleActivePanel,
   setIsSpinning,
-  setCurrentIndex,
   setTargetIndex,
   spinningFlagRef,
   pendingIndexRef,
 }: Options): void {
-  useEffect(() => {
+  // layout: первый paint уже в целевом режиме (без вспышки spiral→card).
+  // Unlock mode-fade делает toggleAccessible (exit→swap→enter).
+  useLayoutEffect(() => {
     killMotion();
     spinningFlagRef.current = false;
     setIsSpinning(false);
-
-    if (isAccessible) {
-      const spiral = spiralRef.current;
-      if (spiral) spiral.style.transform = "";
-      panelsRef.current.forEach(({ section, scroll }) => {
-        section.style.transform = "";
-        section.style.width = "";
-        section.style.height = "";
-        section.style.zIndex = "";
-        section.style.filter = "";
-        section.style.opacity = "1";
-        section.style.visibility = "visible";
-        setPanelStateAttr(section, PANEL_STATE_ATTR.far, false);
-        setPanelStateAttr(section, PANEL_STATE_ATTR.active, true);
-        setPanelStateAttr(scroll, PANEL_STATE_ATTR.scrollable, false);
-        scroll.style.overflow = "";
-        scroll.style.pointerEvents = "";
-      });
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-      applyColors(currentIndexRef.current, true);
-      return;
-    }
 
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
     const idx = currentIndexRef.current;
-    const rot = rotationForSectionIndex(idx);
     pendingIndexRef.current = idx;
-    // Сначала sync rebuild+paint: await ensureGsap() оставлял кадр
-    // с пустым transform спирали («птичий» вид всех панелей). CSS-пути хватает
-    // до загрузки GSAP; потом перезаписываем через gsap.set.
+    setTargetIndex(idx);
+
+    if (isAccessible) {
+      // Узлы те же (без remount) — сбрасываем spiral inline, ставим card-delta.
+      clearSpiralInlineStyles(spiralRef.current, panelsRef.current);
+      markAccessibleCards(idx);
+      // Палитра уже на месте — не force-paint всех панелей.
+      applyColors(idx, false);
+      return;
+    }
+
+    // Сбрасываем card-delta / inline от accessible, затем spiral layout.
+    clearSpiralInlineStyles(spiralRef.current, panelsRef.current);
+    panelsRef.current.forEach(({ section }) => {
+      setPanelStateAttr(section, PANEL_STATE_ATTR.active, false);
+      if (section.hasAttribute(PANEL_STATE_ATTR.cardDelta)) {
+        section.removeAttribute(PANEL_STATE_ATTR.cardDelta);
+      }
+    });
+    const rot = rotationForSectionIndex(idx);
+    // Sync rebuild+paint: await ensureGsap() оставлял кадр с пустым transform.
     buildSpiral();
     paintSpiralTransform(rot);
     markActive(idx);
-    applyColors(idx, true);
-    setTargetIndex(idx);
+    applyColors(idx, false);
 
     let cancelled = false;
     void (async () => {
@@ -117,6 +130,7 @@ export function useSpiralDomEffects({
     buildSpiral,
     paintSpiralTransform,
     markActive,
+    markAccessibleCards,
     applyColors,
     settleActivePanel,
     setIsSpinning,
@@ -144,33 +158,5 @@ export function useSpiralDomEffects({
     rotationRef,
     spinningRef,
     settleActivePanel,
-  ]);
-
-  useEffect(() => {
-    if (!isAccessible) return;
-    const onScroll = () => {
-      const marker = window.scrollY + Math.min(120, window.innerHeight * 0.22);
-      let best = 0;
-      sectionIds.forEach((id, i) => {
-        const el = panelsRef.current.get(id)?.section;
-        if (el && el.offsetTop <= marker) best = i;
-      });
-      if (best !== currentIndexRef.current) {
-        setCurrentIndex(best);
-        setTargetIndex(best);
-        applyColors(best);
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [
-    isAccessible,
-    sectionIds,
-    applyColors,
-    panelsRef,
-    currentIndexRef,
-    setCurrentIndex,
-    setTargetIndex,
   ]);
 }

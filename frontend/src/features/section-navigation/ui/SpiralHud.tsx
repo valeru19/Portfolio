@@ -22,9 +22,7 @@ const SECTION_ARIA_LABEL: Record<SectionId, LocalizedString> = {
 
 export function SpiralHud() {
   const t = useT();
-  const { sectionIds, currentIndex, isAccessible, goTo, goNext } = useSpiralNavigationContext();
-
-  if (isAccessible) return null;
+  const { sectionIds, currentIndex, goTo, goNext } = useSpiralNavigationContext();
 
   const { current, total } = formatSectionCounter(currentIndex, sectionIds.length);
 

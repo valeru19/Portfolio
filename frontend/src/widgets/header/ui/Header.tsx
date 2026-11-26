@@ -3,7 +3,7 @@ import { useRef } from "react";
 import {
   ModeToggle,
   useAccessibleHeaderHide,
-  useSpiralNavigationContext,
+  useSpiralNavigationApi,
 } from "@/features/section-navigation";
 import { LanguageToggle } from "@/features/switch-language";
 import { ThemeToggle } from "@/features/switch-theme";
@@ -16,9 +16,9 @@ import styles from "./Header.module.css";
 export function Header() {
   const t = useT();
   const headerRef = useRef<HTMLElement | null>(null);
-  const { isAccessible, goTo } = useSpiralNavigationContext();
+  const { isAccessible, goTo } = useSpiralNavigationApi();
   const isHeaderHidden = useAccessibleHeaderHide({
-    enabled: isAccessible,
+    enabled: false,
     headerRef,
   });
 

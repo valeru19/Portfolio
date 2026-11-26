@@ -2,23 +2,34 @@ import type { SectionId } from "@/shared/content";
 import { sectionPaletteForId, type SectionPalette } from "@/shared/content/sectionPalettes";
 import type { Theme } from "@/shared/theme";
 
+function setVar(el: HTMLElement, name: string, value: string): void {
+  if (el.style.getPropertyValue(name) !== value) {
+    el.style.setProperty(name, value);
+  }
+}
+
 /**
- * Цвета поверхности конкретной панели (аналог legacy ensureSectionPalettes).
- * Остаются стабильными, пока stage-палитра документа меняется при перевороте.
+ * Цвета поверхности панели через CSS-переменные (не inline background).
+ * Полный набор токенов (включая --stage-*), чтобы кнопки/текст на чужих
+ * секциях не перекрашивались при смене document-палитры на flip.
  */
 export function paintPanelPalette(section: HTMLElement, palette: SectionPalette): void {
-  section.style.backgroundColor = palette.panel;
-  section.style.color = palette.fg;
-  section.style.borderColor = palette.border;
-  // Токены на панели, чтобы дети (чипы контактов и т.п.) не подхватывали
-  // чужие document --text/--panel от другой секции или вспышки темы.
-  section.style.setProperty("--panel", palette.panel);
-  section.style.setProperty("--panel-alt", palette.panel);
-  section.style.setProperty("--text", palette.fg);
-  section.style.setProperty("--border", palette.border);
-  section.style.setProperty("--accent", palette.accent);
-  section.style.setProperty("--accent-ink", palette.accentInk);
-  section.style.setProperty("--muted", palette.muted);
+  if (section.style.backgroundColor) section.style.backgroundColor = "";
+  if (section.style.borderColor) section.style.borderColor = "";
+  if (section.style.color) section.style.color = "";
+
+  setVar(section, "--panel", palette.panel);
+  setVar(section, "--panel-alt", palette.panel);
+  setVar(section, "--text", palette.fg);
+  setVar(section, "--border", palette.border);
+  setVar(section, "--accent", palette.accent);
+  setVar(section, "--accent-ink", palette.accentInk);
+  setVar(section, "--muted", palette.muted);
+  // Кнопки/hover раньше читали stage-* с :root — из‑за этого чужие секции
+  // перекрашивались при applyPaletteToDocument.
+  setVar(section, "--stage-fg", palette.fg);
+  setVar(section, "--stage-bg", palette.bg);
+  setVar(section, "--bg", palette.bg);
 }
 
 export function paintPanelPaletteForId(

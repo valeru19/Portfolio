@@ -1,27 +1,173 @@
+/*
+  Линейный режим = карточный стек (как вкладки на смартфоне).
+  data-card-delta: 0 текущая; >0 снизу всплывает; <0 уходит назад.
+*/
 .accessibleSection {
-  min-height: 70vh;
-  border-bottom: var(--frame) solid var(--border);
+  /* Мягкий разгон/посадка без позднего «дотягивания» (меньше дёрганья). */
+  --card-ease: cubic-bezier(0.33, 0.9, 0.32, 1);
+  /* ~22% как у иконок iOS; фон на этом же узле → скругляется вместе с формой */
+  --card-radius: 22%;
+  --panel-blur: 0px;
+  position: absolute;
+  left: clamp(10px, 2.2vw, 28px);
+  right: clamp(10px, 2.2vw, 28px);
+  top: calc(var(--nav-h, 52px) + clamp(10px, 1.6vw, 20px));
+  bottom: clamp(10px, 1.8vw, 24px);
+  border: var(--frame) solid var(--border);
   background: var(--panel);
+  background-clip: padding-box;
   color: var(--text);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  isolation: isolate;
+  cursor: default;
+  transform: translate3d(0, 108%, 0) scale(1);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow:
+    0 18px 48px color-mix(in srgb, #000 28%, transparent),
+    0 1px 0 color-mix(in srgb, var(--border) 35%, transparent);
+  transition:
+    transform 0.56s var(--card-ease),
+    opacity 0.42s var(--card-ease),
+    box-shadow 0.4s var(--card-ease);
+}
+
+/* Общая DOM-ветка со спиралью: frame/blur — прозрачный passthrough. */
+.accessibleSection .panelFrame {
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  isolation: auto;
+  transform: none;
+}
+
+.accessibleSection .panelBlurLayer {
+  filter: none;
+}
+
+.accessibleSection[data-card-delta] {
+  touch-action: pan-y;
+}
+
+.accessibleSection[data-card-delta="0"] {
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 5;
+  box-shadow:
+    0 22px 56px color-mix(in srgb, #000 32%, transparent),
+    0 1px 0 color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+/* Prev сверху — короткий ход, меньше рывка при reverse. */
+.accessibleSection[data-card-delta="-1"] {
+  transform: translate3d(0, -28%, 0) scale(0.96);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.accessibleSection[data-card-delta="-2"],
+.accessibleSection[data-card-delta="-3"] {
+  transform: translate3d(0, -48%, 0) scale(0.92);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.accessibleSection[data-card-delta="1"] {
+  transform: translate3d(0, 108%, 0) scale(1);
+  opacity: 1;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.accessibleSection[data-card-delta="2"],
+.accessibleSection[data-card-delta="3"] {
+  transform: translate3d(0, 118%, 0) scale(1);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.accessibleCardBody {
+  /* Дополняет .panelScroll в accessible: другие отступы под карточный стек. */
+  padding-top: clamp(28px, 3vw, 40px);
+  padding-bottom: clamp(28px, 3vw, 48px);
+  border-radius: 0;
+}
+
+.accessibleSection[data-active] .accessibleCardBody[data-scrollable] {
+  overflow-x: hidden;
+  overflow-y: auto;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accessibleSection {
+    transition: none;
+    will-change: auto;
+  }
+}
+
+/* Apple continuous corner (squircle) — Chromium/новые Safari; иначе обычный %. */
+@supports (corner-shape: squircle) {
+  .accessibleSection {
+    --card-radius: 28%;
+    corner-shape: squircle;
+  }
 }
 
 .spiralSection {
+  /* --panel-blur пишется inline на section и наследуется во frame. */
+  --panel-blur: 0px;
   position: absolute;
   left: 0;
   top: 0;
-  border: var(--frame) solid var(--border);
-  background: var(--panel);
+  /* Без radius/filter здесь: стабильный прямоугольный hit-box под :hover. */
+  border: none;
+  background: transparent;
   color: var(--text);
-  overflow: hidden;
-  border-radius: 0.01px;
+  overflow: visible;
   cursor: pointer;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
   /* Ниже active — следующие DOM-соседи (следующая страница) не должны перекрывать текущую. */
   z-index: 1;
-  /* Не ставить will-change на каждую панель — анимируется родитель .spiral.
-     Слои на всех рукавах во время спина → thrash GPU-памяти. */
   contain: layout style;
+  transition: none;
+}
+
+.panelFrame {
+  --panel-radius: 0.01px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  border: var(--frame) solid var(--border);
+  /* Непрозрачный фон: иначе соседний резкий текст просвечивает сквозь blur. */
+  background: var(--panel);
+  background-clip: padding-box;
+  color: var(--text);
+  border-radius: var(--panel-radius);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  /* Без transition radius/filter: leave tween мигал 2× под spiral transform. */
+  transition: none;
+}
+
+/* Blur на внутреннем слое: filter не размывает углы поверх overflow родителя.
+   Без translateZ(0): лишний compositor-слой × filter под rotate спирали = hitch. */
+.panelBlurLayer {
+  width: 100%;
+  height: 100%;
+  filter: blur(var(--panel-blur));
+  backface-visibility: hidden;
+  /* База без transition — land markActive не tween'ит все панели. */
+  transition: none;
 }
 
 .spiralSection[data-active] {
@@ -29,8 +175,42 @@
   z-index: 5;
 }
 
-.spiralSection[data-far] {
-  pointer-events: none;
+/* Роль mid-turn оставлена для coupling/тестов; tween отключён (мерцание под rotate). */
+.spiralSection[data-blur-turn] {
+  /* no-op */
+}
+
+/*
+  Preview только у следующих (data-ahead) в покое.
+  Radius + filter: enter/leave оба плавные; не вешаем transition на все панели.
+  Mid-spin blur роли snap'аются в JS — без CSS-tween (мерцание под rotate).
+*/
+@media (hover: hover) and (pointer: fine) {
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]) .panelFrame {
+    transition: --panel-radius 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]):hover .panelFrame {
+    --panel-radius: 22%;
+    transition: --panel-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Leave: transition на базе ahead; enter: на :hover (чуть быстрее). */
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]) .panelBlurLayer {
+    transition: filter 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]):hover .panelBlurLayer {
+    filter: blur(0px);
+    transition: filter 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panelFrame,
+  .panelBlurLayer {
+    transition: none;
+  }
 }
 
 .spiralSection[data-far] .panelScroll {
@@ -39,11 +219,9 @@
   contain-intrinsic-size: auto 480px;
 }
 
-/* На повороте замораживаем content-visibility — смена data-far на land
-   раньше skip/unskip paint и мигала пустым содержимым панели. */
-:global(body.is-spinning) .spiralSection[data-far] .panelScroll {
-  content-visibility: visible;
-}
+/* На спине НЕ форсим content-visibility:visible у всех far —
+   это заставляло GPU красить всю спираль (особенно больно на reverse/Наверх).
+   Attrs data-far mid-turn не трогаем; на land markActive идемпотентен. */
 
 .panelScroll {
   height: 100%;

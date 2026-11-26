@@ -26,6 +26,28 @@
   transform: scale(1.2);
 }
 
+/*
+  Accessible: клетки сидят на правом борте карточки и сливались с --border
+  (тот же кремовый, что у stage-fg). Инверсия от палитры секции:
+  обводка --panel, заливка --border/--text + кольцо --panel.
+*/
+:global(html.is-accessible) .dots {
+  color: var(--panel);
+}
+
+:global(html.is-accessible) .dot {
+  border-color: var(--panel);
+  background: var(--border);
+  box-shadow: 0 0 0 2px var(--panel);
+}
+
+:global(html.is-accessible) .dotActive {
+  border-color: var(--panel);
+  background: var(--text);
+  box-shadow: 0 0 0 2px var(--panel);
+  transform: scale(1.2);
+}
+
 .counter {
   position: fixed;
   left: 18px;

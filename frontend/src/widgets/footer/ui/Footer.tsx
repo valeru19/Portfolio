@@ -15,8 +15,9 @@ export function Footer() {
   const contactLineTemplate = t(content.privacy.contactLine);
 
   const onBackToTop = (event: MouseEvent<HTMLAnchorElement>) => {
-    // Нативный scrollIntoView на #hero ломает GSAP-трансформы absolute-панелей.
-    if (!spiral || spiral.isAccessible) return;
+    // И spiral, и accessible: только goTo(0). Нативный #hero ломает absolute-панели /
+    // в карточках document-scroll выключен — без goTo кнопка «Наверх» мертва.
+    if (!spiral) return;
     event.preventDefault();
     spiral.goTo(0);
   };

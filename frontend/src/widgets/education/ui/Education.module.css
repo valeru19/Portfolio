@@ -15,14 +15,18 @@
 
 .degree {
   margin: 0 0 6px;
+  font-family: var(--font);
   font-weight: 700;
+  letter-spacing: 0.005em;
   color: inherit;
 }
 
 .school {
   margin: 0 0 6px;
+  font-family: var(--font);
   color: #333;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
+  line-height: 1.45;
 }
 
 .dates {

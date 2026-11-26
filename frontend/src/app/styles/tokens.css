@@ -12,8 +12,10 @@
   --nav-h: 0px;
   --phi: 0.618033;
   --axis: 0.7237;
-  --font: "Bricolage Grotesque", system-ui, sans-serif;
-  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  /* Body: геометричный гротеск (кириллица) — «архитектура / система», не Inter. */
+  --font: "Geologica", "Bricolage Grotesque", system-ui, sans-serif;
+  /* Display: оптический Bricolage для имён и заголовков секций. */
+  --font-display: "Bricolage Grotesque", "Geologica", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --stage-bg: #0c0c0c;

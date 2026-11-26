@@ -10,8 +10,9 @@ export function loadGsap(): Promise<GsapModule["gsap"]> {
   if (!gsapLoadPromise) {
     gsapLoadPromise = import("gsap").then((mod) => {
       const gsap = mod.gsap;
-      // Ограничиваем догон после лага, чтобы длинный таск не «телепортировал» спираль.
-      gsap.ticker.lagSmoothing(500, 33);
+      // false: не догонять пропущенное время после long task —
+      // иначе спираль «телепортируется» и это читается как лаг/рывок.
+      gsap.ticker.lagSmoothing(false);
       // "auto": слой на GPU только на время твина; постоянный force3D:true
       // держит все панели на GPU и даёт layer thrash.
       gsap.config({ force3D: "auto" });

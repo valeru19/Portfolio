@@ -27,13 +27,29 @@
 
 .osGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.distroGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 16px;
 }
 
+@media (max-width: 720px) {
+  .distroGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 560px) {
   .osGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .distroGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

@@ -26,12 +26,14 @@
   border-color: var(--accent);
 }
 
+/* --text/--panel с панели (paintPanelPalette), не stage-* с :root —
+   иначе при flip чужие секции перекрашиваются вместе с document-палитрой. */
 .primary:hover,
 .primary:focus-visible,
 .ghost:hover,
 .ghost:focus-visible {
-  background: var(--stage-fg);
-  color: var(--stage-bg);
-  border-color: var(--stage-fg);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--stage-fg) 28%, transparent);
+  background: var(--text);
+  color: var(--panel);
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--text) 28%, transparent);
 }

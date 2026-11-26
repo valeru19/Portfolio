@@ -7,10 +7,10 @@
 }
 
 .stageAccessible {
-  position: static;
-  overflow: visible;
-  inset: auto;
-  padding-top: var(--nav-h, 52px);
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  padding: 0;
 }
 
 .spiral {
@@ -22,16 +22,16 @@
 }
 
 .spiralAccessible {
-  position: static !important;
-  inset: auto;
+  position: absolute !important;
+  inset: 0;
   width: auto;
   height: auto;
   transform: none !important;
   display: block;
+  overflow: hidden;
 }
 
-/* will-change держим стабильным в режиме спирали — вкл/выкл с is-spinning
-   поднимало/снимало слой на каждом шаге и давало flicker на land. */
-.spiral:not(.spiralAccessible) {
+/* Как legacy: will-change только на спине — меньше layer thrash в покое. */
+:global(body.is-spinning) .spiral:not(.spiralAccessible) {
   will-change: transform;
 }
