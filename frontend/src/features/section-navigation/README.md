@@ -4,12 +4,12 @@
 
 ## Подпапки
 
-| Папка | Роль |
-| --- | --- |
+| Папка                       | Роль                                                      |
+| --------------------------- | --------------------------------------------------------- |
 | [`hooks/`](hooks/README.md) | React-хуки: навигация, motion, панели, колесо/клавиши/тач |
-| [`lib/`](lib/README.md) | GSAP-loader, transform, blur, палитры на DOM |
-| [`model/`](model/README.md) | Геометрия φ, константы, индексы, wheel-lock, attrs |
-| [`ui/`](ui/README.md) | Stage, NavSection, HUD, ModeToggle, Provider |
+| [`lib/`](lib/README.md)     | GSAP-loader, transform, blur, палитры на DOM              |
+| [`model/`](model/README.md) | Геометрия φ, константы, индексы, wheel-lock, attrs        |
+| [`ui/`](ui/README.md)       | Stage, NavSection, HUD, ModeToggle, Provider              |
 
 ## Файл
 

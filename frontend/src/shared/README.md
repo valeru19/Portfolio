@@ -4,14 +4,14 @@
 
 ## Подпапки
 
-| Папка | Назначение |
-| --- | --- |
-| [`api/`](api/README.md) | HTTP-клиент и эндпоинты заявок/отзывов |
-| [`config/`](config/README.md) | env, контакты, ключи storage |
-| [`content/`](content/README.md) | тексты RU/EN и палитры секций |
-| [`i18n/`](i18n/README.md) | язык интерфейса и meta документа |
-| [`lib/`](lib/README.md) | мелкие утилиты (`cn`, storage, copy) |
-| [`theme/`](theme/README.md) | светлая/тёмная тема |
-| [`ui/`](ui/README.md) | кнопки, поля, секции, теги |
+| Папка                           | Назначение                             |
+| ------------------------------- | -------------------------------------- |
+| [`api/`](api/README.md)         | HTTP-клиент и эндпоинты заявок/отзывов |
+| [`config/`](config/README.md)   | env, контакты, ключи storage           |
+| [`content/`](content/README.md) | тексты RU/EN и палитры секций          |
+| [`i18n/`](i18n/README.md)       | язык интерфейса и meta документа       |
+| [`lib/`](lib/README.md)         | мелкие утилиты (`cn`, storage, copy)   |
+| [`theme/`](theme/README.md)     | светлая/тёмная тема                    |
+| [`ui/`](ui/README.md)           | кнопки, поля, секции, теги             |
 
 Импортируется из `app`, `widgets`, `features`, `entities`. Сам `shared` не должен импортировать верхние слои.

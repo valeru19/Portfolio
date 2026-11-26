@@ -4,11 +4,11 @@
 
 ## Подпапки
 
-| Сущность | Папка |
-| --- | --- |
+| Сущность        | Папка                                 |
+| --------------- | ------------------------------------- |
 | Опыт / таймлайн | [`experience/`](experience/README.md) |
-| Проект | [`project/`](project/README.md) |
-| Отзыв | [`review/`](review/README.md) |
-| Технология | [`tech/`](tech/README.md) |
+| Проект          | [`project/`](project/README.md)       |
+| Отзыв           | [`review/`](review/README.md)         |
+| Технология      | [`tech/`](tech/README.md)             |
 
 Виджеты (`projects`, `reviews`, `stack`, `experience`) композируют эти сущности.
