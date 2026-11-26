@@ -4,11 +4,9 @@ const base = process.argv[2] || "http://127.0.0.1:4173/Portfolio/";
 
 async function waitSpin(page, on, timeout = 6000) {
   await page
-    .waitForFunction(
-      (want) => document.body.classList.contains("is-spinning") === want,
-      on,
-      { timeout },
-    )
+    .waitForFunction((want) => document.body.classList.contains("is-spinning") === want, on, {
+      timeout,
+    })
     .catch(() => {});
 }
 

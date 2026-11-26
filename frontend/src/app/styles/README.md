@@ -6,7 +6,7 @@
 
 - **`tokens.css`** — CSS-переменные (`--panel`, `--stage-bg`, `--text`, шрифты…). Палитры секций из `section-navigation` перезаписывают часть переменных на `:root` / панелях.
 - **`reset.css`** — нормализация box-model / отступов.
-- **`global.css`** — `html`/`body`, accessible vs spiral overflow, `body.is-spinning` (отключение transition во время переворота спирали).
+- **`global.css`** — `html`/`body`, accessible vs spiral overflow, `body.is-spinning` (точечное отключение transition у frame/scroll/cover/veil; без `content-visibility: visible !important`).
 - **`index.ts`** — side-effect импорт CSS в бандл.
 
 ## Связи

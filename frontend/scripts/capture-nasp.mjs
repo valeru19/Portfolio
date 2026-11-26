@@ -8,11 +8,9 @@ fs.mkdirSync(outDir, { recursive: true });
 
 async function waitSpin(page, on, timeout = 5000) {
   await page
-    .waitForFunction(
-      (want) => document.body.classList.contains("is-spinning") === want,
-      on,
-      { timeout },
-    )
+    .waitForFunction((want) => document.body.classList.contains("is-spinning") === want, on, {
+      timeout,
+    })
     .catch(() => {});
 }
 
@@ -50,7 +48,8 @@ await page.evaluate(() => {
 
 await page.getByRole("link", { name: /Наверх|Back to top|Top/i }).click({ force: true });
 await page.waitForFunction(
-  () => document.body.classList.contains("is-spinning") && document.body.dataset.spinKind === "nasp",
+  () =>
+    document.body.classList.contains("is-spinning") && document.body.dataset.spinKind === "nasp",
   { timeout: 4000 },
 );
 

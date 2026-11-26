@@ -129,24 +129,22 @@ html.is-mode-switching header {
 
 /*
   Во время поворота:
-  — hot path = transform спирали + opacity вуалей;
+  — hot path = transform спирали + opacity cover/veil (WAAPI);
   — stage-цвета (body/HUD/header) анимируются через transition — НЕ глушим;
-  — у тяжёлых потомков секций transition выключаем (дорого под rotate).
+  — точечно глушим transition у frame/scroll (не универсальный *).
 */
-body.is-spinning [data-spiral-section] * {
+body.is-spinning [data-spiral-section],
+body.is-spinning [data-panel-scroll],
+body.is-spinning [data-spiral-section] > * {
   transition: none !important;
   animation-play-state: paused;
 }
 
-/* Opacity-вуаль / frost: mid-spin ведёт WAAPI или статичный квадрат — CSS transition глушим. */
+/* Cover/veil mid-spin ведёт WAAPI — CSS transition глушим точечно. */
 body.is-spinning [data-panel-blur-veil],
+body.is-spinning [data-panel-solid-cover],
 body.is-spinning [data-panel-frost-fill] {
   transition: none !important;
-}
-
-/* Mid-spin: не даём content-visibility:auto пересобирать far-панели на reverse scale-up. */
-body.is-spinning [data-panel-scroll] {
-  content-visibility: visible !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
