@@ -1,11 +1,5 @@
 import { ASPECT, PANEL_BLUR_PX } from "../model/constants";
-import {
-  PANEL_STATE_ATTR,
-  SPIRAL_DOM_ATTR,
-  setBlurTurnAttr,
-  setPanelStateAttr,
-  type BlurTurnRole,
-} from "../model/panelStateAttrs";
+import { SPIRAL_DOM_ATTR, setBlurTurnAttr, type BlurTurnRole } from "../model/panelStateAttrs";
 
 /**
  * Blur через opacity-вуаль (backdrop-filter радиус статичен).
@@ -239,7 +233,8 @@ export function endBlurTurnCrossfade(...sections: Array<HTMLElement | undefined>
   }
 }
 
-/** Пометить мелкую панель дешёвой вуалью (без backdrop-filter). */
+/** @deprecated шаг 18: blur только у active+1; lite больше не используется. */
 export function paintBlurLiteFlag(section: HTMLElement, lite: boolean): void {
-  setPanelStateAttr(section, PANEL_STATE_ATTR.blurLite, lite);
+  void section;
+  void lite;
 }

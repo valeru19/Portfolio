@@ -54,7 +54,7 @@ export function NavSection({ id, children, className, ...aria }: Props) {
     >
       {/*
         Контент резкий; blur — статичная backdrop-вуаль с opacity.
-        В accessible вуаль passthrough (см. CSS).
+        Solid cover выше вуали. В accessible — passthrough.
       */}
       <div className={styles.panelFrame}>
         <div
@@ -64,25 +64,20 @@ export function NavSection({ id, children, className, ...aria }: Props) {
         >
           {children}
         </div>
-        <img
-          className={styles.panelBake}
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          draggable={false}
-          {...{ [SPIRAL_DOM_ATTR.bake]: "" }}
-        />
-        <div
-          className={styles.panelFrostFill}
-          aria-hidden="true"
-          {...{ [SPIRAL_DOM_ATTR.frostFill]: "" }}
-        />
         <div
           className={styles.panelBlurVeil}
           aria-hidden="true"
           {...{
             [SPIRAL_DOM_ATTR.blurVeil]: "",
             [SPIRAL_DOM_ATTR.blurLayer]: "",
+          }}
+        />
+        <div
+          className={styles.panelSolidCover}
+          aria-hidden="true"
+          {...{
+            [SPIRAL_DOM_ATTR.solidCover]: "",
+            [SPIRAL_DOM_ATTR.frostFill]: "",
           }}
         />
       </div>
