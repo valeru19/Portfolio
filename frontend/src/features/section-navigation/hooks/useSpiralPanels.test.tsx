@@ -115,6 +115,9 @@ describe("useSpiralPanels settleActivePanel", () => {
     expect(aboutSection.style.zIndex).toBe("5");
     expect(stackSection.style.zIndex).toBe("1");
     expect(heroSection.style.zIndex).toBe("1");
+    expect(stackSection.hasAttribute(PANEL_STATE_ATTR.ahead)).toBe(true);
+    expect(heroSection.hasAttribute(PANEL_STATE_ATTR.ahead)).toBe(false);
+    expect(aboutSection.hasAttribute(PANEL_STATE_ATTR.ahead)).toBe(false);
   });
 
   it("enables scrollable on the explicit forIndex even if currentIndexRef lags", () => {
@@ -200,5 +203,39 @@ describe("useSpiralPanels settleActivePanel", () => {
     });
     expect(heroSection.style.zIndex).toBe(firstZ);
     expect(heroSection.style.zIndex).toBe("5");
+  });
+});
+
+describe("useSpiralPanels markAccessibleCards", () => {
+  it("stacks cards with data-card-delta relative to the active index", () => {
+    const currentIndexRef = { current: 1 };
+    const spinningFlagRef = { current: false };
+    const hero = document.createElement("section");
+    const about = document.createElement("section");
+    const stack = document.createElement("section");
+    const aboutScroll = createOverflowScrollBox(800, 400);
+
+    const { result } = renderHook(() =>
+      useSpiralPanels({
+        sectionIds: ["hero", "about", "stack"] as SectionId[],
+        theme: "dark",
+        isAccessible: true,
+        currentIndexRef,
+        spinningFlagRef,
+      }),
+    );
+
+    act(() => {
+      result.current.registerPanel("hero", hero, createOverflowScrollBox(400, 400));
+      result.current.registerPanel("about", about, aboutScroll);
+      result.current.registerPanel("stack", stack, createOverflowScrollBox(400, 400));
+      result.current.markAccessibleCards(1);
+    });
+
+    expect(hero.getAttribute(PANEL_STATE_ATTR.cardDelta)).toBe("-1");
+    expect(about.getAttribute(PANEL_STATE_ATTR.cardDelta)).toBe("0");
+    expect(stack.getAttribute(PANEL_STATE_ATTR.cardDelta)).toBe("1");
+    expect(about.hasAttribute(PANEL_STATE_ATTR.active)).toBe(true);
+    expect(aboutScroll.hasAttribute(PANEL_STATE_ATTR.scrollable)).toBe(true);
   });
 });
