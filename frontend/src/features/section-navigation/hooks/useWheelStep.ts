@@ -39,7 +39,10 @@ type Options = {
   stepLockMs?: number;
 };
 
-function metricsFromElement(el: HTMLElement | null, scrollTopOverride?: number): ScrollBoxMetrics | null {
+function metricsFromElement(
+  el: HTMLElement | null,
+  scrollTopOverride?: number,
+): ScrollBoxMetrics | null {
   if (!el) return null;
   return {
     scrollTop: scrollTopOverride ?? el.scrollTop,

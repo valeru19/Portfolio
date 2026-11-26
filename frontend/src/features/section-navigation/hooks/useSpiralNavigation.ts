@@ -80,31 +80,34 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     });
   }, []);
 
-  const onSettled = useCallback((index: number) => {
-    currentIndexRef.current = index;
+  const onSettled = useCallback(
+    (index: number) => {
+      currentIndexRef.current = index;
 
-    const pending = clampSectionIndex(pendingIndexRef.current, sectionCount);
-    if (pending !== index) {
-      // Очередь намерений: едем дальше без React commit на промежуточном land.
-      targetIndexRef.current = pending;
-      spinningFlagRef.current = true;
+      const pending = clampSectionIndex(pendingIndexRef.current, sectionCount);
+      if (pending !== index) {
+        // Очередь намерений: едем дальше без React commit на промежуточном land.
+        targetIndexRef.current = pending;
+        spinningFlagRef.current = true;
+        startTransition(() => {
+          setCurrentIndex(index);
+        });
+        void animateToRotationRef.current(rotationForSectionIndex(pending));
+        return;
+      }
+
+      spinningFlagRef.current = false;
+      targetIndexRef.current = index;
+      pendingIndexRef.current = index;
+      // Один React commit на финальный land (HUD). startTransition — не блокировать позу.
       startTransition(() => {
         setCurrentIndex(index);
+        setTargetIndex(index);
+        setIsSpinning(false);
       });
-      void animateToRotationRef.current(rotationForSectionIndex(pending));
-      return;
-    }
-
-    spinningFlagRef.current = false;
-    targetIndexRef.current = index;
-    pendingIndexRef.current = index;
-    // Один React commit на финальный land (HUD). startTransition — не блокировать позу.
-    startTransition(() => {
-      setCurrentIndex(index);
-      setTargetIndex(index);
-      setIsSpinning(false);
-    });
-  }, [sectionCount]);
+    },
+    [sectionCount],
+  );
 
   const {
     rotationRef,
@@ -177,14 +180,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
       spinningFlagRef.current = true;
       void animateToRotation(rotationForSectionIndex(next));
     },
-    [
-      animateToRotation,
-      applyColors,
-      isAccessible,
-      markAccessibleCards,
-      sectionCount,
-      spinningRef,
-    ],
+    [animateToRotation, applyColors, isAccessible, markAccessibleCards, sectionCount, spinningRef],
   );
 
   goToRef.current = goTo;
@@ -245,14 +241,15 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   }, [theme, applyColors]);
 
   useEffect(() => {
+    const stage = stageRef.current;
     return () => {
       if (cardBusyTimerRef.current) window.clearTimeout(cardBusyTimerRef.current);
       if (modeTimerRef.current) window.clearTimeout(modeTimerRef.current);
       modeTransitionGenRef.current += 1;
-      stageRef.current?.removeAttribute("data-mode-phase");
+      stage?.removeAttribute("data-mode-phase");
       document.documentElement.classList.remove("is-mode-switching");
     };
-  }, []);
+  }, [stageRef]);
 
   const setStageModePhase = useCallback((phase: ModeTransitionPhase) => {
     const stage = stageRef.current;

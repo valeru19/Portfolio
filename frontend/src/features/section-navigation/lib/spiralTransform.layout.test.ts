@@ -33,7 +33,10 @@ describe("applySpiralLayoutToPanels", () => {
       ids,
       new Map([
         ["hero", { section: remounted, scroll: document.createElement("div") }],
-        ["about", { section: document.createElement("section"), scroll: document.createElement("div") }],
+        [
+          "about",
+          { section: document.createElement("section"), scroll: document.createElement("div") },
+        ],
       ]),
       null,
     );

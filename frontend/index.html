@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0c0c0c" />
@@ -20,8 +20,8 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geologica:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-  <script>
-    (function () {
+    <script>
+      (function () {
         try {
           var theme = localStorage.getItem("valeru-theme");
           if (theme !== "dark" && theme !== "light") {
@@ -31,11 +31,11 @@
         } catch (e) {
           document.documentElement.setAttribute("data-theme", "dark");
         }
-    })();
-  </script>
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/app/main.tsx"></script>
-</body>
+  </body>
 </html>

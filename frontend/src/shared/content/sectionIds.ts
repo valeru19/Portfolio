@@ -25,8 +25,7 @@ export type SectionVisibilityOptions = {
 
 export function getVisibleSectionIds(options: SectionVisibilityOptions = {}): SectionId[] {
   const apiEnabled = options.apiEnabled ?? isApiConfigured();
-  const contactChannelAvailable =
-    options.hasContactChannel ?? hasPrivacyContactChannel();
+  const contactChannelAvailable = options.hasContactChannel ?? hasPrivacyContactChannel();
   const formsVisible = apiEnabled && contactChannelAvailable;
 
   return ALL_SECTION_IDS.filter((id) => {

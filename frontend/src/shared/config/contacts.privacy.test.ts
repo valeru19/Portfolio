@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import {
-  contactsConfig,
-  hasPrivacyContactChannel,
-  privacyContactForDeletion,
-} from "./contacts";
+import { contactsConfig, hasPrivacyContactChannel, privacyContactForDeletion } from "./contacts";
 
 type MutableContact = {
   value: string;

@@ -66,7 +66,9 @@ export function SpiralNavigationProvider({ sectionIds, children }: Props) {
 
   return (
     <SpiralNavigationApiContext.Provider value={api}>
-      <SpiralNavigationStateContext.Provider value={state}>{children}</SpiralNavigationStateContext.Provider>
+      <SpiralNavigationStateContext.Provider value={state}>
+        {children}
+      </SpiralNavigationStateContext.Provider>
     </SpiralNavigationApiContext.Provider>
   );
 }
