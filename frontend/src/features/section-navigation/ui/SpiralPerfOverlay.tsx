@@ -46,18 +46,22 @@ export function SpiralPerfOverlay() {
     };
     raf = requestAnimationFrame(tick);
 
+    const kindRef = { current: "step" };
     const onMutate = () => {
       const on = document.body.classList.contains("is-spinning");
+      const kind = document.body.dataset.spinKind || "step";
       if (on && !spinningRef.current) {
         spinDeltasRef.current = [];
         spinningRef.current = true;
+        kindRef.current = kind;
       } else if (!on && spinningRef.current) {
         spinningRef.current = false;
         const deltas = spinDeltasRef.current.slice();
         const maxMs = deltas.length ? Math.max(...deltas) : 0;
         const over50 = deltas.filter((x) => x > 50).length;
         setStats({ maxMs: Number(maxMs.toFixed(1)), over50, frames: deltas.length });
-        const label = `flip#${sessionRef.current.length + 1}`;
+        const kindLabel = kindRef.current === "nasp" ? "Наверх" : kindRef.current;
+        const label = `${kindLabel}#${sessionRef.current.length + 1}`;
         sessionRef.current.push({ label, deltas });
         console.table(
           sessionRef.current.map((row) => {
@@ -75,11 +79,16 @@ export function SpiralPerfOverlay() {
             };
           }),
         );
+      } else if (on) {
+        kindRef.current = kind;
       }
     };
 
     const mo = new MutationObserver(onMutate);
-    mo.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    mo.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class", "data-spin-kind"],
+    });
 
     console.info(
       `[perf] overlay on. Flip duration const=${SPIRAL_FLIP_DURATION_MS}ms. Flip and check console.table.`,

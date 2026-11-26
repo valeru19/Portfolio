@@ -61,6 +61,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     markAccessibleCards,
     clearScrollable,
     warmAround,
+    prepareJump,
     settleActivePanel,
     registerPanel,
   } = useSpiralPanels({
@@ -129,6 +130,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     applyColors,
     clearScrollable,
     warmAround,
+    prepareJump,
     settleActivePanel,
   });
 

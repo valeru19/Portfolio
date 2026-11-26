@@ -32,6 +32,7 @@ type Options = {
   applyColors: (index: number, force?: boolean) => void;
   clearScrollable: () => void;
   warmAround: (index: number) => void;
+  prepareJump: (destIndex: number) => Promise<void>;
   settleActivePanel: (forIndex?: number) => void;
 };
 
@@ -46,6 +47,7 @@ export function useSpiralMotion({
   applyColors,
   clearScrollable,
   warmAround,
+  prepareJump,
   settleActivePanel,
 }: Options) {
   const rotationRef = useRef(0);
@@ -68,10 +70,12 @@ export function useSpiralMotion({
     blurDestRef.current = undefined;
   }, []);
 
-  const setSpinning = useCallback((on: boolean) => {
+  const setSpinning = useCallback((on: boolean, kind?: "step" | "nasp" | "long") => {
     spinningRef.current = on;
     document.body.classList.toggle("is-spinning", on);
     document.body.classList.remove("is-spinning-back");
+    if (on && kind) document.body.dataset.spinKind = kind;
+    else delete document.body.dataset.spinKind;
   }, []);
 
   const cancelWarm = useCallback(() => {
@@ -140,18 +144,30 @@ export function useSpiralMotion({
 
       const runPanelAttrs = () => {
         clearBlurTurn();
-        // Roles + near blur пока is-spinning (transition:none); far — батчами в markActive.
+        // Near/far+reveal; без layout reads.
         markActive(index);
       };
 
       const runSettle = () => {
         setSpinning(false);
-        // Без rebuild layout: позы от индекса. settle/layout — после твина, не в onUpdate.
         paintSpiralTransform(snapped);
         applyColors(index);
-        scheduleWarm(index);
         onSettled(index);
-        settleActivePanel(index);
+        // will-change / scrollable / warm — не в кадре посадки.
+        requestAnimationFrame(() => {
+          panelsRef.current.forEach(({ section }) => {
+            if (section.style.willChange) section.style.willChange = "";
+          });
+          const idle = () => {
+            scheduleWarm(index);
+            settleActivePanel(index);
+          };
+          if (typeof window.requestIdleCallback === "function") {
+            window.requestIdleCallback(idle, { timeout: 120 });
+          } else {
+            window.setTimeout(idle, 32);
+          }
+        });
       };
 
       if (settleRafRef.current) cancelAnimationFrame(settleRafRef.current);
@@ -166,6 +182,7 @@ export function useSpiralMotion({
       markActive,
       onSettled,
       paintSpiralTransform,
+      panelsRef,
       scheduleWarm,
       sectionCount,
       setSpinning,
@@ -208,14 +225,36 @@ export function useSpiralMotion({
       const fromSection = fromId ? panelsRef.current.get(fromId)?.section : undefined;
       const destSection = destId ? panelsRef.current.get(destId)?.section : undefined;
 
-      setSpinning(true);
+      const longJump = distanceDeg > 95;
+      const spinKind = longJump ? (goingBack ? "nasp" : "long") : "step";
 
-      panelsRef.current.forEach(({ section }) => {
-        setPanelStateAttr(section, PANEL_STATE_ATTR.far, false);
-      });
+      // Длинный ход: прогрев dest±1 ДО спина (1–2 кадра), без снятия far у всей спирали.
+      if (longJump && !prefersReducedMotion()) {
+        await prepareJump(destIdx);
+        if (gen !== motionGenRef.current) return;
+      }
 
-      // Stage-цвета сразу — transition на HUD/body/header (не transition:none).
+      setSpinning(true, spinKind);
+
+      // Stage-цвета сразу — transition на HUD/body/header.
       applyColors(destIdx);
+
+      // will-change: короткий ход — только from/dest; длинный — ещё соседи.
+      sectionIds.forEach((id, i) => {
+        const section = panelsRef.current.get(id)?.section;
+        if (!section) return;
+        const nearCore = i === fromIdx || i === destIdx;
+        const near =
+          nearCore ||
+          (longJump && (Math.abs(i - fromIdx) <= 1 || Math.abs(i - destIdx) <= 1));
+        section.style.willChange = near ? "transform" : "";
+        // Далёкие на длинном ходе: far+frost (без массового content paint).
+        if (longJump && !near) {
+          setPanelStateAttr(section, PANEL_STATE_ATTR.frost, true);
+          setPanelStateAttr(section, PANEL_STATE_ATTR.blurLite, true);
+          setPanelStateAttr(section, PANEL_STATE_ATTR.far, true);
+        }
+      });
 
       if (prefersReducedMotion()) {
         if (gen !== motionGenRef.current) return;
@@ -223,16 +262,7 @@ export function useSpiralMotion({
         return;
       }
 
-      // Opacity-вуаль from/dest на любом ходе (в т.ч. «Наверх»). Остальные остаются под вуалью.
-      // Далёкие на длинном ходе — blur-lite (tint), чтобы не держать много backdrop-слоёв.
-      if (distanceDeg > 95) {
-        sectionIds.forEach((id, i) => {
-          if (i === fromIdx || i === destIdx) return;
-          if (Math.abs(i - fromIdx) <= 1 || Math.abs(i - destIdx) <= 1) return;
-          const section = panelsRef.current.get(id)?.section;
-          if (section) setPanelStateAttr(section, PANEL_STATE_ATTR.blurLite, true);
-        });
-      }
+      // Opacity-вуаль from/dest на любом ходе. Остальные — frost (без backdrop).
       if (fromIdx !== destIdx) {
         blurFromRef.current = fromSection;
         blurDestRef.current = destSection;
@@ -289,6 +319,7 @@ export function useSpiralMotion({
       finishScroll,
       isAccessible,
       panelsRef,
+      prepareJump,
       sectionCount,
       sectionIds,
       setSpinning,
