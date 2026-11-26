@@ -9,3 +9,6 @@ lighthouse-report.*
 .DS_Store
 Thumbs.db
 scripts/flip-shots/
+scripts/nasp-trace.json
+scripts/nasp-playwright.zip
+scripts/baseline-s16.json
