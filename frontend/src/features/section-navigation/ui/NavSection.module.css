@@ -298,22 +298,29 @@
   display: none !important;
 }
 
-/* Mid на длинном ходе: без bake-img — только непрозрачный фон frame. */
+/*
+  Длинный ход: у всех baked — непрозрачная текстура (без live filter).
+  from/dest кроссфейдят opacity bake; mid держит opacity:1.
+*/
+:global(body.is-spinning[data-spin-kind="nasp"])
+  .spiralSection[data-baked][data-bake-visible]
+  .panelBake,
+:global(body.is-spinning[data-spin-kind="long"])
+  .spiralSection[data-baked][data-bake-visible]
+  .panelBake {
+  display: block;
+}
+
 :global(body.is-spinning[data-spin-kind="nasp"])
   .spiralSection[data-baked]:not([data-blur-turn])
   .panelBake,
 :global(body.is-spinning[data-spin-kind="long"])
   .spiralSection[data-baked]:not([data-blur-turn])
   .panelBake {
-  display: none !important;
+  opacity: 1;
 }
 
-:global(body.is-spinning[data-spin-kind="nasp"]) .spiralSection[data-blur-turn] .panelBake,
-:global(body.is-spinning[data-spin-kind="long"]) .spiralSection[data-blur-turn] .panelBake {
-  display: block;
-}
-
-/* Контент mid прячем; from/dest под opacity bake. */
+/* Контент mid прячем; from/dest видны под opacity bake. */
 :global(body.is-spinning[data-spin-kind="nasp"])
   .spiralSection[data-baked]:not([data-blur-turn])
   .panelScroll,

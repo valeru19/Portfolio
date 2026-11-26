@@ -90,16 +90,26 @@ export function bakePanelPlate(
   }
   sctx.globalAlpha = 1;
 
+  const blurred = document.createElement("canvas");
+  blurred.width = w;
+  blurred.height = h;
+  const bctx = blurred.getContext("2d");
+  if (!bctx) return null;
+  bctx.filter = `blur(${Math.max(2, blurPx * scale)}px)`;
+  bctx.drawImage(src, 0, 0);
+  bctx.filter = "none";
+
+  // Непрозрачный итог: blur даёт полупрозрачные края — кладём на сплошной --panel.
   const out = document.createElement("canvas");
   out.width = w;
   out.height = h;
   const octx = out.getContext("2d");
   if (!octx) return null;
-  octx.filter = `blur(${Math.max(2, blurPx * scale)}px)`;
-  octx.drawImage(src, 0, 0);
-  octx.filter = "none";
+  octx.fillStyle = panel;
+  octx.fillRect(0, 0, w, h);
+  octx.drawImage(blurred, 0, 0);
 
-  const url = out.toDataURL("image/webp", 0.72);
+  const url = out.toDataURL("image/webp", 0.8);
   return {
     url,
     bytes: Math.round((url.length * 3) / 4),

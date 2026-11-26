@@ -249,7 +249,7 @@ export function useSpiralMotion({
       applyColors(destIdx);
 
       // will-change только from/dest.
-      // Длинный ход: mid = только фон frame (0 эффектов); from/dest = bake opacity (≤2).
+      // Длинный ход: все mid = непрозрачный bake (0 live-эффектов); from/dest = opacity bake.
       sectionIds.forEach((id, i) => {
         const section = panelsRef.current.get(id)?.section;
         if (!section) return;
@@ -257,7 +257,7 @@ export function useSpiralMotion({
         section.style.willChange = nearCore ? "transform" : "";
         if (longJump) {
           bakeAndAttachPanel(id, section);
-          setPanelBakeVisible(section, nearCore);
+          setPanelBakeVisible(section, true);
           setPanelStateAttr(section, PANEL_STATE_ATTR.far, !nearCore);
           setPanelStateAttr(section, PANEL_STATE_ATTR.frost, false);
           setPanelStateAttr(section, PANEL_STATE_ATTR.blurLite, false);

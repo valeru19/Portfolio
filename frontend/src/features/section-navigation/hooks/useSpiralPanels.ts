@@ -16,7 +16,7 @@ import {
   PANEL_VEIL_VAR,
 } from "../lib/panelBlur";
 import { paintPanelPaletteForId } from "../lib/paintPanelPalette";
-import { bakeAndAttachPanel, estimateBakeCacheBytes } from "../lib/panelBake";
+import { bakeAndAttachPanel, clearPanelBakeCache, estimateBakeCacheBytes } from "../lib/panelBake";
 import {
   rememberPanelIntrinsicHeight,
   revealPanelFromFrost,
@@ -56,25 +56,6 @@ export function useSpiralPanels({
   const farBlurRafRef = useRef(0);
   const revealGenRef = useRef(0);
   const bakeIdleRef = useRef(0);
-
-  const paintAllPanelPalettes = useCallback(() => {
-    sectionIds.forEach((id) => {
-      const nodes = panelsRef.current.get(id);
-      if (!nodes) return;
-      paintPanelPaletteForId(nodes.section, theme, id);
-    });
-  }, [sectionIds, theme]);
-
-  const applyColors = useCallback(
-    (index: number, force = false) => {
-      if (!force && index === paintedIndexRef.current) return;
-      paintedIndexRef.current = index;
-      const id = sectionIds[index] ?? "hero";
-      applyPaletteToDocument(sectionPaletteForId(theme, id), id);
-      if (force) paintAllPanelPalettes();
-    },
-    [paintAllPanelPalettes, sectionIds, theme],
-  );
 
   const markActive = useCallback(
     (index: number) => {
@@ -262,34 +243,69 @@ export function useSpiralPanels({
    * по одной панели за кадр — без массового layout в старте твина.
    */
   /** Idle: запечь панели по одной (текстуры для длинного reverse). */
-  const schedulePanelBakes = useCallback(() => {
-    if (isAccessible) return;
-    if (bakeIdleRef.current) return;
-    let cursor = 0;
-    const pump = () => {
-      bakeIdleRef.current = 0;
-      if (cursor >= sectionIds.length) {
-        if (import.meta.env.DEV) {
-          console.info(`[bake] cache ~${Math.round(estimateBakeCacheBytes() / 1024)} KB`);
+  const schedulePanelBakes = useCallback(
+    (opts?: { restart?: boolean; force?: boolean }) => {
+      if (isAccessible) return;
+      const restart = opts?.restart === true;
+      const force = opts?.force === true;
+      if (bakeIdleRef.current) {
+        if (!restart) return;
+        if (typeof window.cancelIdleCallback === "function") {
+          window.cancelIdleCallback(bakeIdleRef.current);
+        } else {
+          window.clearTimeout(bakeIdleRef.current);
         }
-        return;
+        bakeIdleRef.current = 0;
       }
-      const id = sectionIds[cursor];
-      cursor += 1;
-      const nodes = id ? panelsRef.current.get(id) : undefined;
-      if (nodes && id) bakeAndAttachPanel(id, nodes.section);
+      let cursor = 0;
+      const pump = () => {
+        bakeIdleRef.current = 0;
+        if (cursor >= sectionIds.length) {
+          if (import.meta.env.DEV) {
+            console.info(`[bake] cache ~${Math.round(estimateBakeCacheBytes() / 1024)} KB`);
+          }
+          return;
+        }
+        const id = sectionIds[cursor];
+        cursor += 1;
+        const nodes = id ? panelsRef.current.get(id) : undefined;
+        if (nodes && id) bakeAndAttachPanel(id, nodes.section, force);
+        if (typeof window.requestIdleCallback === "function") {
+          bakeIdleRef.current = window.requestIdleCallback(pump, { timeout: 400 });
+        } else {
+          bakeIdleRef.current = window.setTimeout(pump, 32);
+        }
+      };
       if (typeof window.requestIdleCallback === "function") {
         bakeIdleRef.current = window.requestIdleCallback(pump, { timeout: 400 });
       } else {
-        bakeIdleRef.current = window.setTimeout(pump, 32);
+        bakeIdleRef.current = window.setTimeout(pump, 48);
       }
-    };
-    if (typeof window.requestIdleCallback === "function") {
-      bakeIdleRef.current = window.requestIdleCallback(pump, { timeout: 400 });
-    } else {
-      bakeIdleRef.current = window.setTimeout(pump, 48);
-    }
-  }, [isAccessible, sectionIds]);
+    },
+    [isAccessible, sectionIds],
+  );
+
+  const paintAllPanelPalettes = useCallback(() => {
+    clearPanelBakeCache();
+    sectionIds.forEach((id) => {
+      const nodes = panelsRef.current.get(id);
+      if (!nodes) return;
+      paintPanelPaletteForId(nodes.section, theme, id);
+      setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.baked, false);
+    });
+    schedulePanelBakes({ restart: true, force: true });
+  }, [schedulePanelBakes, sectionIds, theme]);
+
+  const applyColors = useCallback(
+    (index: number, force = false) => {
+      if (!force && index === paintedIndexRef.current) return;
+      paintedIndexRef.current = index;
+      const id = sectionIds[index] ?? "hero";
+      applyPaletteToDocument(sectionPaletteForId(theme, id), id);
+      if (force) paintAllPanelPalettes();
+    },
+    [paintAllPanelPalettes, sectionIds, theme],
+  );
 
   const prepareJump = useCallback(
     async (destIndex: number) => {
