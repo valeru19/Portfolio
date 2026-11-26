@@ -7,6 +7,7 @@ import {
   panelScaleAtIndex,
   spiralScaleFromRotation,
 } from "../model/geometry";
+import { SPIRAL_DOM_ATTR } from "../model/panelStateAttrs";
 
 type PanelNodes = {
   section: HTMLElement;
@@ -103,6 +104,39 @@ export function applySpiralLayoutToPanels(
     if (nodes.section.style.transform !== pose) {
       nodes.section.style.transform = pose;
     }
+  });
+
+  paintInfinityGhosts(spiral, sectionIds.length, layoutIndexById);
+}
+
+/**
+ * Хвост «бесконечной» спирали: ghost-квадраты после реальных секций.
+ * Если первая заняла слот N (кольцо на последней) — ghosts с N+1.
+ */
+export function paintInfinityGhosts(
+  spiral: HTMLElement,
+  sectionCount: number,
+  layoutIndexById?: ReadonlyMap<SectionId, number>,
+): void {
+  const layout = computeSpiralLayout(window.innerWidth, window.innerHeight);
+  const widthPx = `${layout.panelWidth}px`;
+  const heightPx = `${layout.panelHeight}px`;
+  let firstSlot = sectionCount;
+  if (layoutIndexById) {
+    for (const slot of layoutIndexById.values()) {
+      if (slot >= firstSlot) firstSlot = slot + 1;
+    }
+  }
+  const ghosts = spiral.querySelectorAll<HTMLElement>(`[${SPIRAL_DOM_ATTR.ghost}]`);
+  ghosts.forEach((el, i) => {
+    const slot = firstSlot + i;
+    if (el.style.width !== widthPx) el.style.width = widthPx;
+    if (el.style.height !== heightPx) el.style.height = heightPx;
+    if (el.style.transformOrigin !== layout.transformOrigin) {
+      el.style.transformOrigin = layout.transformOrigin;
+    }
+    const pose = `rotate(${panelRotationAtIndex(slot)}deg) scale(${panelScaleAtIndex(slot)}) translate3d(0,0,0)`;
+    if (el.style.transform !== pose) el.style.transform = pose;
   });
 }
 

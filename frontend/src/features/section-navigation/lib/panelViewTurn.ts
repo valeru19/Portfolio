@@ -327,13 +327,16 @@ export async function settlePanelViewsAfterLand(
 }
 
 /**
- * Кольцевая «следующая» на последней: первая в слоте N, контент под cover,
- * секция opacity 0 — не видна, но decode/paint уже сделаны.
+ * Кольцевая «следующая» на последней: первая в слоте N как залитый квадрат
+ * (solid), контент под cover уже decode — на «Наверх» только fade cover.
  */
 export async function armHiddenRingNext(nodes: PanelNodesLike): Promise<void> {
   await prepareSharpUnderCover(nodes);
-  nodes.section.style.opacity = "0";
-  // Не data-ahead: hover/blur idle не включаем.
+  // Виден только solid cover; контент уже в дереве под ним.
+  const cover = solidCoverOf(nodes.section);
+  if (cover) cover.style.opacity = "1";
+  nodes.section.style.opacity = "1";
+  nodes.section.style.visibility = "visible";
 }
 
 /**

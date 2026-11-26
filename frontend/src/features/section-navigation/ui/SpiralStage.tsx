@@ -5,6 +5,7 @@ import { cn } from "@/shared/lib";
 import { useSpiralNavigationApi } from "../hooks/useSpiralNavigationContext";
 import { SPIRAL_DOM_ATTR } from "../model/panelStateAttrs";
 
+import { SpiralInfinityTrail } from "./SpiralInfinityTrail";
 import styles from "./SpiralStage.module.css";
 
 type Props = {
@@ -31,6 +32,7 @@ export function SpiralStage({ children }: Props) {
         {...{ [SPIRAL_DOM_ATTR.root]: "" }}
       >
         {children}
+        <SpiralInfinityTrail />
       </div>
     </main>
   );

@@ -84,21 +84,17 @@ export function useSpiralPanels({
         const nodes = panelsRef.current.get(id);
         if (!nodes) return;
         const isOn = i === index;
-        // Кольцевая первая на последней: в DOM/слоте N, но не видна (opacity 0).
-        const isHiddenRingNext = index === lastIdx && lastIdx > 0 && i === 0;
+        // Кольцевая первая на последней: залитый квадрат в слоте N (не hover-ahead).
+        const isRingNextSolid = index === lastIdx && lastIdx > 0 && i === 0;
         writes.push(() => {
           setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.active, isOn);
           setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, !isOn && i > index);
-          if (isHiddenRingNext) {
-            if (nodes.section.style.opacity !== "0") nodes.section.style.opacity = "0";
-          } else if (nodes.section.style.opacity !== "1") {
-            nodes.section.style.opacity = "1";
-          }
+          if (nodes.section.style.opacity !== "1") nodes.section.style.opacity = "1";
           if (nodes.section.style.visibility !== "visible") {
             nodes.section.style.visibility = "visible";
           }
           if (nodes.section.style.clipPath) nodes.section.style.clipPath = "";
-          const z = isOn ? "5" : "1";
+          const z = isOn ? "5" : isRingNextSolid ? "2" : "1";
           if (nodes.section.style.zIndex !== z) nodes.section.style.zIndex = z;
         });
       });

@@ -63,6 +63,8 @@ export const SPIRAL_DOM_ATTR = {
   frostFill: "data-panel-frost-fill",
   /** Scroll-box панели — content-visibility на solid. */
   scroll: "data-panel-scroll",
+  /** Декоративный solid-квадрат бесконечного хвоста спирали. */
+  ghost: "data-spiral-ghost",
 } as const;
 
 export function setPanelStateAttr(element: Element, attr: PanelStateAttr, enabled: boolean): void {

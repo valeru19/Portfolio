@@ -56,3 +56,6 @@ export const MODE_TRANSITION_ENTER_MS = 180;
  * Ниже ~12 текст читается сквозь blur; выше ~20 дороже paint под спиралью.
  */
 export const PANEL_BLUR_PX = 16;
+
+/** Декоративные solid-квадраты «бесконечной» спирали за последней секцией. */
+export const SPIRAL_INFINITY_GHOST_COUNT = 12;
