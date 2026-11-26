@@ -65,6 +65,11 @@ export function NavSection({ id, children, className, ...aria }: Props) {
           {children}
         </div>
         <div
+          className={styles.panelFrostFill}
+          aria-hidden="true"
+          {...{ [SPIRAL_DOM_ATTR.frostFill]: "" }}
+        />
+        <div
           className={styles.panelBlurVeil}
           aria-hidden="true"
           {...{

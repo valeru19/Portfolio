@@ -138,8 +138,9 @@ body.is-spinning [data-spiral-section] * {
   animation-play-state: paused;
 }
 
-/* Opacity-вуаль: mid-spin ведёт WAAPI — CSS transition на veil глушим. */
-body.is-spinning [data-panel-blur-veil] {
+/* Opacity-вуаль / frost: mid-spin ведёт WAAPI или статичный квадрат — CSS transition глушим. */
+body.is-spinning [data-panel-blur-veil],
+body.is-spinning [data-panel-frost-fill] {
   transition: none !important;
 }
 

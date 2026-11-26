@@ -19,6 +19,10 @@ export const PANEL_STATE_ATTR = {
    * Дешёвая вуаль без backdrop-filter (панель слишком мелкая / далеко).
    */
   blurLite: "data-blur-lite",
+  /** Сплошная заливка поверх контента (квадратик), пока контент не готов. */
+  frost: "data-frost",
+  /** Идёт opacity-кроссфейд frost → контент под blur. */
+  revealing: "data-revealing",
 } as const;
 
 /** Роль панели в CSS-кроссфейде blur на перевороте. */
@@ -55,6 +59,8 @@ export const SPIRAL_DOM_ATTR = {
   blurLayer: "data-panel-blur-layer",
   /** Opacity-вуаль (backdrop-filter статичен; анимируется только opacity). */
   blurVeil: "data-panel-blur-veil",
+  /** Слой-заливка (квадратик) для плавного reveal. */
+  frostFill: "data-panel-frost-fill",
   /** Scroll-box панели — content-visibility на reverse. */
   scroll: "data-panel-scroll",
 } as const;

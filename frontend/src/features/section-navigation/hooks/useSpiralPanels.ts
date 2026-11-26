@@ -16,12 +16,17 @@ import {
   PANEL_VEIL_VAR,
 } from "../lib/panelBlur";
 import { paintPanelPaletteForId } from "../lib/paintPanelPalette";
+import {
+  rememberPanelIntrinsicHeight,
+  revealPanelFromFrost,
+  warmPanelsForJump,
+} from "../lib/panelReveal";
 import { PANEL_BLUR_PX } from "../model/constants";
 import { PANEL_STATE_ATTR, setCardDeltaAttr, setPanelStateAttr } from "../model/panelStateAttrs";
 
 /** Короткая пауза после settle compositor, прежде чем включить overflow. */
-const PANEL_SCROLL_ENABLE_DELAY_MS = 32;
-/** Far-панели: blur не в том же кадре, что from/dest (избегаем 1.1s longtask). */
+const PANEL_SCROLL_ENABLE_DELAY_MS = 48;
+/** Far-панели: veil/attr не в том же кадре, что from/dest. */
 const FAR_BLUR_BATCH = 2;
 
 export type PanelNodes = {
@@ -48,6 +53,7 @@ export function useSpiralPanels({
   const paintedIndexRef = useRef(-1);
   const settleTimerRef = useRef<number | null>(null);
   const farBlurRafRef = useRef(0);
+  const revealGenRef = useRef(0);
 
   const paintAllPanelPalettes = useCallback(() => {
     sectionIds.forEach((id) => {
@@ -74,69 +80,94 @@ export function useSpiralPanels({
         cancelAnimationFrame(farBlurRafRef.current);
         farBlurRafRef.current = 0;
       }
-
-      const farBlurQueue: HTMLElement[] = [];
+      const revealGen = ++revealGenRef.current;
+      const farQueue: PanelNodes[] = [];
+      const revealQueue: PanelNodes[] = [];
 
       sectionIds.forEach((id, i) => {
         const nodes = panelsRef.current.get(id);
         if (!nodes) return;
         const isOn = i === index;
         const isNeighbor = !isOn && (i === index - 1 || i === index + 1);
-        const isFar = !isOn && !isNeighbor && (i < index - 1 || i > index + 2);
+        const wantFar = !isOn && !isNeighbor && (i < index - 1 || i > index + 2);
+        const wasFar = nodes.section.hasAttribute(PANEL_STATE_ATTR.far);
+        const wantLite =
+          !isOn && (effectivePanelScale(i, index) < BLUR_LITE_SCALE || Math.abs(i - index) > 1);
+
         setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.active, isOn);
-        // Hover-unblur только у следующих страниц; предыдущие остаются в idle-blur.
         setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, !isOn && i > index);
-        setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.far, isFar);
         if (nodes.section.style.opacity !== "1") nodes.section.style.opacity = "1";
         if (nodes.section.style.visibility !== "visible")
           nodes.section.style.visibility = "visible";
         if (nodes.section.style.clipPath) nodes.section.style.clipPath = "";
-        // Поднимаем только текущую — без boost соседей (наезд при flip).
         const z = isOn ? "5" : "1";
         if (nodes.section.style.zIndex !== z) nodes.section.style.zIndex = z;
 
         const scale = effectivePanelScale(i, index);
         const radius = isOn ? PANEL_BLUR_PX : panelBlurPxForScale(scale);
-        // Backdrop только у ближайших соседей; |Δ|>1 — tint-вуаль (дешевле, без snap).
-        paintBlurLiteFlag(
-          nodes.section,
-          !isOn && (scale < BLUR_LITE_SCALE || Math.abs(i - index) > 1),
-        );
 
-        if (isFar) {
-          // Far: attrs сразу, veil батчами (CSS opacity transition — без snap).
-          farBlurQueue.push(nodes.section);
+        // Уход в far: сначала frost (квадратик), far — батчем позже (не в кадре посадки near).
+        if (wantFar) {
+          setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.frost, true);
+          farQueue.push(nodes);
           return;
         }
-        // Соседи: без inline --panel-veil, чтобы ahead:hover работал.
+
+        // Выход из far/lite: плавный reveal (не снимать far в том же кадре, что blur).
+        if (wasFar || nodes.section.hasAttribute(PANEL_STATE_ATTR.blurLite)) {
+          revealQueue.push(nodes);
+          if (isOn) paintPanelVeil(nodes.section, 0, radius);
+          else {
+            nodes.section.style.removeProperty(PANEL_VEIL_VAR);
+            nodes.section.style.setProperty(PANEL_BLUR_RADIUS_VAR, `${radius}px`);
+          }
+          return;
+        }
+
+        paintBlurLiteFlag(nodes.section, wantLite);
         if (isOn) {
           paintPanelVeil(nodes.section, 0, radius);
+          rememberPanelIntrinsicHeight(nodes.scroll);
         } else {
           nodes.section.style.removeProperty(PANEL_VEIL_VAR);
           nodes.section.style.setProperty(PANEL_BLUR_RADIUS_VAR, `${radius}px`);
         }
       });
 
+      // Reveal near: по 1 панели / кадр после готовности контента.
+      void (async () => {
+        for (const nodes of revealQueue) {
+          if (revealGen !== revealGenRef.current) return;
+          await revealPanelFromFrost(nodes.section, nodes.scroll);
+          if (revealGen !== revealGenRef.current) return;
+        }
+      })();
+
+      // Far attrs батчами — не в кадре near-reveal.
       let cursor = 0;
       const pumpFar = () => {
-        const slice = farBlurQueue.slice(cursor, cursor + FAR_BLUR_BATCH);
+        if (revealGen !== revealGenRef.current) return;
+        const slice = farQueue.slice(cursor, cursor + FAR_BLUR_BATCH);
         cursor += FAR_BLUR_BATCH;
-        for (const section of slice) {
-          const id = section.id as SectionId;
+        for (const nodes of slice) {
+          const id = nodes.section.id as SectionId;
           const i = sectionIds.indexOf(id);
-          const scale = effectivePanelScale(i, index);
-          paintBlurLiteFlag(section, scale < BLUR_LITE_SCALE);
-          // Far уже под вуалью; только радиус + лёгкий CSS transition если нужно.
-          section.style.removeProperty(PANEL_VEIL_VAR);
-          paintPanelVeil(section, idleVeilAmount(i, index), panelBlurPxForScale(scale));
+          setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.far, true);
+          paintBlurLiteFlag(nodes.section, true);
+          nodes.section.style.removeProperty(PANEL_VEIL_VAR);
+          paintPanelVeil(
+            nodes.section,
+            idleVeilAmount(i, index),
+            panelBlurPxForScale(effectivePanelScale(i, index)),
+          );
         }
-        if (cursor < farBlurQueue.length) {
+        if (cursor < farQueue.length) {
           farBlurRafRef.current = requestAnimationFrame(pumpFar);
         } else {
           farBlurRafRef.current = 0;
         }
       };
-      if (farBlurQueue.length) {
+      if (farQueue.length) {
         farBlurRafRef.current = requestAnimationFrame(pumpFar);
       }
     },
@@ -162,6 +193,8 @@ export function useSpiralPanels({
         nodes.section.style.removeProperty("--panel-veil");
         nodes.section.style.removeProperty("--panel-blur-radius");
         setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.blurLite, false);
+        setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.frost, false);
+        setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.revealing, false);
 
         if (isOn) {
           setPanelStateAttr(nodes.scroll, PANEL_STATE_ATTR.scrollable, true);
@@ -220,6 +253,26 @@ export function useSpiralPanels({
       if (index < sectionIds.length - 1) warmSection(index + 1);
     },
     [sectionIds.length, warmSection],
+  );
+
+  /**
+   * Перед длинным ходом: прогреть dest ±1 (content-visibility + decode),
+   * по одной панели за кадр — без массового layout в старте твина.
+   */
+  const prepareJump = useCallback(
+    async (destIndex: number) => {
+      const idxs = [destIndex - 1, destIndex, destIndex + 1].filter(
+        (i) => i >= 0 && i < sectionIds.length,
+      );
+      const batch: PanelNodes[] = [];
+      for (const i of idxs) {
+        const id = sectionIds[i];
+        const nodes = id ? panelsRef.current.get(id) : undefined;
+        if (nodes) batch.push(nodes);
+      }
+      await warmPanelsForJump(batch);
+    },
+    [sectionIds],
   );
 
   const settleActivePanel = useCallback(
@@ -289,6 +342,7 @@ export function useSpiralPanels({
     markAccessibleCards,
     clearScrollable,
     warmAround,
+    prepareJump,
     settleActivePanel,
     registerPanel,
   };
