@@ -23,3 +23,6 @@ export const TOUCH_STEP_THRESHOLD = 48;
 
 export const ACCESSIBLE_MODE_VALUE = "accessible";
 export const SPIRAL_MODE_VALUE = "spiral";
+
+/** Soft focus on non-current spiral panels (px). Keep modest — filter is paint-costly. */
+export const PANEL_BLUR_PX = 14;

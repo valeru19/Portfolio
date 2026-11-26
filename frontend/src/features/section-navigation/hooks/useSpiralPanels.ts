@@ -5,6 +5,7 @@ import { sectionPaletteForId } from "@/shared/content/sectionPalettes";
 import type { Theme } from "@/shared/theme";
 
 import { applyPaletteToDocument } from "../lib/applyPaletteToDocument";
+import { inactivePanelBlurPx, paintPanelBlur } from "../lib/panelBlur";
 import { paintPanelPaletteForId } from "../lib/paintPanelPalette";
 import { PANEL_STATE_ATTR, setPanelStateAttr } from "../model/panelStateAttrs";
 
@@ -55,27 +56,28 @@ export function useSpiralPanels({
   );
 
   const markActive = useCallback(
-    (index: number, options?: { incomingIndex?: number }) => {
-      const incomingIndex = options?.incomingIndex;
+    (index: number) => {
       sectionIds.forEach((id, i) => {
         const nodes = panelsRef.current.get(id);
         if (!nodes) return;
         const isOn = i === index;
-        const isIncoming = incomingIndex != null && i === incomingIndex && !isOn;
-        const isNeighbor = !isOn && !isIncoming && (i === index - 1 || i === index + 1);
+        const isNeighbor = !isOn && (i === index - 1 || i === index + 1);
         setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.active, isOn);
         setPanelStateAttr(
           nodes.section,
           PANEL_STATE_ATTR.far,
-          !isOn && !isIncoming && !isNeighbor && (i < index - 1 || i > index + 2),
+          !isOn && !isNeighbor && (i < index - 1 || i > index + 2),
         );
         // Only touch visibility styles when wrong — avoid style thrash every hop.
         if (nodes.section.style.opacity !== "1") nodes.section.style.opacity = "1";
         if (nodes.section.style.visibility !== "visible") nodes.section.style.visibility = "visible";
         if (nodes.section.style.clipPath) nodes.section.style.clipPath = "";
-        // current (5) > incoming (4) > prev/next (3) > far arms (1).
-        const z = isOn ? "5" : isIncoming ? "4" : isNeighbor ? "3" : "1";
+        // Only the current panel is elevated. No incoming/neighbor boost —
+        // those caused one section to paint over another during a flip.
+        const z = isOn ? "5" : "1";
         if (nodes.section.style.zIndex !== z) nodes.section.style.zIndex = z;
+        // Settled focus: current sharp, everything else soft.
+        paintPanelBlur(nodes.section, isOn ? 0 : inactivePanelBlurPx());
       });
     },
     [sectionIds],
@@ -145,9 +147,9 @@ export function useSpiralPanels({
       const enable = () => {
         if (isAccessible || spinningFlagRef.current) return;
         if (currentIndexRef.current !== idx) return;
+        // Only flip the attr — overflow comes from CSS. Inline overflow writes
+        // forced a layout/paint hitch (scrollbar flash) on every land.
         setPanelStateAttr(active.scroll, PANEL_STATE_ATTR.scrollable, true);
-        active.scroll.style.overflowY = "scroll";
-        active.scroll.style.overflowX = "hidden";
         active.scroll.style.pointerEvents = "auto";
       };
 

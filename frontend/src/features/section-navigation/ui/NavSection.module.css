@@ -39,6 +39,12 @@
   contain-intrinsic-size: auto 480px;
 }
 
+/* Freeze content-visibility during a turn — toggling data-far at land used to
+   skip/unskip paint and flash blank panel interiors (мерцание контента). */
+:global(body.is-spinning) .spiralSection[data-far] .panelScroll {
+  content-visibility: visible;
+}
+
 .panelScroll {
   height: 100%;
   /* never toggle overflow via :not(.is-spinning) — that blanks panels on reverse scale */

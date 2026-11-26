@@ -208,6 +208,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     setCurrentIndex,
     setTargetIndex,
     spinningFlagRef,
+    pendingIndexRef,
   });
 
   return {

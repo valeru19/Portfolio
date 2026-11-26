@@ -25,8 +25,6 @@ export function paintSpiralElement(spiral: HTMLElement, rotationDeg: number): vo
   spiral.style.transform = `rotate(${rotationDeg}deg) scale(${scale}) translate3d(0,0,0)`;
 }
 
-let lastLayoutKey = "";
-
 export function applySpiralLayoutToPanels(
   spiral: HTMLElement,
   sectionIds: SectionId[],
@@ -34,9 +32,8 @@ export function applySpiralLayoutToPanels(
   gsap: GsapLike | null,
 ): void {
   const layout = computeSpiralLayout(window.innerWidth, window.innerHeight);
-  const layoutKey = `${layout.panelWidth}|${layout.panelHeight}|${layout.transformOrigin}|${sectionIds.length}`;
-  const layoutUnchanged = layoutKey === lastLayoutKey;
-  lastLayoutKey = layoutKey;
+  const widthPx = `${layout.panelWidth}px`;
+  const heightPx = `${layout.panelHeight}px`;
 
   spiral.style.transformOrigin = layout.transformOrigin;
   if (gsap) gsap.set(spiral, { transformOrigin: layout.transformOrigin });
@@ -44,9 +41,11 @@ export function applySpiralLayoutToPanels(
   sectionIds.forEach((id, index) => {
     const nodes = panels.get(id);
     if (!nodes) return;
-    if (!layoutUnchanged) {
-      nodes.section.style.width = `${layout.panelWidth}px`;
-      nodes.section.style.height = `${layout.panelHeight}px`;
+    // Idempotent per node — a global layout-key cache skipped sizes after
+    // accessible↔spiral remount (new DOM, same viewport → bird's-eye mess).
+    if (nodes.section.style.width !== widthPx) nodes.section.style.width = widthPx;
+    if (nodes.section.style.height !== heightPx) nodes.section.style.height = heightPx;
+    if (nodes.section.style.transformOrigin !== layout.transformOrigin) {
       nodes.section.style.transformOrigin = layout.transformOrigin;
     }
     const rotation = panelRotationAtIndex(index);
@@ -63,11 +62,6 @@ export function applySpiralLayoutToPanels(
       nodes.section.style.transform = `rotate(${rotation}deg) scale(${scale}) translate3d(0,0,0)`;
     }
   });
-}
-
-/** Test helper — clears layout cache between cases. */
-export function resetSpiralLayoutCache(): void {
-  lastLayoutKey = "";
 }
 
 /**

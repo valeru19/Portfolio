@@ -53,6 +53,8 @@ html.is-accessible {
    Mid-turn palette snaps are cheaper than overlapping 0.7s paints every section. */
 body.is-spinning,
 body.is-spinning [data-spiral-root],
+body.is-spinning [data-spiral-section],
+body.is-spinning [data-spiral-section] *,
 body.is-spinning [data-spiral-hud],
 body.is-spinning [data-spiral-hud] *,
 body.is-spinning header {

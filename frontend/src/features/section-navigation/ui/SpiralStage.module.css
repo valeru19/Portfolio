@@ -30,6 +30,8 @@
   display: block;
 }
 
-:global(body.is-spinning) .spiral {
+/* Keep will-change stable while mounted in spiral mode — toggling it with
+   is-spinning promoted/demoted the layer every hop and caused a land flicker. */
+.spiral:not(.spiralAccessible) {
   will-change: transform;
 }

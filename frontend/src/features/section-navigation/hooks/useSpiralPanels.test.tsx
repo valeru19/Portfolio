@@ -50,7 +50,6 @@ describe("useSpiralPanels settleActivePanel", () => {
     });
 
     expect(scroll.hasAttribute(PANEL_STATE_ATTR.scrollable)).toBe(true);
-    expect(scroll.style.overflowY).toBe("scroll");
     expect(scroll.style.pointerEvents).toBe("auto");
   });
 
@@ -114,37 +113,8 @@ describe("useSpiralPanels settleActivePanel", () => {
     expect(heroSection.style.visibility).toBe("visible");
     expect(aboutSection.hasAttribute(PANEL_STATE_ATTR.active)).toBe(true);
     expect(aboutSection.style.zIndex).toBe("5");
-    expect(stackSection.style.zIndex).toBe("3");
-    expect(heroSection.style.zIndex).toBe("3");
-  });
-
-  it("keeps the incoming page above other arms but under the current page", () => {
-    const currentIndexRef = { current: 0 };
-    const spinningFlagRef = { current: true };
-    const heroSection = document.createElement("section");
-    const aboutSection = document.createElement("section");
-    const stackSection = document.createElement("section");
-
-    const { result } = renderHook(() =>
-      useSpiralPanels({
-        sectionIds: ["hero", "about", "stack"] as SectionId[],
-        theme: "dark",
-        isAccessible: false,
-        currentIndexRef,
-        spinningFlagRef,
-      }),
-    );
-
-    act(() => {
-      result.current.registerPanel("hero", heroSection, createOverflowScrollBox(400, 400));
-      result.current.registerPanel("about", aboutSection, createOverflowScrollBox(400, 400));
-      result.current.registerPanel("stack", stackSection, createOverflowScrollBox(400, 400));
-      result.current.markActive(0, { incomingIndex: 1 });
-    });
-
-    expect(heroSection.style.zIndex).toBe("5");
-    expect(aboutSection.style.zIndex).toBe("4");
     expect(stackSection.style.zIndex).toBe("1");
+    expect(heroSection.style.zIndex).toBe("1");
   });
 
   it("enables scrollable on the explicit forIndex even if currentIndexRef lags", () => {

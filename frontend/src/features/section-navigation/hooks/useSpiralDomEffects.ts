@@ -22,13 +22,14 @@ type Options = {
   ensureGsap: () => Promise<unknown>;
   buildSpiral: () => void;
   paintSpiralTransform: (rotationDeg: number) => void;
-  markActive: (index: number, options?: { incomingIndex?: number }) => void;
+  markActive: (index: number) => void;
   applyColors: (index: number, force?: boolean) => void;
   settleActivePanel: (forIndex?: number) => void;
   setIsSpinning: (value: boolean) => void;
   setCurrentIndex: (value: number) => void;
   setTargetIndex: (value: number) => void;
   spinningFlagRef: MutableRefObject<boolean>;
+  pendingIndexRef: MutableRefObject<number>;
 };
 
 /** Mode switch, resize rebuild, accessible scroll-spy. */
@@ -51,6 +52,7 @@ export function useSpiralDomEffects({
   setCurrentIndex,
   setTargetIndex,
   spinningFlagRef,
+  pendingIndexRef,
 }: Options): void {
   useEffect(() => {
     killMotion();
@@ -64,6 +66,8 @@ export function useSpiralDomEffects({
         section.style.transform = "";
         section.style.width = "";
         section.style.height = "";
+        section.style.zIndex = "";
+        section.style.filter = "";
         section.style.opacity = "1";
         section.style.visibility = "visible";
         setPanelStateAttr(section, PANEL_STATE_ATTR.far, false);
@@ -81,15 +85,26 @@ export function useSpiralDomEffects({
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
+    const idx = currentIndexRef.current;
+    const rot = rotationForSectionIndex(idx);
+    pendingIndexRef.current = idx;
+    // Sync rebuild + paint first — awaiting ensureGsap() used to leave a frame
+    // of cleared spiral transform (bird's-eye of every panel). CSS path is enough
+    // until GSAP loads; then we re-apply with gsap.set.
+    buildSpiral();
+    paintSpiralTransform(rot);
+    markActive(idx);
+    applyColors(idx, true);
+    setTargetIndex(idx);
+
     let cancelled = false;
     void (async () => {
       await ensureGsap();
       if (cancelled) return;
       buildSpiral();
-      paintSpiralTransform(rotationForSectionIndex(currentIndexRef.current));
-      markActive(currentIndexRef.current);
-      applyColors(currentIndexRef.current, true);
-      settleActivePanel();
+      paintSpiralTransform(rot);
+      markActive(idx);
+      settleActivePanel(idx);
     })();
 
     return () => {
@@ -105,10 +120,12 @@ export function useSpiralDomEffects({
     applyColors,
     settleActivePanel,
     setIsSpinning,
+    setTargetIndex,
     spiralRef,
     panelsRef,
     currentIndexRef,
     spinningFlagRef,
+    pendingIndexRef,
   ]);
 
   useEffect(() => {
