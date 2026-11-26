@@ -23,6 +23,10 @@ export const PANEL_STATE_ATTR = {
   frost: "data-frost",
   /** Идёт opacity-кроссфейд frost → контент под blur. */
   revealing: "data-revealing",
+  /** Есть запечённая текстура blur. */
+  baked: "data-baked",
+  /** Показать bake-текстуру поверх контента (длинный ход). */
+  bakeVisible: "data-bake-visible",
 } as const;
 
 /** Роль панели в CSS-кроссфейде blur на перевороте. */
@@ -61,6 +65,8 @@ export const SPIRAL_DOM_ATTR = {
   blurVeil: "data-panel-blur-veil",
   /** Слой-заливка (квадратик) для плавного reveal. */
   frostFill: "data-panel-frost-fill",
+  /** Запечённый blur (img/canvas texture). */
+  bake: "data-panel-bake",
   /** Scroll-box панели — content-visibility на reverse. */
   scroll: "data-panel-scroll",
 } as const;

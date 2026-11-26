@@ -64,6 +64,14 @@ export function NavSection({ id, children, className, ...aria }: Props) {
         >
           {children}
         </div>
+        <img
+          className={styles.panelBake}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          draggable={false}
+          {...{ [SPIRAL_DOM_ATTR.bake]: "" }}
+        />
         <div
           className={styles.panelFrostFill}
           aria-hidden="true"

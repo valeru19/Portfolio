@@ -159,6 +159,32 @@
 }
 
 /*
+  Запечённый blur: непрозрачная текстура без filter/backdrop.
+  На длинном ходе (nasp/long) — основной вид mid-панелей.
+*/
+.panelBake {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  display: none;
+}
+
+.spiralSection[data-baked][data-bake-visible] .panelBake {
+  display: block;
+  opacity: 1;
+}
+
+.accessibleSection .panelBake {
+  display: none !important;
+}
+
+/*
   Заливка-«квадратик»: закрывает контент, пока far/blur-lite.
   Reveal = opacity 1→0 (композитор), без скачка content-visibility.
 */
@@ -259,6 +285,42 @@
 
 .accessibleSection .panelFrostFill {
   display: none;
+}
+
+/*
+  Длинный ход: живые эффект-слои выключены (veil/frost).
+  Вид = bake-текстура; from/dest кроссфейдят её opacity (≤2 эффекта).
+*/
+:global(body.is-spinning[data-spin-kind="nasp"]) .spiralSection .panelBlurVeil,
+:global(body.is-spinning[data-spin-kind="long"]) .spiralSection .panelBlurVeil,
+:global(body.is-spinning[data-spin-kind="nasp"]) .spiralSection .panelFrostFill,
+:global(body.is-spinning[data-spin-kind="long"]) .spiralSection .panelFrostFill {
+  display: none !important;
+}
+
+/* Mid на длинном ходе: без bake-img — только непрозрачный фон frame. */
+:global(body.is-spinning[data-spin-kind="nasp"])
+  .spiralSection[data-baked]:not([data-blur-turn])
+  .panelBake,
+:global(body.is-spinning[data-spin-kind="long"])
+  .spiralSection[data-baked]:not([data-blur-turn])
+  .panelBake {
+  display: none !important;
+}
+
+:global(body.is-spinning[data-spin-kind="nasp"]) .spiralSection[data-blur-turn] .panelBake,
+:global(body.is-spinning[data-spin-kind="long"]) .spiralSection[data-blur-turn] .panelBake {
+  display: block;
+}
+
+/* Контент mid прячем; from/dest под opacity bake. */
+:global(body.is-spinning[data-spin-kind="nasp"])
+  .spiralSection[data-baked]:not([data-blur-turn])
+  .panelScroll,
+:global(body.is-spinning[data-spin-kind="long"])
+  .spiralSection[data-baked]:not([data-blur-turn])
+  .panelScroll {
+  visibility: hidden;
 }
 
 /* На спине НЕ форсим content-visibility:visible у всех far —
