@@ -3,11 +3,7 @@ import { useCallback, useRef, type MutableRefObject } from "react";
 import type { SectionId } from "@/shared/content";
 
 import { loadGsap } from "../lib/loadGsap";
-import {
-  beginPanelViewTurn,
-  bumpPanelViewGeneration,
-  prepareSharpUnderCover,
-} from "../lib/panelViewController";
+import { beginPanelViewTurn, bumpPanelViewGeneration } from "../lib/panelViewController";
 import {
   animationDurationMs,
   animationEase,
@@ -18,7 +14,7 @@ import {
 import { rotationForSectionIndex, snapRotationToSection } from "../model/geometry";
 import { setBlurTurnAttr } from "../model/panelStateAttrs";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
-import { planMoveFromSection } from "../model/ringNavigation";
+import { planMoveFromSection, ringLayoutIndexBySectionIds } from "../model/ringNavigation";
 import { clampSectionIndex } from "../model/sectionIndex";
 
 import type { PanelNodes } from "./useSpiralPanels";
@@ -116,8 +112,10 @@ export function useSpiralMotion({
     if (isAccessible) return;
     const spiral = spiralRef.current;
     if (!spiral) return;
-    applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
-  }, [isAccessible, panelsRef, sectionIds, spiralRef]);
+    const active = clampSectionIndex(Math.round(-rotationRef.current / 90), sectionCount);
+    const ringLayout = ringLayoutIndexBySectionIds(sectionIds, active);
+    applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current, ringLayout);
+  }, [isAccessible, panelsRef, sectionCount, sectionIds, spiralRef]);
 
   const ensureGsap = useCallback(async () => {
     if (prefersReducedMotion()) return null;
@@ -155,6 +153,17 @@ export function useSpiralMotion({
       const index = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
 
       paintSpiralTransform(snapped);
+      // На последней — первая уже в слоте N (кольцевой blur), готова к «Наверх».
+      const spiral = spiralRef.current;
+      if (spiral) {
+        applySpiralLayoutToPanels(
+          spiral,
+          sectionIds,
+          panelsRef.current,
+          gsapRef.current,
+          ringLayoutIndexBySectionIds(sectionIds, index),
+        );
+      }
 
       const runPanelAttrs = () => {
         clearBlurTurnAttrs();
@@ -198,8 +207,10 @@ export function useSpiralMotion({
       panelsRef,
       scheduleWarm,
       sectionCount,
+      sectionIds,
       setSpinning,
       settleActivePanel,
+      spiralRef,
     ],
   );
 
@@ -353,8 +364,8 @@ export function useSpiralMotion({
   );
 
   /**
-   * Вперёд через край круга: dest временно в слоте from+steps,
-   * промежуточные скрыты; после посадки — rebase layout и rotation.
+   * Вперёд через край: dest уже в слоте N (на последней — первая как blur).
+   * Без await prep / hide — старт как обычный шаг вперёд.
    */
   const animateRingWrap = useCallback(
     async (fromIdx: number, destIdx: number, steps: number) => {
@@ -376,11 +387,12 @@ export function useSpiralMotion({
       const destId = sectionIds[destIdx];
       const spiral = spiralRef.current;
 
-      const layoutIndexById = new Map<SectionId, number>();
-      sectionIds.forEach((id, i) => layoutIndexById.set(id, i));
-      if (destId) layoutIndexById.set(destId, fromIdx + steps);
-
-      if (spiral) {
+      // Если ещё не на кольцевом layout (напр. HUD wrap не с последней) — слот dest.
+      const alreadyRing = fromIdx === sectionCount - 1 && destIdx === 0 && steps === 1;
+      if (!alreadyRing && destId && spiral) {
+        const layoutIndexById = new Map<SectionId, number>();
+        sectionIds.forEach((id, i) => layoutIndexById.set(id, i));
+        layoutIndexById.set(destId, fromIdx + steps);
         applySpiralLayoutToPanels(
           spiral,
           sectionIds,
@@ -390,41 +402,18 @@ export function useSpiralMotion({
         );
       }
 
-      // Скрыть всё, кроме from и dest — без мелькания промежуточных.
-      sectionIds.forEach((id, i) => {
-        const section = panelsRef.current.get(id)?.section;
-        if (!section) return;
-        if (i === fromIdx || i === destIdx) {
-          section.style.opacity = "1";
-          section.style.visibility = "visible";
-          section.style.willChange = "transform";
-          return;
-        }
-        section.style.opacity = "0";
-        section.style.visibility = "hidden";
-        section.style.willChange = "";
-      });
+      const fromSection = panelsRef.current.get(sectionIds[fromIdx] ?? "")?.section;
+      const destSection = destId ? panelsRef.current.get(destId)?.section : undefined;
+      if (fromSection) fromSection.style.willChange = "transform";
+      if (destSection) destSection.style.willChange = "transform";
 
-      // Только dest: без dest+1 (промежуточные скрыты; blur after land).
-      if (!prefersReducedMotion()) {
-        const destNodes = destId ? panelsRef.current.get(destId) : undefined;
-        if (destNodes) await prepareSharpUnderCover(destNodes);
-        if (gen !== motionGenRef.current) return;
-      }
-
+      // Сразу в ход — без prepareJump / decode.
       setSpinning(true, destIdx === 0 ? "nasp" : "long");
       applyColors(destIdx);
-      // HUD сразу на dest: во время wrap слот за краем, round(rotation) врёт.
       onProgress?.(destIdx);
 
       if (prefersReducedMotion()) {
         if (gen !== motionGenRef.current) return;
-        sectionIds.forEach((id) => {
-          const section = panelsRef.current.get(id)?.section;
-          if (!section) return;
-          section.style.opacity = "1";
-          section.style.visibility = "visible";
-        });
         if (spiral) {
           applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
         }
@@ -437,8 +426,6 @@ export function useSpiralMotion({
         const nodes = panelsRef.current.get(id);
         if (nodes) byIndex.set(i, nodes);
       });
-      const fromSection = byIndex.get(fromIdx)?.section;
-      const destSection = byIndex.get(destIdx)?.section;
       if (fromSection) setBlurTurnAttr(fromSection, "from");
       if (destSection) setBlurTurnAttr(destSection, "dest");
       const turn = beginPanelViewTurn({
@@ -456,10 +443,7 @@ export function useSpiralMotion({
       const restoreAndFinish = () => {
         sectionIds.forEach((id) => {
           const section = panelsRef.current.get(id)?.section;
-          if (!section) return;
-          section.style.opacity = "1";
-          section.style.visibility = "visible";
-          section.style.willChange = "";
+          if (section?.style.willChange) section.style.willChange = "";
         });
         const sp = spiralRef.current;
         if (sp) {

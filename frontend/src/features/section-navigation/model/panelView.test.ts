@@ -18,16 +18,16 @@ describe("panelViewFor", () => {
     expect(panelViewFor(4, 3, n)).toBe("blur");
   });
 
-  it("has no blur panel on the last section", () => {
+  it("on last section marks first as ring blur", () => {
     expect(panelViewFor(6, 6, n)).toBe("sharp");
     expect(panelViewFor(5, 6, n)).toBe("solid");
-    expect(panelViewFor(0, 6, n)).toBe("solid");
+    expect(panelViewFor(0, 6, n)).toBe("blur");
   });
 
   it("never returns more than one blur for a given active index", () => {
     for (let active = 0; active < n; active += 1) {
       const views = Array.from({ length: n }, (_, i) => panelViewFor(i, active, n));
-      expect(views.filter((v) => v === "blur")).toHaveLength(active === n - 1 ? 0 : 1);
+      expect(views.filter((v) => v === "blur")).toHaveLength(1);
       expect(views.filter((v) => v === "sharp")).toHaveLength(1);
     }
   });

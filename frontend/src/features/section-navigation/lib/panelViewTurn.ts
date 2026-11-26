@@ -86,17 +86,13 @@ export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () =>
   const fromNodes = panels.get(fromIdx);
   const destNodes = panels.get(destIdx);
 
-  // ——— Wrap через круг: только from и dest, без промежуточных ———
+  // ——— Wrap: как шаг вперёд; dest уже blur в слоте N. Без hide/prep. ———
   if (wrapsRing) {
     for (let i = 0; i < sectionCount; i += 1) {
       const nodes = panels.get(i);
       if (!nodes) continue;
       if (i === fromIdx || i === destIdx) continue;
-      forceSolidInstant(nodes);
-      if (nodes.section.style.opacity !== "0") nodes.section.style.opacity = "0";
-      if (nodes.section.style.visibility !== "hidden") {
-        nodes.section.style.visibility = "hidden";
-      }
+      if (readPanelViewAttr(nodes.section) !== "solid") forceSolidInstant(nodes);
     }
     if (fromNodes) void transitionToSolid(fromNodes, gen, durationMs);
     if (destNodes) {
@@ -343,8 +339,14 @@ export async function revealNextBlurAfterLand(
   gen: number,
 ): Promise<void> {
   if (gen !== currentPanelViewGeneration()) return;
-  const blurIdx = activeIndex + 1;
-  if (blurIdx >= sectionCount) return;
+  // На последней — кольцевой blur = секция 0 (уже в слоте N).
+  const blurIdx =
+    activeIndex + 1 < sectionCount
+      ? activeIndex + 1
+      : activeIndex === sectionCount - 1 && sectionCount > 1
+        ? 0
+        : -1;
+  if (blurIdx < 0) return;
   const nodes = panels.get(blurIdx);
   if (!nodes) return;
   const have = readPanelViewAttr(nodes.section);

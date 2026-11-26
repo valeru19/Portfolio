@@ -127,3 +127,21 @@ export function canStepGesture(
   if (direction === -1 && current <= 0) return false;
   return true;
 }
+
+/**
+ * Карта слотов раскладки: на последней секции первая → слот N.
+ * Иначе undefined (обычные индексы).
+ */
+export function ringLayoutIndexBySectionIds(
+  sectionIds: readonly string[],
+  activeIndex: number,
+): Map<string, number> | undefined {
+  const N = sectionIds.length;
+  if (N <= 1 || activeIndex !== N - 1) return undefined;
+  const firstId = sectionIds[0];
+  if (!firstId) return undefined;
+  const map = new Map<string, number>();
+  sectionIds.forEach((id, i) => map.set(id, i));
+  map.set(firstId, N);
+  return map;
+}

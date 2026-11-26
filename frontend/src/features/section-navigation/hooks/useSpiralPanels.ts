@@ -79,19 +79,25 @@ export function useSpiralPanels({
     (index: number) => {
       // Сначала все чтения индексов / attrs, потом записи (без getComputedStyle).
       const writes: Array<() => void> = [];
+      const lastIdx = sectionIds.length - 1;
       sectionIds.forEach((id, i) => {
         const nodes = panelsRef.current.get(id);
         if (!nodes) return;
         const isOn = i === index;
+        const isRingNext = index === lastIdx && lastIdx > 0 && i === 0;
         writes.push(() => {
           setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.active, isOn);
-          setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, !isOn && i > index);
+          setPanelStateAttr(
+            nodes.section,
+            PANEL_STATE_ATTR.ahead,
+            isRingNext || (!isOn && i > index),
+          );
           if (nodes.section.style.opacity !== "1") nodes.section.style.opacity = "1";
           if (nodes.section.style.visibility !== "visible") {
             nodes.section.style.visibility = "visible";
           }
           if (nodes.section.style.clipPath) nodes.section.style.clipPath = "";
-          const z = isOn ? "5" : "1";
+          const z = isOn || isRingNext ? "5" : "1";
           if (nodes.section.style.zIndex !== z) nodes.section.style.zIndex = z;
         });
       });
@@ -172,6 +178,8 @@ export function useSpiralPanels({
       warmSection(index);
       if (index > 0) warmSection(index - 1);
       if (index < sectionIds.length - 1) warmSection(index + 1);
+      // На последней кольцевая «следующая» = первая.
+      else if (sectionIds.length > 1) warmSection(0);
     },
     [sectionIds.length, warmSection],
   );

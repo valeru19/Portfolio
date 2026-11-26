@@ -8,6 +8,7 @@ import {
   planMove,
   planMoveFromSection,
   ringFromV,
+  ringLayoutIndexBySectionIds,
   sectionFromV,
 } from "./ringNavigation";
 
@@ -160,5 +161,19 @@ describe("panelKeyFromV", () => {
   it("is unique per v", () => {
     expect(panelKeyFromV(0)).toBe("v0");
     expect(panelKeyFromV(9)).toBe("v9");
+  });
+});
+
+describe("ringLayoutIndexBySectionIds", () => {
+  const ids = ["hero", "about", "stack", "contacts"];
+
+  it("moves first to slot N on last section", () => {
+    const map = ringLayoutIndexBySectionIds(ids, 3);
+    expect(map?.get("hero")).toBe(4);
+    expect(map?.get("contacts")).toBe(3);
+  });
+
+  it("returns undefined when not on last", () => {
+    expect(ringLayoutIndexBySectionIds(ids, 2)).toBeUndefined();
   });
 });
