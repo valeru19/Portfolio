@@ -2,15 +2,22 @@ import { useCallback, useRef, type MutableRefObject } from "react";
 
 import type { SectionId } from "@/shared/content";
 
+import {
+  beginBlurTurnWaapi,
+  endBlurTurnCrossfade,
+  idleBlurPxForPanel,
+  paintPanelBlur,
+} from "../lib/panelBlur";
 import { loadGsap } from "../lib/loadGsap";
-import { blurPxForTurnProgress, paintPanelBlur } from "../lib/panelBlur";
 import {
   animationDurationMs,
   animationEase,
   applySpiralLayoutToPanels,
   paintSpiralElement,
+  paintSpiralElementWithGsap,
 } from "../lib/spiralTransform";
 import { snapRotationToSection } from "../model/geometry";
+import { PANEL_STATE_ATTR, setPanelStateAttr } from "../model/panelStateAttrs";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
 import { clampSectionIndex } from "../model/sectionIndex";
 
@@ -40,7 +47,7 @@ export function useSpiralMotion({
   spiralRef,
   panelsRef,
   onSettled,
-  onProgress,
+  onProgress: _onProgress,
   markActive,
   applyColors,
   clearScrollable,
@@ -54,10 +61,33 @@ export function useSpiralMotion({
   const motionGenRef = useRef(0);
   const settleRafRef = useRef(0);
   const warmIdleRef = useRef(0);
+  const warmIdleKindRef = useRef<"timeout" | "idle">("timeout");
+  const blurFromRef = useRef<HTMLElement | undefined>(undefined);
+  const blurDestRef = useRef<HTMLElement | undefined>(undefined);
+  const blurAnimRef = useRef<{ cancel: () => void } | null>(null);
+
+  const clearBlurTurn = useCallback(() => {
+    blurAnimRef.current?.cancel();
+    blurAnimRef.current = null;
+    endBlurTurnCrossfade(blurFromRef.current, blurDestRef.current);
+    blurFromRef.current = undefined;
+    blurDestRef.current = undefined;
+  }, []);
 
   const setSpinning = useCallback((on: boolean) => {
     spinningRef.current = on;
     document.body.classList.toggle("is-spinning", on);
+    document.body.classList.remove("is-spinning-back");
+  }, []);
+
+  const cancelWarm = useCallback(() => {
+    if (!warmIdleRef.current) return;
+    if (warmIdleKindRef.current === "idle" && typeof window.cancelIdleCallback === "function") {
+      window.cancelIdleCallback(warmIdleRef.current);
+    } else {
+      window.clearTimeout(warmIdleRef.current);
+    }
+    warmIdleRef.current = 0;
   }, []);
 
   const paintSpiralTransform = useCallback(
@@ -91,17 +121,20 @@ export function useSpiralMotion({
 
   const scheduleWarm = useCallback(
     (index: number) => {
-      if (warmIdleRef.current) {
-        window.clearTimeout(warmIdleRef.current);
-        warmIdleRef.current = 0;
-      }
-      // Декодим картинки после кадра старта — img.decode на hot path даёт hitch.
-      warmIdleRef.current = window.setTimeout(() => {
+      cancelWarm();
+      const run = () => {
         warmIdleRef.current = 0;
         warmAround(index);
-      }, 0);
+      };
+      if (typeof window.requestIdleCallback === "function") {
+        warmIdleKindRef.current = "idle";
+        warmIdleRef.current = window.requestIdleCallback(run, { timeout: 200 });
+        return;
+      }
+      warmIdleKindRef.current = "timeout";
+      warmIdleRef.current = window.setTimeout(run, 48);
     },
-    [warmAround],
+    [cancelWarm, warmAround],
   );
 
   const finishScroll = useCallback(
@@ -109,29 +142,34 @@ export function useSpiralMotion({
       const snapped = snapRotationToSection(targetRotation, sectionCount);
       const index = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
 
-      // Поза на compositor + палитра, пока is-spinning глушит color-transition.
       paintSpiralTransform(snapped);
-      markActive(index);
-      applyColors(index);
-      onProgress?.(index);
+
+      const runPanelAttrs = () => {
+        clearBlurTurn();
+        // Roles + near blur пока is-spinning (transition:none); far — батчами в markActive.
+        markActive(index);
+      };
 
       const runSettle = () => {
-        scheduleWarm(index);
         setSpinning(false);
+        // Без rebuild layout: позы от индекса. settle/layout — после твина, не в onUpdate.
+        paintSpiralTransform(snapped);
+        applyColors(index);
+        scheduleWarm(index);
         onSettled(index);
         settleActivePanel(index);
       };
 
-      // Double-rAF: сначала коммит последнего transform, потом React/DOM settle.
       if (settleRafRef.current) cancelAnimationFrame(settleRafRef.current);
       settleRafRef.current = requestAnimationFrame(() => {
+        runPanelAttrs();
         settleRafRef.current = requestAnimationFrame(runSettle);
       });
     },
     [
       applyColors,
+      clearBlurTurn,
       markActive,
-      onProgress,
       onSettled,
       paintSpiralTransform,
       scheduleWarm,
@@ -145,7 +183,6 @@ export function useSpiralMotion({
     async (targetRotation: number) => {
       if (isAccessible) return;
       const snapped = snapRotationToSection(targetRotation, sectionCount);
-      const destIndex = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
       const alreadyThere = Math.abs(snapped - rotationRef.current) < 0.05;
 
       if (alreadyThere && !spinningRef.current) {
@@ -153,6 +190,8 @@ export function useSpiralMotion({
         return;
       }
 
+      // Без kill/restart текущего твина снаружи: goTo коалесцирует pending.
+      // Здесь kill только при явной новой цели из finishScroll→pending chain.
       const gen = ++motionGenRef.current;
       tweenRef.current?.kill();
       tweenRef.current = null;
@@ -160,40 +199,30 @@ export function useSpiralMotion({
         cancelAnimationFrame(settleRafRef.current);
         settleRafRef.current = 0;
       }
+      clearBlurTurn();
       clearScrollable();
-      setSpinning(true);
 
-      const fromIndex = clampSectionIndex(Math.round(-rotationRef.current / 90), sectionCount);
       const startR = rotationRef.current;
       const goingBack = snapped > startR;
       const distanceDeg = Math.abs(snapped - startR);
-      // Назад / длинный прыжок: обновляем матрицы панелей ДО твина,
-      // чтобы кадр приземления был чистым (rebuild в конце давал hitch).
-      const needsRebuild = goingBack || distanceDeg > 135;
-      if (needsRebuild) {
-        buildSpiral();
-        paintSpiralTransform(startR);
-      }
+      const duration = animationDurationMs(distanceDeg, goingBack);
 
-      // Не трогаем applyColors / markActive / warm здесь — вспышки палитры и
-      // data-far/content-visibility как раз и давали мерцание.
-      scheduleWarm(destIndex);
-
-      const fromId = sectionIds[fromIndex];
-      const destId = sectionIds[destIndex];
+      const fromIdx = clampSectionIndex(Math.round(-startR / 90), sectionCount);
+      const destIdx = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
+      const fromId = sectionIds[fromIdx];
+      const destId = sectionIds[destIdx];
       const fromSection = fromId ? panelsRef.current.get(fromId)?.section : undefined;
       const destSection = destId ? panelsRef.current.get(destId)?.section : undefined;
 
-      const paintTurnBlur = (progress: number) => {
-        if (fromSection) {
-          paintPanelBlur(fromSection, blurPxForTurnProgress("from", progress));
-        }
-        if (destSection && destSection !== fromSection) {
-          paintPanelBlur(destSection, blurPxForTurnProgress("dest", progress));
-        }
-      };
-      // Старт поворота: уходящая резкая, входящая уже мягкая (idle).
-      paintTurnBlur(0);
+      setSpinning(true);
+
+      panelsRef.current.forEach(({ section }) => {
+        setPanelStateAttr(section, PANEL_STATE_ATTR.far, false);
+      });
+
+      const longBack = goingBack && distanceDeg > 95;
+      // Палитра mid-jump на reverse — лишний style thrash; красим на settle.
+      if (!longBack) applyColors(destIdx);
 
       if (prefersReducedMotion()) {
         if (gen !== motionGenRef.current) return;
@@ -201,10 +230,45 @@ export function useSpiralMotion({
         return;
       }
 
+      // Blur: короткий ход вперёд — WAAPI кроссфейд from/dest (не GSAP onUpdate).
+      // Reverse / длинный прыжок (scale-up): snap; mid-jump blur только у from/dest —
+      // filter на промежуточных × scale-up давал кадры ~400ms на «Наверх».
+      if (fromIdx !== destIdx) {
+        const fromEnd = idleBlurPxForPanel(fromIdx, destIdx);
+        const destStart = idleBlurPxForPanel(destIdx, fromIdx);
+        blurFromRef.current = fromSection;
+        blurDestRef.current = destSection;
+        const useWaapi = !goingBack && distanceDeg <= 95;
+        if (useWaapi) {
+          blurAnimRef.current = beginBlurTurnWaapi(
+            fromSection,
+            destSection,
+            duration,
+            fromEnd,
+            destStart,
+          );
+        } else if (longBack) {
+          sectionIds.forEach((id, i) => {
+            const section = panelsRef.current.get(id)?.section;
+            if (!section) return;
+            if (i === fromIdx) paintPanelBlur(section, fromEnd);
+            else if (i === destIdx) paintPanelBlur(section, 0);
+            else paintPanelBlur(section, 0);
+          });
+        } else {
+          if (fromSection) paintPanelBlur(fromSection, fromEnd);
+          if (destSection && destSection !== fromSection) paintPanelBlur(destSection, 0);
+        }
+      }
+
       const runTween = (gsap: NonNullable<GsapLike>) => {
         if (gen !== motionGenRef.current) return;
+        const spiral = spiralRef.current;
+        if (!spiral) {
+          finishScroll(snapped);
+          return;
+        }
         const state = { r: startR };
-        const duration = animationDurationMs(distanceDeg, goingBack);
         const ease = animationEase(distanceDeg, goingBack);
 
         tweenRef.current = gsap.to(state, {
@@ -214,10 +278,9 @@ export function useSpiralMotion({
           overwrite: true,
           onUpdate: () => {
             if (gen !== motionGenRef.current) return;
-            paintSpiralTransform(state.r);
-            const progress =
-              distanceDeg < 0.01 ? 1 : Math.min(1, Math.abs(state.r - startR) / distanceDeg);
-            paintTurnBlur(progress);
+            // Только transform спирали — без layout reads / filter.
+            paintSpiralElementWithGsap(gsap, spiral, state.r);
+            rotationRef.current = state.r;
           },
           onComplete: () => {
             if (gen !== motionGenRef.current) return;
@@ -227,8 +290,6 @@ export function useSpiralMotion({
         });
       };
 
-      // GSAP уже в кэше — стартуем синхронно: await на resolved-промисе
-      // всё равно даёт microtask и кадр паузы до твина.
       if (gsapRef.current) {
         runTween(gsapRef.current);
         return;
@@ -243,17 +304,17 @@ export function useSpiralMotion({
       runTween(gsap);
     },
     [
-      buildSpiral,
+      applyColors,
+      clearBlurTurn,
       clearScrollable,
       ensureGsap,
       finishScroll,
       isAccessible,
-      paintSpiralTransform,
       panelsRef,
-      scheduleWarm,
       sectionCount,
       sectionIds,
       setSpinning,
+      spiralRef,
     ],
   );
 
@@ -265,12 +326,10 @@ export function useSpiralMotion({
       cancelAnimationFrame(settleRafRef.current);
       settleRafRef.current = 0;
     }
-    if (warmIdleRef.current) {
-      window.clearTimeout(warmIdleRef.current);
-      warmIdleRef.current = 0;
-    }
+    cancelWarm();
+    clearBlurTurn();
     setSpinning(false);
-  }, [setSpinning]);
+  }, [cancelWarm, clearBlurTurn, setSpinning]);
 
   return {
     rotationRef,
