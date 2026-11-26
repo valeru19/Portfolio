@@ -3,7 +3,11 @@ import { useCallback, useRef, type MutableRefObject } from "react";
 import type { SectionId } from "@/shared/content";
 
 import { loadGsap } from "../lib/loadGsap";
-import { beginPanelViewTurn, bumpPanelViewGeneration } from "../lib/panelViewController";
+import {
+  beginPanelViewTurn,
+  bumpPanelViewGeneration,
+  prepareSharpUnderCover,
+} from "../lib/panelViewController";
 import {
   animationDurationMs,
   animationEase,
@@ -392,8 +396,10 @@ export function useSpiralMotion({
         section.style.willChange = "";
       });
 
+      // Только dest: без dest+1 (промежуточные скрыты; blur after land).
       if (!prefersReducedMotion()) {
-        await prepareJump(fromIdx, destIdx, false);
+        const destNodes = destId ? panelsRef.current.get(destId) : undefined;
+        if (destNodes) await prepareSharpUnderCover(destNodes);
         if (gen !== motionGenRef.current) return;
       }
 
@@ -498,7 +504,6 @@ export function useSpiralMotion({
       finishScroll,
       isAccessible,
       panelsRef,
-      prepareJump,
       sectionCount,
       sectionIds,
       setSpinning,
