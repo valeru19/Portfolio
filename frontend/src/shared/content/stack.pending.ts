@@ -1,8 +1,8 @@
 /**
- * Technologies present in legacy CONTENT but without confirmed experience.
- * Do not import into rendered stack/logo grids until the owner confirms.
+ * Технологии из legacy CONTENT без подтверждённого опыта.
+ * Не импортировать в сетки стека/логотипов, пока владелец не подтвердит.
  *
- * Pending: Kubernetes, Apache, AWS S3, Figma.
+ * В ожидании: Kubernetes, Apache, AWS S3, Figma.
  */
 export const pendingStackItems = [
   { id: "kubernetes", label: "Kubernetes", logo: "kubernetes", src: "assets/kubernetes.png" },

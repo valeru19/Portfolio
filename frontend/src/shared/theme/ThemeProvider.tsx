@@ -38,7 +38,7 @@ export function ThemeProvider({ children, initialTheme }: Props) {
     applyTheme(theme);
   }, [theme]);
 
-  // Stable identity so consumers depending on setTheme do not re-render every paint.
+  // Стабильная identity: потребители setTheme не ре-рендерятся каждый paint.
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
     safeSetItem(STORAGE_THEME, next);
@@ -48,7 +48,7 @@ export function ThemeProvider({ children, initialTheme }: Props) {
     setTheme(theme === "dark" ? "light" : "dark");
   }, [setTheme, theme]);
 
-  // Memoize context value object — same reason as setTheme above.
+  // Мемо value объекта контекста — та же причина, что у setTheme.
   const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

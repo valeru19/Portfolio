@@ -57,8 +57,8 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   });
 
   const onProgress = useCallback((index: number) => {
-    // Mid-turn HUD only — keep spinning lock + pending target intact.
-    // startTransition keeps the GSAP frame off the React sync path.
+    // Только HUD mid-turn — spinning-lock и pending не трогаем.
+    // startTransition уводит React-апдейт с sync-пути кадра GSAP.
     currentIndexRef.current = index;
     startTransition(() => {
       setCurrentIndex(index);
@@ -71,7 +71,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
 
     const pending = clampSectionIndex(pendingIndexRef.current, sectionCount);
     if (pending !== index) {
-      // Intent queue: continue to the latest requested section without thrash.
+      // Очередь намерений: едем к последней запрошенной секции без thrash.
       targetIndexRef.current = pending;
       setTargetIndex(pending);
       spinningFlagRef.current = true;
@@ -132,7 +132,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
         return;
       }
 
-      // While a turn is in flight, only update pending — never kill/restart.
+      // Пока идёт поворот — только обновляем pending, без kill/restart.
       if (spinningFlagRef.current || spinningRef.current) {
         return;
       }

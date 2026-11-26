@@ -7,7 +7,7 @@ from fastapi import HTTPException, Request, status
 
 from .config import settings
 
-# Cleanup dictionary entries every N successful checks to bound memory growth.
+# Чистим словарь каждые N успешных проверок, чтобы не раздувать память.
 _CLEANUP_EVERY_CHECKS = 32
 
 _rate_buckets: dict[str, deque[float]] = defaultdict(deque)
@@ -15,7 +15,7 @@ _checks_since_cleanup = 0
 
 
 def reset_rate_limit_state() -> None:
-    """Clear buckets — used by tests between cases."""
+    """Очистка buckets — для тестов между кейсами."""
     global _checks_since_cleanup
     _rate_buckets.clear()
     _checks_since_cleanup = 0

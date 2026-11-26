@@ -17,7 +17,7 @@ function detectLang(): Lang {
 
 type Props = {
   children: ReactNode;
-  /** Override for tests */
+  /** Переопределение для тестов */
   initialLang?: Lang;
 };
 
@@ -28,13 +28,13 @@ export function I18nProvider({ children, initialLang }: Props) {
     document.documentElement.lang = lang;
   }, [lang]);
 
-  // Stable identity so consumers depending on setLang do not re-render every paint.
+  // Стабильная identity: потребители setLang не ре-рендерятся каждый paint.
   const setLang = useCallback((next: Lang) => {
     setLangState(next);
     safeSetItem(STORAGE_LANG, next);
   }, []);
 
-  // Memoize context value object — same reason as setLang above.
+  // Мемо value объекта контекста — та же причина, что у setLang.
   const value = useMemo(() => ({ lang, setLang }), [lang, setLang]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

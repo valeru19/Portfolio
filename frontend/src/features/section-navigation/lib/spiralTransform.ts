@@ -17,8 +17,8 @@ type GsapLike = {
 };
 
 /**
- * Per-frame spiral paint. Writes one compositor-only transform string —
- * cheaper than gsap.set every tick (no plugin/property parsing on the hot path).
+ * Покраска спирали на кадр: одна compositor-only строка transform —
+ * дешевле, чем gsap.set каждый тик (без парсинга плагинов на hot path).
  */
 export function paintSpiralElement(spiral: HTMLElement, rotationDeg: number): void {
   const scale = spiralScaleFromRotation(rotationDeg);
@@ -41,8 +41,8 @@ export function applySpiralLayoutToPanels(
   sectionIds.forEach((id, index) => {
     const nodes = panels.get(id);
     if (!nodes) return;
-    // Idempotent per node — a global layout-key cache skipped sizes after
-    // accessible↔spiral remount (new DOM, same viewport → bird's-eye mess).
+    // Идемпотентно по узлу: глобальный layout-key кэш раньше пропускал размеры
+    // после remount accessible↔spiral (новый DOM, тот же viewport → «птичий» вид).
     if (nodes.section.style.width !== widthPx) nodes.section.style.width = widthPx;
     if (nodes.section.style.height !== heightPx) nodes.section.style.height = heightPx;
     if (nodes.section.style.transformOrigin !== layout.transformOrigin) {
@@ -50,7 +50,7 @@ export function applySpiralLayoutToPanels(
     }
     const rotation = panelRotationAtIndex(index);
     const scale = panelScaleAtIndex(index);
-    // Always re-apply panel pose after reverse (callers only rebuild when needed).
+    // Позу панели всегда перезаписываем (вызов только когда rebuild нужен).
     if (gsap) {
       gsap.set(nodes.section, {
         transformOrigin: layout.transformOrigin,
@@ -65,8 +65,8 @@ export function applySpiralLayoutToPanels(
 }
 
 /**
- * Seconds for a spiral turn.
- * Single step ~1s. Multi-step (back-to-top) scales with distance — one continuous tween.
+ * Длительность поворота в секундах.
+ * Один шаг ~1с. Длинный прыжок (наверх) масштабируется с дистанцией — один непрерывный твин.
  */
 export function animationDurationMs(distanceDeg: number, goingBack: boolean): number {
   const steps = Math.max(1, distanceDeg / 90);

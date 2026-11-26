@@ -95,7 +95,7 @@ export function useSpiralMotion({
         window.clearTimeout(warmIdleRef.current);
         warmIdleRef.current = 0;
       }
-      // Defer decode off the turn-start frame — img.decode on the hot path hitchs.
+      // Декодим картинки после кадра старта — img.decode на hot path даёт hitch.
       warmIdleRef.current = window.setTimeout(() => {
         warmIdleRef.current = 0;
         warmAround(index);
@@ -109,7 +109,7 @@ export function useSpiralMotion({
       const snapped = snapRotationToSection(targetRotation, sectionCount);
       const index = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
 
-      // Compositor pose + palette while is-spinning still kills color transitions.
+      // Поза на compositor + палитра, пока is-spinning глушит color-transition.
       paintSpiralTransform(snapped);
       markActive(index);
       applyColors(index);
@@ -122,7 +122,7 @@ export function useSpiralMotion({
         settleActivePanel(index);
       };
 
-      // Double-rAF: let the last transform commit, then React/DOM settle.
+      // Double-rAF: сначала коммит последнего transform, потом React/DOM settle.
       if (settleRafRef.current) cancelAnimationFrame(settleRafRef.current);
       settleRafRef.current = requestAnimationFrame(() => {
         settleRafRef.current = requestAnimationFrame(runSettle);
@@ -167,16 +167,16 @@ export function useSpiralMotion({
       const startR = rotationRef.current;
       const goingBack = snapped > startR;
       const distanceDeg = Math.abs(snapped - startR);
-      // Reverse / long jumps: refresh panel matrices BEFORE the tween so the
-      // landing frame stays clean (end-of-turn rebuild was a visible hitch).
+      // Назад / длинный прыжок: обновляем матрицы панелей ДО твина,
+      // чтобы кадр приземления был чистым (rebuild в конце давал hitch).
       const needsRebuild = goingBack || distanceDeg > 135;
       if (needsRebuild) {
         buildSpiral();
         paintSpiralTransform(startR);
       }
 
-      // Do NOT applyColors / markActive / warm here — palette snaps and
-      // data-far/content-visibility thrash are the remaining flicker sources.
+      // Не трогаем applyColors / markActive / warm здесь — вспышки палитры и
+      // data-far/content-visibility как раз и давали мерцание.
       scheduleWarm(destIndex);
 
       const fromId = sectionIds[fromIndex];
@@ -192,7 +192,7 @@ export function useSpiralMotion({
           paintPanelBlur(destSection, blurPxForTurnProgress("dest", progress));
         }
       };
-      // Start of turn: outgoing sharp, incoming already soft (idle state).
+      // Старт поворота: уходящая резкая, входящая уже мягкая (idle).
       paintTurnBlur(0);
 
       if (prefersReducedMotion()) {
@@ -227,8 +227,8 @@ export function useSpiralMotion({
         });
       };
 
-      // Cached GSAP: start sync — `await` on an already-resolved promise still
-      // yields a microtask and paints a frozen pre-tween frame (мерцание/пауза).
+      // GSAP уже в кэше — стартуем синхронно: await на resolved-промисе
+      // всё равно даёт microtask и кадр паузы до твина.
       if (gsapRef.current) {
         runTween(gsapRef.current);
         return;

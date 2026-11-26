@@ -16,7 +16,7 @@ export const about = {
       "4+ years in education and IT projects.",
     ],
   } satisfies LocalizedStringList,
-  /** `projects` value is filled in `content/index.ts` from `projects.items.length`. */
+  /** Значение `projects` подставляется в content/index.ts из projects.items.length. */
   stats: [
     { id: "years", value: "4+", label: { ru: "года опыта", en: "years of experience" } },
     { id: "projects", value: "0", label: { ru: "проекта", en: "key projects" } },

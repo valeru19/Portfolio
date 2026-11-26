@@ -32,7 +32,7 @@ type Options = {
   pendingIndexRef: MutableRefObject<number>;
 };
 
-/** Mode switch, resize rebuild, accessible scroll-spy. */
+/** Смена режима, rebuild на resize, scroll-spy в accessible. */
 export function useSpiralDomEffects({
   isAccessible,
   sectionIds,
@@ -88,9 +88,9 @@ export function useSpiralDomEffects({
     const idx = currentIndexRef.current;
     const rot = rotationForSectionIndex(idx);
     pendingIndexRef.current = idx;
-    // Sync rebuild + paint first — awaiting ensureGsap() used to leave a frame
-    // of cleared spiral transform (bird's-eye of every panel). CSS path is enough
-    // until GSAP loads; then we re-apply with gsap.set.
+    // Сначала sync rebuild+paint: await ensureGsap() оставлял кадр
+    // с пустым transform спирали («птичий» вид всех панелей). CSS-пути хватает
+    // до загрузки GSAP; потом перезаписываем через gsap.set.
     buildSpiral();
     paintSpiralTransform(rot);
     markActive(idx);

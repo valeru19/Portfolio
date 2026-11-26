@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 
-/** Node 22+/26 may not expose `localStorage` unless configured — provide an in-memory shim for tests. */
+/** Node 22+/26 может не отдавать localStorage — in-memory shim для тестов. */
 function installMemoryLocalStorage() {
   const store = new Map<string, string>();
   const memoryStorage: Storage = {

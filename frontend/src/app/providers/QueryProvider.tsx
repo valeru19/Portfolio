@@ -6,7 +6,7 @@ type Props = {
 };
 
 export function QueryProvider({ children }: Props) {
-  // One client per app mount — avoids sharing cache across tests/remounts.
+  // Один client на mount приложения — без общего кэша между тестами/remount.
   const [client] = useState(
     () =>
       new QueryClient({

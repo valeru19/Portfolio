@@ -1,5 +1,19 @@
 # Backend (FastAPI + SQLite)
 
+API заявок и отзывов. Подробные описания модулей — в подпапках:
+
+- [`app/README.md`](app/README.md) — код приложения
+- [`tests/README.md`](tests/README.md) — pytest
+- [`data/README.md`](data/README.md) — SQLite runtime
+
+## Файлы в корне `backend/`
+
+- **`Dockerfile`** — образ API (non-root `appuser`, том `/app/data`).
+- **`requirements.txt`** — прод-зависимости (FastAPI, uvicorn, SQLAlchemy…).
+- **`requirements-dev.txt`** — pytest и тестовые зависимости.
+- **`pytest.ini`** — настройки pytest.
+- **`.env.example`** — шаблон `ADMIN_KEY`, `CORS_ORIGINS`, `DATABASE_URL` (не коммитить реальный `.env`).
+
 ## Local (PowerShell)
 
 ```powershell

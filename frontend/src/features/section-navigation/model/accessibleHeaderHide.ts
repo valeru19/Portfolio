@@ -6,8 +6,8 @@ export type AccessibleHeaderHideInput = {
 };
 
 /**
- * Legacy scroll spy for accessible header, plus a focus guard so keyboard
- * users do not lose the focused control when the bar would otherwise hide.
+ * Scroll-spy хедера в accessible (из legacy) + focus-guard, чтобы клавиатура
+ * не теряла фокус, когда шапка иначе бы спряталась.
  */
 export function nextAccessibleHeaderHidden({
   scrollY,

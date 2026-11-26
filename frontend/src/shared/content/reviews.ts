@@ -2,7 +2,7 @@ import type { LocalizedString } from "@/shared/i18n";
 
 export const reviews = {
   title: { ru: "Отзывы", en: "Reviews" } satisfies LocalizedString,
-  /** Shown while the approved list is empty (step 1 answer 5.6). */
+  /** Показывается, пока список одобренных пуст. */
   subtitleEmpty: {
     ru: "Отзывы появляются после проверки.",
     en: "Reviews appear after moderation.",

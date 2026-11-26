@@ -30,8 +30,8 @@
   display: block;
 }
 
-/* Keep will-change stable while mounted in spiral mode — toggling it with
-   is-spinning promoted/demoted the layer every hop and caused a land flicker. */
+/* will-change держим стабильным в режиме спирали — вкл/выкл с is-spinning
+   поднимало/снимало слой на каждом шаге и давало flicker на land. */
 .spiral:not(.spiralAccessible) {
   will-change: transform;
 }

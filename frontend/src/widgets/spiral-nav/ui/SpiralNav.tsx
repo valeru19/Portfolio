@@ -16,7 +16,7 @@ const SECTION_ARIA_LABEL: Record<SectionId, LocalizedString> = {
   contacts: content.nav.contacts,
 };
 
-/** Anchor-only nav chrome (no wheel/GSAP — step 6). Hides reviews/apply when API is off. */
+/** Хром навигации по якорям (без wheel/GSAP). Скрывает reviews/apply без API. */
 export function SpiralNav() {
   const t = useT();
   const visibleIds = getVisibleSectionIds();

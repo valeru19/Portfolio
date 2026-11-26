@@ -3,17 +3,17 @@ type GsapModule = typeof import("gsap");
 let gsapLoadPromise: Promise<GsapModule["gsap"]> | null = null;
 
 /**
- * Dynamically import GSAP. Call only when spiral mode is active and
- * prefers-reduced-motion is off — keeps GSAP out of the accessible entry chunk.
+ * Ленивый import GSAP. Вызывать только в режиме спирали и без
+ * prefers-reduced-motion — так GSAP не попадает в accessible-чанк.
  */
 export function loadGsap(): Promise<GsapModule["gsap"]> {
   if (!gsapLoadPromise) {
     gsapLoadPromise = import("gsap").then((mod) => {
       const gsap = mod.gsap;
-      // Cap catch-up after a stall so a long task doesn't teleport the spiral.
+      // Ограничиваем догон после лага, чтобы длинный таск не «телепортировал» спираль.
       gsap.ticker.lagSmoothing(500, 33);
-      // "auto": promote while tweening, release the layer after — permanent
-      // force3D:true keeps every panel on the GPU and causes layer thrash.
+      // "auto": слой на GPU только на время твина; постоянный force3D:true
+      // держит все панели на GPU и даёт layer thrash.
       gsap.config({ force3D: "auto" });
       return gsap;
     });
@@ -21,7 +21,7 @@ export function loadGsap(): Promise<GsapModule["gsap"]> {
   return gsapLoadPromise;
 }
 
-/** Test helper — clears the cached promise between cases. */
+/** Хелпер тестов — сброс кэша промиса между кейсами. */
 export function resetGsapLoader(): void {
   gsapLoadPromise = null;
 }

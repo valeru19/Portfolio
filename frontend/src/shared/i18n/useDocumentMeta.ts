@@ -5,8 +5,8 @@ import { meta } from "@/shared/content/meta";
 import { useI18n } from "./useI18n";
 
 /**
- * Keeps document title and meta description aligned with the active language.
- * Build-time SEO tags in dist/index.html remain the crawler-facing baseline.
+ * Держит document title и meta description в синхроне с активным языком.
+ * SEO-теги сборки в dist/index.html остаются базой для краулеров.
  */
 export function useDocumentMeta(): void {
   const { lang } = useI18n();

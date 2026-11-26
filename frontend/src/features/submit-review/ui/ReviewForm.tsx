@@ -42,7 +42,7 @@ export function ReviewForm() {
       });
       reset({ name: "", text: "", rating: 5, privacyConsent: false });
     } catch {
-      // status text below
+      // статус ниже
     }
   });
 

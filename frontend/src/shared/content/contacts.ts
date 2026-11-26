@@ -9,6 +9,6 @@ export const contacts = {
   } satisfies LocalizedString,
   copy: { ru: "Скопировать email", en: "Copy email" } satisfies LocalizedString,
   copied: { ru: "Скопировано", en: "Copied" } satisfies LocalizedString,
-  /** Only non-TODO links from `shared/config/contacts`. */
+  /** Только не-TODO ссылки из shared/config/contacts. */
   links: visibleContacts(),
 };

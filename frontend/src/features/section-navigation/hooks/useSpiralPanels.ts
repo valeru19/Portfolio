@@ -9,7 +9,7 @@ import { inactivePanelBlurPx, paintPanelBlur } from "../lib/panelBlur";
 import { paintPanelPaletteForId } from "../lib/paintPanelPalette";
 import { PANEL_STATE_ATTR, setPanelStateAttr } from "../model/panelStateAttrs";
 
-/** Short delay after compositor settle before enabling overflow. */
+/** Короткая пауза после settle compositor, прежде чем включить overflow. */
 const PANEL_SCROLL_ENABLE_DELAY_MS = 32;
 
 export type PanelNodes = {
@@ -68,15 +68,15 @@ export function useSpiralPanels({
           PANEL_STATE_ATTR.far,
           !isOn && !isNeighbor && (i < index - 1 || i > index + 2),
         );
-        // Only touch visibility styles when wrong — avoid style thrash every hop.
+        // Visibility трогаем только если неверно — без style thrash на каждый шаг.
         if (nodes.section.style.opacity !== "1") nodes.section.style.opacity = "1";
         if (nodes.section.style.visibility !== "visible") nodes.section.style.visibility = "visible";
         if (nodes.section.style.clipPath) nodes.section.style.clipPath = "";
-        // Only the current panel is elevated. No incoming/neighbor boost —
-        // those caused one section to paint over another during a flip.
+        // Поднимаем только текущую. Без boost входящей/соседей —
+        // из-за них секции наезжали друг на друга при перевороте.
         const z = isOn ? "5" : "1";
         if (nodes.section.style.zIndex !== z) nodes.section.style.zIndex = z;
-        // Settled focus: current sharp, everything else soft.
+        // В покое: текущая резкая, остальные размыты.
         paintPanelBlur(nodes.section, isOn ? 0 : inactivePanelBlurPx());
       });
     },
@@ -84,8 +84,8 @@ export function useSpiralPanels({
   );
 
   const clearScrollable = useCallback(() => {
-    // Lock interaction during a turn without thrashing overflow/scrollTop
-    // (those paint as section-part flicker: scrollbar/content jump).
+    // Блокируем взаимодействие на повороте без thrash overflow/scrollTop
+    // (иначе мерцает скроллбар и прыгает контент).
     panelsRef.current.forEach(({ scroll }) => {
       setPanelStateAttr(scroll, PANEL_STATE_ATTR.scrollable, false);
       scroll.style.pointerEvents = "none";
@@ -93,8 +93,8 @@ export function useSpiralPanels({
   }, []);
 
   /**
-   * Kick image decode for nearby panels. Do NOT read offsetWidth here —
-   * forced layout mid-turn is a classic thrash source (css.dev / web.dev).
+   * Прогрев decode картинок соседних панелей. Не читать offsetWidth —
+   * forced layout mid-turn классический источник thrash.
    */
   const warmSection = useCallback(
     (index: number) => {
@@ -135,8 +135,8 @@ export function useSpiralPanels({
         if (!isActive) {
           setPanelStateAttr(scroll, PANEL_STATE_ATTR.scrollable, false);
           scroll.style.pointerEvents = "none";
-          // Never toggle overflow mid-reverse — that blanks panels on scale-down.
-          // Don't yank scrollTop on the immediate previous/next either.
+          // Не трогаем overflow mid-reverse — панели белеют на scale-down.
+          // И не обнуляем scrollTop у ближайших prev/next.
           if (i < idx - 1 || i > idx + 1) scroll.scrollTop = 0;
         }
       });
@@ -147,15 +147,15 @@ export function useSpiralPanels({
       const enable = () => {
         if (isAccessible || spinningFlagRef.current) return;
         if (currentIndexRef.current !== idx) return;
-        // Only flip the attr — overflow comes from CSS. Inline overflow writes
-        // forced a layout/paint hitch (scrollbar flash) on every land.
+        // Только атрибут — overflow из CSS. Инлайн overflow давал
+        // layout/paint hitch (вспышка скроллбара) на каждом приземлении.
         setPanelStateAttr(active.scroll, PANEL_STATE_ATTR.scrollable, true);
         active.scroll.style.pointerEvents = "auto";
       };
 
       if (settleTimerRef.current != null) window.clearTimeout(settleTimerRef.current);
       settleTimerRef.current = null;
-      // Delay overflow until reverse scale has fully committed (legacy 70ms).
+      // Ждём коммит reverse scale, потом overflow (в legacy было ~70ms).
       settleTimerRef.current = window.setTimeout(enable, PANEL_SCROLL_ENABLE_DELAY_MS);
     },
     [currentIndexRef, isAccessible, sectionIds, spinningFlagRef],

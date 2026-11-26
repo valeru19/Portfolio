@@ -26,7 +26,7 @@ describe("applySpiralLayoutToPanels", () => {
     const width = first.style.width;
     const height = first.style.height;
 
-    // Simulate accessible↔spiral remount: new DOM nodes, empty inline sizes.
+    // Симуляция remount accessible↔spiral: новые DOM-узлы без inline sizes.
     const remounted = document.createElement("section");
     applySpiralLayoutToPanels(
       spiral,

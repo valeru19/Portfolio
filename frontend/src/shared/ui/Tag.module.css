@@ -33,7 +33,7 @@
   transition: filter 0.18s var(--ease);
 }
 
-/* Keep brand marks readable on the inverted hover fill. */
+/* Читаемость бренд-меток на инвертированной заливке hover. */
 .tag:hover img,
 .tag:focus-visible img {
   filter: invert(1) grayscale(1) brightness(1.15);

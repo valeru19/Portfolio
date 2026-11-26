@@ -49,8 +49,8 @@ html.is-accessible {
   border: 0;
 }
 
-/* During a spiral turn: kill paint-heavy color transitions on stage/body/chrome.
-   Mid-turn palette snaps are cheaper than overlapping 0.7s paints every section. */
+/* Во время поворота спирали: глушим тяжёлые color-transition у stage/body/chrome.
+   Мгновенный snap палитры дешевле, чем накладывающиеся 0.7s paint на каждую секцию. */
 body.is-spinning,
 body.is-spinning [data-spiral-root],
 body.is-spinning [data-spiral-section],

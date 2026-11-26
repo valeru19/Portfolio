@@ -1,4 +1,4 @@
-/** Copy plain text to the clipboard with a textarea fallback. */
+/** Копирует текст в буфер; fallback через textarea. */
 export async function copyText(value: string): Promise<boolean> {
   try {
     if (navigator.clipboard?.writeText) {
@@ -6,7 +6,7 @@ export async function copyText(value: string): Promise<boolean> {
       return true;
     }
   } catch {
-    // fall through to legacy path
+    // fallback на legacy-путь
   }
 
   try {

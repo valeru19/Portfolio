@@ -24,14 +24,14 @@ export function computeSpiralLayout(viewportWidth: number, viewportHeight: numbe
   let panelHeight: number;
 
   if (isSmallScreen && !isLandscape) {
-    // Portrait phone: φ-cell is full CSS width; origin in the spiral unit winW/φ.
+    // Портретный телефон: φ-ячейка = полная CSS-ширина; origin в единице winW/φ.
     originX = Math.floor((viewportWidth / ASPECT) * ASPECT * (1 - AXIS));
     originY = Math.floor((viewportWidth / ASPECT) * AXIS);
     panelWidth = viewportWidth;
     panelHeight = viewportWidth;
   } else {
-    // Desktop / landscape: panel = φ × width so adjacent 90° arms tessellate
-    // without overlap (larger ratios make current/prev/next stack on each other).
+    // Desktop / landscape: панель = φ × width, соседние рукава 90° стыкуются
+    // без наезда (больший ratio кладёт current/prev/next друг на друга).
     originX = Math.floor(viewportWidth * AXIS);
     originY = Math.floor(viewportWidth * ASPECT * AXIS);
     panelWidth = viewportWidth * PANEL_SIZE_RATIO;

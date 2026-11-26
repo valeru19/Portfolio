@@ -1,4 +1,4 @@
-/** Safe localStorage access — never throws when storage is blocked or missing. */
+/** Безопасный localStorage — не бросает, если storage заблокирован или отсутствует. */
 
 export function safeGetItem(key: string): string | null {
   try {

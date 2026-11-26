@@ -12,13 +12,13 @@ export const INITIAL_WHEEL_LOCK_STATE: WheelLockState = {
 
 export type WheelStepResult = {
   state: WheelLockState;
-  /** +1 = next section, -1 = previous, 0 = no step yet */
+  /** +1 = следующая секция, -1 = предыдущая, 0 = шага ещё нет */
   step: -1 | 0 | 1;
 };
 
 /**
- * Pure wheel accumulator + step lock (legacy: one section per gesture window).
- * Callers reset `accumulatedDelta` on decay timer separately.
+ * Чистый аккумулятор колеса + lock шага (legacy: одна секция на жест).
+ * Сброс accumulatedDelta — отдельный decay-таймер у вызывающего.
  */
 export function reduceWheelStep(
   state: WheelLockState,

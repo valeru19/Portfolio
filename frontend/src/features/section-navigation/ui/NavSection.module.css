@@ -17,10 +17,10 @@
   cursor: pointer;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
-  /* Below active — later DOM siblings (next page) must not paint over the current one. */
+  /* Ниже active — следующие DOM-соседи (следующая страница) не должны перекрывать текущую. */
   z-index: 1;
-  /* Do NOT will-change every panel — only the parent .spiral animates per frame.
-     Layerizing all arms during a spin causes GPU memory thrash (web.dev). */
+  /* Не ставить will-change на каждую панель — анимируется родитель .spiral.
+     Слои на всех рукавах во время спина → thrash GPU-памяти. */
   contain: layout style;
 }
 
@@ -39,15 +39,15 @@
   contain-intrinsic-size: auto 480px;
 }
 
-/* Freeze content-visibility during a turn — toggling data-far at land used to
-   skip/unskip paint and flash blank panel interiors (мерцание контента). */
+/* На повороте замораживаем content-visibility — смена data-far на land
+   раньше skip/unskip paint и мигала пустым содержимым панели. */
 :global(body.is-spinning) .spiralSection[data-far] .panelScroll {
   content-visibility: visible;
 }
 
 .panelScroll {
   height: 100%;
-  /* never toggle overflow via :not(.is-spinning) — that blanks panels on reverse scale */
+  /* не переключать overflow через :not(.is-spinning) — белеют панели на reverse scale */
   overflow: hidden;
   padding: clamp(18px, 2.6vw, 36px);
   padding-top: 76px;
@@ -62,7 +62,7 @@
 }
 
 .spiralSection[data-active] .panelScroll[data-scrollable] {
-  /* scroll (not auto): gutter reserved; thumb ready as soon as the panel activates */
+  /* scroll (не auto): gutter зарезервирован; thumb готов сразу при активации */
   overflow-x: hidden;
   overflow-y: scroll;
   pointer-events: auto;

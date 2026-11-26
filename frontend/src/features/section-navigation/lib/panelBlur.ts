@@ -1,13 +1,13 @@
 import { PANEL_BLUR_PX } from "../model/constants";
 
-/** Idle / settled blur for a panel that is not current. */
+/** Blur для панели, которая сейчас не текущая (состояние покоя). */
 export function inactivePanelBlurPx(): number {
   return PANEL_BLUR_PX;
 }
 
 /**
- * Crossfade blur for a spiral turn.
- * progress 0 = still on fromIndex (sharp), 1 = landed on dest (sharp).
+ * Кроссфейд blur на перевороте спирали.
+ * progress 0 — ещё на from (резкая), 1 — приземлились на dest (резкая).
  */
 export function blurPxForTurnProgress(
   role: "from" | "dest" | "other",
@@ -20,7 +20,7 @@ export function blurPxForTurnProgress(
   return maxBlurPx;
 }
 
-/** Write filter only when the string changes — avoids style thrash every frame. */
+/** Пишем filter только при смене строки — без лишнего style thrash каждый кадр. */
 export function paintPanelBlur(section: HTMLElement, blurPx: number): void {
   const next = blurPx <= 0.05 ? "none" : `blur(${blurPx.toFixed(2)}px)`;
   if (section.style.filter !== next) section.style.filter = next;

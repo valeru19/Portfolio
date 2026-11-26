@@ -4,21 +4,21 @@ export type ContactLink = {
   value: string;
   href: string;
   copyable?: boolean;
-  /** When true (or href/value is TODO), the link must not render in UI. */
+  /** true (или href/value = TODO) — ссылку не рендерим в UI. */
   hidden?: boolean;
 };
 
 export const LINKEDIN_PROFILE_SLUG = "валера-кожин-923b8638b";
 export const LINKEDIN_PROFILE_DISPLAY = `linkedin.com/in/${LINKEDIN_PROFILE_SLUG}`;
 
-/** Encode Cyrillic (and other non-ASCII) path segments for a valid LinkedIn href. */
+/** Кодирует кириллицу (и прочий non-ASCII) в path для валидного LinkedIn href. */
 export function linkedInProfileHref(slug: string = LINKEDIN_PROFILE_SLUG): string {
   return encodeURI(`https://www.linkedin.com/in/${slug}`);
 }
 
 /**
- * Real contact values live here. Anything still `TODO` / `hidden` stays off the page.
- * Do not add a phone number here.
+ * Реальные контакты живут здесь. Всё ещё `TODO` / `hidden` на страницу не попадает.
+ * Телефон сюда не добавлять.
  */
 export const contactsConfig = {
   email: {
@@ -81,20 +81,20 @@ export function hhResumeHref(): string | null {
   return isContactVisible(hh) ? hh.href : null;
 }
 
-/** Public email address for privacy text / copy control, or null while still TODO. */
+/** Публичный email для privacy / copy, или null пока TODO. */
 export function privacyEmailAddress(): string | null {
   const email = contactsConfig.email;
   return isContactVisible(email) ? email.value : null;
 }
 
-/** Prefer email, then Telegram, then LinkedIn for privacy / form contact channel. */
+/** Приоритет канала: email → Telegram → LinkedIn (privacy / формы). */
 export const PRIVACY_CONTACT_PRIORITY = ["email", "telegram", "linkedin"] as const;
 
 export type PrivacyContactId = (typeof PRIVACY_CONTACT_PRIORITY)[number];
 
 /**
- * First visible contact suitable for “delete/update my data” requests.
- * GitHub / hh.ru are not used here — they are not personal reply channels.
+ * Первый видимый контакт для запросов «удалить/обновить мои данные».
+ * GitHub / hh.ru сюда не берём — это не личные каналы ответа.
  */
 export function privacyContactForDeletion(): ContactLink | null {
   for (const id of PRIVACY_CONTACT_PRIORITY) {
@@ -104,12 +104,12 @@ export function privacyContactForDeletion(): ContactLink | null {
   return null;
 }
 
-/** Forms that collect personal data require a reply channel from the priority list. */
+/** Формы с ПДн требуют канал ответа из приоритетного списка. */
 export function hasPrivacyContactChannel(): boolean {
   return privacyContactForDeletion() !== null;
 }
 
-/** https? contacts only — for JSON-LD sameAs (excludes mailto:). */
+/** Только https?-контакты — для JSON-LD sameAs (без mailto:). */
 export function sameAsUrls(): string[] {
   return visibleContacts()
     .filter((link) => /^https?:/i.test(link.href))

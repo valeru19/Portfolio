@@ -15,7 +15,7 @@ type Props = {
   "aria-labelledby"?: string;
 };
 
-/** Section shell that registers with spiral navigation (panel + inner scroll). */
+/** Оболочка секции: регистрируется в спирали (панель + внутренний скролл). */
 export function NavSection({ id, children, className, ...aria }: Props) {
   const { isAccessible, registerPanel, goTo, currentIndex, sectionIds } =
     useSpiralNavigationContext();
@@ -50,8 +50,8 @@ export function NavSection({ id, children, className, ...aria }: Props) {
   }
 
   return (
-    // Click-to-jump matches legacy; keyboard uses HUD dots + arrow/page keys.
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- see comment above
+    // Клик по панели = переход (как в legacy); клавиатура — точки HUD и стрелки/Page.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- см. комментарий выше
     <section
       ref={sectionRef}
       id={id}

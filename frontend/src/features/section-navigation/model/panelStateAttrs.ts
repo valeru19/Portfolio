@@ -1,4 +1,4 @@
-/** DOM state markers for spiral panels — paired with CSS Modules attribute selectors. */
+/** Маркеры состояния панелей спирали — пара к attribute-селекторам CSS Modules. */
 export const PANEL_STATE_ATTR = {
   active: "data-active",
   far: "data-far",
@@ -7,7 +7,7 @@ export const PANEL_STATE_ATTR = {
 
 export type PanelStateAttr = (typeof PANEL_STATE_ATTR)[keyof typeof PANEL_STATE_ATTR];
 
-/** Static markers for global CSS (spin transitions), not toggled as panel state. */
+/** Статические маркеры для global CSS (spin), не переключаются как panel state. */
 export const SPIRAL_DOM_ATTR = {
   root: "data-spiral-root",
   section: "data-spiral-section",

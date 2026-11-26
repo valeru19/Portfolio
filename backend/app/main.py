@@ -21,6 +21,7 @@ from .schemas import (
     ReviewPublic,
 )
 
+# Создаём таблицы при старте (SQLite / простой деплой без Alembic).
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Valeru Portfolio API", version="1.0.0")
@@ -37,6 +38,7 @@ DbDep = Annotated[Session, Depends(get_db)]
 
 
 def require_admin(x_admin_key: Annotated[str | None, Header()] = None) -> None:
+    """Защита админ-роутов заголовком X-Admin-Key (constant-time compare)."""
     if not x_admin_key or not secrets.compare_digest(x_admin_key, settings.admin_key):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -46,6 +48,7 @@ def require_admin(x_admin_key: Annotated[str | None, Header()] = None) -> None:
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
+    """Liveness для Docker/CI."""
     return {"status": "ok"}
 
 

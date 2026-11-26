@@ -1,8 +1,8 @@
 import type { LocalizedString, LocalizedStringList } from "@/shared/i18n";
 
 /**
- * Privacy policy body. The email sentence is optional and only rendered when
- * a real contact email exists in `contactsConfig` (not TODO).
+ * Текст политики privacy. Предложение с email рендерится только если
+ * в contactsConfig есть реальный email (не TODO).
  */
 export const privacy = {
   title: {
@@ -20,8 +20,8 @@ export const privacy = {
     ],
   } satisfies LocalizedStringList,
   /**
-   * Shown when email, Telegram or LinkedIn is visible (priority order).
-   * Placeholder `{contact}` is replaced with the contact value.
+   * Строка, когда виден email / Telegram / LinkedIn (по приоритету).
+   * Плейсхолдер `{contact}` заменяется значением контакта.
    */
   contactLine: {
     ru: "Чтобы удалить или изменить свои данные, напишите: {contact}.",

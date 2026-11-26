@@ -41,7 +41,7 @@ const about = {
   ),
 };
 
-/** Typed site content (former legacy `CONTENT`), minus API base (see `shared/config/env`). */
+/** Типизированный контент сайта (бывший legacy CONTENT), без API base (см. shared/config/env). */
 export const content = {
   meta,
   a11y,

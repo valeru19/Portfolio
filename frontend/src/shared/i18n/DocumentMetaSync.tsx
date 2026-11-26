@@ -1,6 +1,6 @@
 import { useDocumentMeta } from "./useDocumentMeta";
 
-/** Mount inside I18nProvider to sync title/description with language. */
+/** Монтировать внутри I18nProvider — синхронизация title/description с языком. */
 export function DocumentMetaSync(): null {
   useDocumentMeta();
   return null;

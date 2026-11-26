@@ -11,9 +11,9 @@ export type SectionPalette = {
 };
 
 /**
- * Order matches ALL_SECTION_IDS (hero → contacts, 9 slots).
- * Look up by section id — not by visible spiral index — so hiding reviews/apply
- * does not shift contacts onto the reviews palette.
+ * Порядок как у ALL_SECTION_IDS (hero → contacts, 9 слотов).
+ * Ищем по id секции, не по видимому индексу спирали — иначе скрытие
+ * reviews/apply сдвигает contacts на палитру reviews.
  */
 export const SECTION_PALETTE_DARK: readonly SectionPalette[] = [
   {
@@ -25,7 +25,7 @@ export const SECTION_PALETTE_DARK: readonly SectionPalette[] = [
     border: "#dfe8e5",
     muted: "#93a09c",
   },
-  // about — warm dark (never paper-white in dark theme)
+  // about — тёплый тёмный (не paper-white в dark)
   {
     bg: "#1c1814",
     fg: "#f4efe8",
@@ -53,7 +53,7 @@ export const SECTION_PALETTE_DARK: readonly SectionPalette[] = [
     border: "#d5dceb",
     muted: "#97a3b6",
   },
-  // projects — warm dark
+  // projects — тёплый тёмный
   {
     bg: "#2a1f1e",
     fg: "#f8eeea",
@@ -81,7 +81,7 @@ export const SECTION_PALETTE_DARK: readonly SectionPalette[] = [
     border: "#ece9dc",
     muted: "#a3a090",
   },
-  // apply — cool dark
+  // apply — холодный тёмный
   {
     bg: "#152029",
     fg: "#e7eef3",
@@ -91,7 +91,7 @@ export const SECTION_PALETTE_DARK: readonly SectionPalette[] = [
     border: "#c5d4e0",
     muted: "#8aa0b0",
   },
-  // contacts — deep terracotta (not paper-white)
+  // contacts — глубокая терракота (не paper-white)
   {
     bg: "#3a2418",
     fg: "#fff6ec",
@@ -191,14 +191,14 @@ export function paletteForTheme(theme: "dark" | "light"): readonly SectionPalett
   return theme === "light" ? SECTION_PALETTE_LIGHT : SECTION_PALETTE_DARK;
 }
 
-/** Palette for a full-list index (0 = hero … 8 = contacts). */
+/** Палитра по индексу полного списка (0 = hero … 8 = contacts). */
 export function sectionPaletteAt(theme: "dark" | "light", index: number): SectionPalette {
   const list = paletteForTheme(theme);
   const safeIndex = Math.min(Math.max(index, 0), list.length - 1);
   return list[safeIndex];
 }
 
-/** Palette for a section id — stable when some sections are hidden from the spiral. */
+/** Палитра по id секции — стабильна, если часть секций скрыта из спирали. */
 export function sectionPaletteForId(theme: "dark" | "light", sectionId: SectionId): SectionPalette {
   const index = ALL_SECTION_IDS.indexOf(sectionId);
   return sectionPaletteAt(theme, index < 0 ? 0 : index);

@@ -50,7 +50,7 @@ export function ApplicationForm() {
         privacyConsent: false,
       });
     } catch {
-      // status text below
+      // статус ниже
     }
   });
 

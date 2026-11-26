@@ -16,7 +16,7 @@ describe("section palettes", () => {
   });
 
   it("keeps contacts palette when reviews/apply slots are skipped in the spiral", () => {
-    // Visible index 6 would wrongly be reviews olive; contacts must stay its own slot.
+    // Видимый индекс 6 ошибочно стал бы reviews olive; contacts — свой слот.
     expect(sectionPaletteForId("dark", "contacts").bg).toBe("#3a2418");
     expect(sectionPaletteForId("light", "contacts").bg).toBe("#a86b3e");
     expect(sectionPaletteForId("dark", "reviews").bg).toBe("#171814");
@@ -28,7 +28,7 @@ describe("section palettes", () => {
       const r = Number.parseInt(value.slice(0, 2), 16);
       const g = Number.parseInt(value.slice(2, 4), 16);
       const b = Number.parseInt(value.slice(4, 6), 16);
-      // Relative luminance threshold — blocks cream/white panels in dark mode.
+      // Порог относительной яркости — режет cream/white панели в dark mode.
       return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.72;
     };
     for (const palette of paletteForTheme("dark")) {

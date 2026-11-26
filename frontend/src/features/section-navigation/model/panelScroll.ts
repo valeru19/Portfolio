@@ -13,7 +13,7 @@ export function panelCanConsumeWheel(box: ScrollBoxMetrics | null): boolean {
   return box.scrollHeight > box.clientHeight + SCROLL_OVERFLOW_SLACK_PX;
 }
 
-/** True when further wheel in `deltaY` direction should leave the panel. */
+/** True, если дальнейший wheel в сторону `deltaY` должен выйти из панели. */
 export function panelAtScrollEdge(box: ScrollBoxMetrics, deltaY: number): boolean {
   const maxScroll = Math.max(0, box.scrollHeight - box.clientHeight);
   const atTop = box.scrollTop <= SCROLL_EDGE_EPSILON_PX;
@@ -24,10 +24,10 @@ export function panelAtScrollEdge(box: ScrollBoxMetrics, deltaY: number): boolea
 }
 
 /**
- * Apply wheel delta inside a panel. Native wheel scrolling is unreliable when the
- * scroll box sits under CSS transforms (spiral rotate/scale), so we drive scrollTop.
- * `scrollFactor` < 1 softens large trackpad deltas for a smoother feel.
- * Returns the next scrollTop.
+ * Применяет wheel-дельту внутри панели. Нативный wheel ненадёжен, когда
+ * scroll-box под CSS-трансформами спирали — поэтому крутим scrollTop сами.
+ * `scrollFactor` < 1 смягчает крупные дельты тачпада.
+ * Возвращает следующий scrollTop.
  */
 export function nextScrollTopAfterWheel(
   box: ScrollBoxMetrics,
@@ -38,7 +38,7 @@ export function nextScrollTopAfterWheel(
   return Math.min(maxScroll, Math.max(0, box.scrollTop + deltaY * scrollFactor));
 }
 
-/** Exponential ease toward target; snaps when close enough. */
+/** Экспоненциальный догон к target; snap, когда уже достаточно близко. */
 export function lerpScrollTop(current: number, target: number, alpha: number): number {
   if (alpha >= 1) return target;
   const next = current + (target - current) * alpha;

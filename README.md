@@ -50,6 +50,17 @@ npm run dev
 
 ## Структура
 
+В **каждой папке с кодом** лежит свой `README.md` на русском: зачем папка, что делает каждый файл и как связан с соседними модулями. Навигация:
+
+| Зона | Точка входа по документации |
+| --- | --- |
+| Фронт (обзор) | [`frontend/README.md`](frontend/README.md) |
+| FSD `src` | [`frontend/src/README.md`](frontend/src/README.md) |
+| Спираль | [`frontend/src/features/section-navigation/README.md`](frontend/src/features/section-navigation/README.md) |
+| Бэкенд | [`backend/README.md`](backend/README.md) → [`backend/app`](backend/app/README.md) |
+| Деплой API | [`deploy/README.md`](deploy/README.md) |
+| CI | [`.github/workflows/README.md`](.github/workflows/README.md) |
+
 ```
 Portfolio/
 ├── frontend/                 # Vite + React + TypeScript (FSD)
@@ -57,13 +68,14 @@ Portfolio/
 │   │   ├── app/              # точка входа, провайдеры
 │   │   ├── features/         # фичи (формы, спираль, отзывы…)
 │   │   ├── widgets/          # крупные блоки страницы
-│   │   ├── shared/           # UI, i18n, theme, API-клиент, контент
-│   │   └── pages/            # страница лендинга
+│   │   ├── entities/         # карточки сущностей
+│   │   └── shared/           # UI, i18n, theme, API-клиент, контент
 │   ├── public/               # статика (иконки, логотипы)
 │   ├── legacy/               # старый однофайловый лендинг (пока сохранён)
 │   ├── vite-plugins/         # SEO-инъекция в dist/index.html
 │   └── dist/                 # результат `npm run build`
 ├── backend/                  # FastAPI + SQLite
+├── deploy/                   # Docker Compose + Caddy на VPS
 ├── .github/workflows/        # CI + GitHub Pages
 ├── DEPLOY.md                 # деплой фронта и бэка
 └── README.md

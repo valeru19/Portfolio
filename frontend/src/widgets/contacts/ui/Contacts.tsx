@@ -20,7 +20,7 @@ const CONTACT_ICON: Record<string, string> = {
 };
 
 type Props = {
-  /** Rendered inside the contacts panel (e.g. Footer + privacy). */
+  /** Рендер внутри панели contacts (например Footer + privacy). */
   endSlot?: ReactNode;
 };
 

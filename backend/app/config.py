@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
+# Запрещённый плейсхолдер из .env.example — без своего ADMIN_KEY API не стартует.
 INSECURE_ADMIN_KEY_PLACEHOLDER = "change-me-admin-key"
 
 
@@ -16,6 +17,7 @@ def _split_origins(raw: str) -> list[str]:
 
 
 def _resolve_database_url(raw: str | None) -> str:
+    """Относительный sqlite-путь резолвим от backend/; каталог data/ создаём при необходимости."""
     default = f"sqlite:///{(BASE_DIR / 'data' / 'portfolio.db').as_posix()}"
     url = (raw or default).strip() or default
     if not url.startswith("sqlite:///"):

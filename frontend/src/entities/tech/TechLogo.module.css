@@ -32,13 +32,13 @@
 .tileCompact img {
   max-width: 56px;
   height: 36px;
-  /* OS row stays still — float + overflow:hidden leaves Chrome ghost stripes. */
+  /* Ряд ОС без float — float + overflow:hidden даёт ghost-полосы в Chrome. */
   animation: none;
 }
 
 .tile img {
-  /* Keep the animation attached and pause while spinning so it does not
-     restart from 0% (that looked like logos blinking back in). */
+  /* Анимацию не снимаем, а паузим на spin — иначе
+     рестарт с 0% выглядел как мигание логотипов. */
   animation: logo-float 4.2s ease-in-out infinite;
   animation-play-state: running;
 }

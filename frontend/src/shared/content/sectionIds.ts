@@ -1,6 +1,6 @@
 import { hasPrivacyContactChannel, isApiConfigured } from "@/shared/config";
 
-/** All possible section anchors in page order. */
+/** Все якоря секций в порядке страницы. */
 export const ALL_SECTION_IDS = [
   "hero",
   "about",
@@ -19,7 +19,7 @@ const API_ONLY_SECTIONS = new Set<SectionId>(["reviews", "apply"]);
 
 export type SectionVisibilityOptions = {
   apiEnabled?: boolean;
-  /** Email / Telegram / LinkedIn channel required for forms that collect personal data. */
+  /** Канал Email / Telegram / LinkedIn обязателен для форм с ПДн. */
   hasContactChannel?: boolean;
 };
 
@@ -41,6 +41,6 @@ export function getSectionIndexLabel(
 ): string {
   const index = visibleIds.indexOf(sectionId);
   if (index < 0) return "00";
-  // hero is 0 in the list; labeled sections start at 01 for about
+  // hero = 0 в списке; подписи секций начинаются с 01 у about
   return String(index).padStart(2, "0");
 }

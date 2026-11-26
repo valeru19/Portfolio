@@ -6,7 +6,7 @@ export function getSiteUrl(): string {
   return (import.meta.env.VITE_SITE_URL || "").replace(/\/$/, "");
 }
 
-/** Forms and review list require a configured API base. */
+/** Формы и список отзывов требуют настроенный API base. */
 export function isApiConfigured(): boolean {
   return getApiBase().length > 0;
 }

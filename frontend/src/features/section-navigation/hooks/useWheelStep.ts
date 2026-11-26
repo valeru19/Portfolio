@@ -23,7 +23,7 @@ import {
 
 type Options = {
   enabled: boolean;
-  /** Prefer a ref-backed getter so the listener stays stable across spins. */
+  /** Лучше getter через ref — слушатель не пересоздаётся на каждый spin. */
   getIsBusy: () => boolean;
   getActiveScrollBox: () => HTMLElement | null;
   onStep: (direction: 1 | -1) => void;
@@ -89,15 +89,15 @@ export function useWheelStep({ enabled, getIsBusy, getActiveScrollBox, onStep }:
       const dy = normalizeWheelDeltaY(event.deltaY, event.deltaMode, window.innerHeight);
       const isBusy = getIsBusyRef.current();
       const scrollBox = getActiveScrollBoxRef.current();
-      // Use the lerped target so edge detection matches where scroll is heading.
+      // Берём lerped target, чтобы край панели совпадал с направлением скролла.
       const effectiveTop =
         scrollBox && scrollElRef.current === scrollBox && targetScrollRef.current != null
           ? targetScrollRef.current
           : undefined;
       const metrics = metricsFromElement(scrollBox, effectiveTop);
 
-      // Prefer inner panel scroll whenever the active panel overflows, even if the
-      // event target sits outside the scroll box (HUD, gaps, transform hit-testing).
+      // Сначала скролл внутри панели, если она переполнена — даже если
+      // target события вне scroll-box (HUD, зазоры, hit-test под transform).
       if (!isBusy && panelCanConsumeWheel(metrics) && scrollBox && metrics) {
         if (!panelAtScrollEdge(metrics, dy)) {
           event.preventDefault();
@@ -116,8 +116,8 @@ export function useWheelStep({ enabled, getIsBusy, getActiveScrollBox, onStep }:
       event.preventDefault();
       stopSmoothScroll();
 
-      // Allow section intent while a turn is in flight — goTo coalesces into
-      // pendingIndex instead of kill/restart. isBusy still blocks panel scroll above.
+      // Шаг секции во время поворота разрешён — goTo коалесцирует в pendingIndex
+      // без kill/restart. isBusy выше по-прежнему режет скролл панели.
       const { state, step } = reduceWheelStep(stateRef.current, dy, performance.now(), {
         isBusy: false,
       });
@@ -129,9 +129,9 @@ export function useWheelStep({ enabled, getIsBusy, getActiveScrollBox, onStep }:
       }, WHEEL_ACC_DECAY_MS);
 
       if (step === 0) return;
-      // Do not reset scrollTop here: on the first/last section a step may be a no-op,
-      // and wiping scrollTop makes the panel jump back to the top. Real navigations
-      // already clear panel scroll via clearScrollable().
+      // Не сбрасываем scrollTop: на первой/последней секции шаг может быть no-op,
+      // и обнуление прыгнет панель наверх. Реальные переходы чистят скролл
+      // через clearScrollable().
       onStepRef.current(step);
     };
 

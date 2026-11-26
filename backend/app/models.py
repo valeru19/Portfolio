@@ -13,6 +13,8 @@ def utcnow() -> datetime:
 
 
 class Application(Base):
+    """Заявка с формы (работа / заказ)."""
+
     __tablename__ = "applications"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -24,6 +26,8 @@ class Application(Base):
 
 
 class Review(Base):
+    """Отзыв: status pending → approved после модерации."""
+
     __tablename__ = "reviews"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

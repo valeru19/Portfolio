@@ -22,7 +22,7 @@
   min-height: 112px;
   padding: 16px 12px;
   text-decoration: none;
-  /* Use panel-scoped tokens (set on the section) so light theme keeps contrast. */
+  /* Токены с панели (на section), чтобы в light теме сохранялся контраст. */
   color: var(--text);
   background: color-mix(in srgb, var(--text) 10%, var(--panel));
   border: var(--frame) solid var(--border);

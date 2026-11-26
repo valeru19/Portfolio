@@ -2,6 +2,15 @@
 
 Краткий гайд: FastAPI + SQLite за Caddy с автоматическим HTTPS. Фронт остаётся на GitHub Pages; этот стек поднимает только API.
 
+## Файлы в этой папке
+
+- **`docker-compose.yml`** — сервисы API (`backend` image) и Caddy; сеть, тома для SQLite и сертификатов, env-файл.
+- **`Caddyfile`** — reverse-proxy на API, автоматический HTTPS Let’s Encrypt для домена API.
+- **`backup.sh`** — скрипт бэкапа SQLite с хоста/контейнера (расписание через cron на VPS).
+- **`README.md`** — этот гайд по установке на сервер.
+
+Связь с кодом API: [`../backend`](../backend/README.md). Общий деплой фронта+бэка: [`../DEPLOY.md`](../DEPLOY.md).
+
 ## Что нужно
 
 - VPS с Ubuntu (или совместимый Linux)
