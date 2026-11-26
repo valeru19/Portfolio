@@ -1,5 +1,6 @@
 import type { SectionId } from "@/shared/content";
 
+import { SPIRAL_FLIP_DURATION_MS } from "../model/constants";
 import {
   computeSpiralLayout,
   panelRotationAtIndex,
@@ -16,15 +17,59 @@ type GsapLike = {
   set: (target: object, vars: Record<string, unknown>) => void;
 };
 
+let lastSpiralTransform = "";
+let lastGsapRotation = Number.NaN;
+let lastGsapScale = Number.NaN;
+
 /**
- * Покраска спирали на кадр: одна compositor-only строка transform —
- * дешевле, чем gsap.set каждый тик (без парсинга плагинов на hot path).
+ * CSS-путь (без GSAP): одна compositor-only строка transform.
+ * Повтор с тем же значением пропускаем — меньше style invalidation.
  */
 export function paintSpiralElement(spiral: HTMLElement, rotationDeg: number): void {
   const scale = spiralScaleFromRotation(rotationDeg);
-  spiral.style.transform = `rotate(${rotationDeg}deg) scale(${scale}) translate3d(0,0,0)`;
+  // Чуть округляем, чтобы микрошум float не плодил уникальные строки каждый тик.
+  const r = Math.round(rotationDeg * 1000) / 1000;
+  const s = Math.round(scale * 1e6) / 1e6;
+  const next = `rotate(${r}deg) scale(${s}) translate3d(0,0,0)`;
+  if (next === lastSpiralTransform && spiral.style.transform === next) return;
+  lastSpiralTransform = next;
+  lastGsapRotation = Number.NaN;
+  lastGsapScale = Number.NaN;
+  spiral.style.transform = next;
 }
 
+/**
+ * Hot path твина как в legacy: gsap.set(rotation/scale) на спирали.
+ * Идемпотентно: повтор с теми же r/s не пишет в DOM.
+ */
+export function paintSpiralElementWithGsap(
+  gsap: GsapLike,
+  spiral: HTMLElement,
+  rotationDeg: number,
+): void {
+  const scale = spiralScaleFromRotation(rotationDeg);
+  const r = Math.round(rotationDeg * 1000) / 1000;
+  const s = Math.round(scale * 1e6) / 1e6;
+  if (r === lastGsapRotation && s === lastGsapScale) return;
+  lastGsapRotation = r;
+  lastGsapScale = s;
+  // force3D:true на время твина — как legacy; стабильный compositor-слой спирали.
+  gsap.set(spiral, { rotation: r, scale: s, force3D: true });
+  // CSS-кэш невалиден: после твина finish снова может писать style.transform.
+  lastSpiralTransform = "";
+}
+
+/** Сброс кэша строки transform (тесты / remount). */
+export function resetSpiralPaintCache(): void {
+  lastSpiralTransform = "";
+  lastGsapRotation = Number.NaN;
+  lastGsapScale = Number.NaN;
+}
+
+/**
+ * Раскладка панелей. Позу пишем через CSS transform (не gsap.set на каждую панель) —
+ * gsap.set на 7 узлах перед reverse/Наверх давал заметный hitch на старте твина.
+ */
 export function applySpiralLayoutToPanels(
   spiral: HTMLElement,
   sectionIds: SectionId[],
@@ -41,8 +86,6 @@ export function applySpiralLayoutToPanels(
   sectionIds.forEach((id, index) => {
     const nodes = panels.get(id);
     if (!nodes) return;
-    // Идемпотентно по узлу: глобальный layout-key кэш раньше пропускал размеры
-    // после remount accessible↔spiral (новый DOM, тот же viewport → «птичий» вид).
     if (nodes.section.style.width !== widthPx) nodes.section.style.width = widthPx;
     if (nodes.section.style.height !== heightPx) nodes.section.style.height = heightPx;
     if (nodes.section.style.transformOrigin !== layout.transformOrigin) {
@@ -50,40 +93,39 @@ export function applySpiralLayoutToPanels(
     }
     const rotation = panelRotationAtIndex(index);
     const scale = panelScaleAtIndex(index);
-    // Позу панели всегда перезаписываем (вызов только когда rebuild нужен).
-    if (gsap) {
-      gsap.set(nodes.section, {
-        transformOrigin: layout.transformOrigin,
-        rotation,
-        scale,
-        force3D: "auto",
-      });
-    } else {
-      nodes.section.style.transform = `rotate(${rotation}deg) scale(${scale}) translate3d(0,0,0)`;
+    const pose = `rotate(${rotation}deg) scale(${scale}) translate3d(0,0,0)`;
+    if (nodes.section.style.transform !== pose) {
+      nodes.section.style.transform = pose;
     }
   });
 }
 
 /**
- * Длительность поворота в секундах.
- * Один шаг ~1с. Длинный прыжок (наверх) масштабируется с дистанцией — один непрерывный твин.
+ * Длительность твина (секунды).
+ * 1 шаг — от SPIRAL_FLIP_DURATION_MS (locked); multi — чуть медленнее.
  */
 export function animationDurationMs(distanceDeg: number, goingBack: boolean): number {
   const steps = Math.max(1, distanceDeg / 90);
+  const singleCeiling = SPIRAL_FLIP_DURATION_MS / 1000;
   if (steps <= 1.01) {
-    const ceiling = goingBack ? 1.25 : 1.15;
-    const floor = goingBack ? 0.95 : 0.9;
-    return Math.min(ceiling, Math.max(floor, 0.8 + distanceDeg / 220));
+    // LOCKED single-step — не менять без явного запроса.
+    const ceiling = goingBack ? singleCeiling : singleCeiling - 0.04;
+    const floor = goingBack ? 0.55 : 0.52;
+    return Math.min(ceiling, Math.max(floor, 0.48 + distanceDeg / 500));
   }
-  const perStep = goingBack ? 0.6 : 0.48;
-  const floor = goingBack ? 1.6 : 1.3;
-  const ceiling = goingBack ? 4.5 : 3.2;
-  return Math.min(ceiling, Math.max(floor, steps * perStep));
+  // Прыжок через несколько секций: медленнее 1-шага по суммарному ощущению.
+  const perStep = goingBack ? 0.2 : 0.22;
+  const floor = goingBack ? 0.85 : 0.9;
+  const ceiling = goingBack ? 1.55 : 1.7;
+  return Math.min(ceiling, Math.max(floor, 0.55 + steps * perStep));
 }
 
+/**
+ * 1 шаг: sine.inOut (зафиксировано).
+ * Reverse / длинный: power2.out — быстрее сходит со «тяжёлого» scale-up (legacy).
+ */
 export function animationEase(distanceDeg: number, goingBack: boolean): string {
   const steps = Math.max(1, distanceDeg / 90);
-  if (steps > 1.5) return "sine.inOut";
-  if (goingBack) return "power2.out";
+  if (goingBack || steps > 1.5) return "power2.out";
   return "sine.inOut";
 }
