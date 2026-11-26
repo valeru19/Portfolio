@@ -32,4 +32,5 @@ export {
   settlePanelViewsAfterLand,
   revealNextBlurAfterLand,
   prepareLongJumpViews,
+  armHiddenRingNext,
 } from "./panelViewTurn";

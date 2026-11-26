@@ -86,7 +86,7 @@ export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () =>
   const fromNodes = panels.get(fromIdx);
   const destNodes = panels.get(destIdx);
 
-  // ——— Wrap: как шаг вперёд; dest уже blur в слоте N. Без hide/prep. ———
+  // ——— Wrap: dest заранее под cover + opacity 0 → показать и снять cover. ———
   if (wrapsRing) {
     for (let i = 0; i < sectionCount; i += 1) {
       const nodes = panels.get(i);
@@ -96,12 +96,10 @@ export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () =>
     }
     if (fromNodes) void transitionToSolid(fromNodes, gen, durationMs);
     if (destNodes) {
-      const destWas = readPanelViewAttr(destNodes.section);
-      if (destWas === "blur") {
-        handles.push(transitionBlurToSharp(destNodes.section, durationMs));
-      } else {
-        void transitionSolidToSharp(destNodes, gen, durationMs);
-      }
+      // Появление по канону: opacity 1, контент уже под cover → fade cover.
+      destNodes.section.style.opacity = "1";
+      destNodes.section.style.visibility = "visible";
+      void transitionSolidToSharp(destNodes, gen, durationMs);
     }
     return {
       gen,
@@ -329,8 +327,18 @@ export async function settlePanelViewsAfterLand(
 }
 
 /**
+ * Кольцевая «следующая» на последней: первая в слоте N, контент под cover,
+ * секция opacity 0 — не видна, но decode/paint уже сделаны.
+ */
+export async function armHiddenRingNext(nodes: PanelNodesLike): Promise<void> {
+  await prepareSharpUnderCover(nodes);
+  nodes.section.style.opacity = "0";
+  // Не data-ahead: hover/blur idle не включаем.
+}
+
+/**
  * Дооткрыть blur после посадки, только если ещё solid / под cover.
- * Если уже blur и cover≈0 — no-op (спека 1.2 Наверх: на посадке ничего не меняется).
+ * На последней — не blur, а скрытый ring-next (armHiddenRingNext).
  */
 export async function revealNextBlurAfterLand(
   panels: Map<number, PanelNodesLike>,
@@ -339,14 +347,15 @@ export async function revealNextBlurAfterLand(
   gen: number,
 ): Promise<void> {
   if (gen !== currentPanelViewGeneration()) return;
-  // На последней — кольцевой blur = секция 0 (уже в слоте N).
-  const blurIdx =
-    activeIndex + 1 < sectionCount
-      ? activeIndex + 1
-      : activeIndex === sectionCount - 1 && sectionCount > 1
-        ? 0
-        : -1;
-  if (blurIdx < 0) return;
+
+  if (activeIndex === sectionCount - 1 && sectionCount > 1) {
+    const ringNext = panels.get(0);
+    if (ringNext) await armHiddenRingNext(ringNext);
+    return;
+  }
+
+  const blurIdx = activeIndex + 1;
+  if (blurIdx >= sectionCount) return;
   const nodes = panels.get(blurIdx);
   if (!nodes) return;
   const have = readPanelViewAttr(nodes.section);
@@ -360,7 +369,6 @@ export async function revealNextBlurAfterLand(
     }
     return;
   }
-  // Ещё solid — открыть (редкий случай прерывания / reduced).
   if (prefersReducedMotion()) {
     applyViewInstant(nodes.section, "blur");
     return;

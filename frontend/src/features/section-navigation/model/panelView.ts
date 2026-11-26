@@ -5,7 +5,7 @@ export const PANEL_VIEW_ATTR = "data-panel-view";
 
 /**
  * Покой: active = sharp, active+1 = blur (если есть), остальные = solid.
- * На последней секции «следующая» = первая (кольцо): blur на index 0, слот N в layout.
+ * На последней blur-панели нет (первая кольца спрятана в слоте N, не в idle-blur).
  */
 export function panelViewFor(
   panelIndex: number,
@@ -14,8 +14,6 @@ export function panelViewFor(
 ): PanelView {
   if (panelIndex === activeIndex) return "sharp";
   if (panelIndex === activeIndex + 1 && activeIndex + 1 < sectionCount) return "blur";
-  // Кольцо: на последней первая уже как следующая (blur), готова к «Наверх» без prep.
-  if (activeIndex === sectionCount - 1 && sectionCount > 1 && panelIndex === 0) return "blur";
   return "solid";
 }
 
