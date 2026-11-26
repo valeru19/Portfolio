@@ -16,18 +16,21 @@ describe("animationDurationMs", () => {
     expect(multi).toBeLessThanOrEqual(1.7);
   });
 
-  it("keeps long reverse within a bounded window", () => {
+  it("allows longer reverse multi jumps for smoother Наверх", () => {
     const longBack = animationDurationMs(720, true);
-    expect(longBack).toBeGreaterThanOrEqual(0.85);
-    expect(longBack).toBeLessThanOrEqual(1.55);
+    expect(longBack).toBeGreaterThanOrEqual(1.15);
+    expect(longBack).toBeLessThanOrEqual(2.15);
   });
 });
 
 describe("animationEase", () => {
-  it("uses sine.inOut forward single-step and power2.out for reverse/long", () => {
+  it("keeps locked single-step sine.inOut both ways", () => {
     expect(animationEase(90, false)).toBe("sine.inOut");
-    expect(animationEase(90, true)).toBe("power2.out");
-    expect(animationEase(720, true)).toBe("power2.out");
+    expect(animationEase(90, true)).toBe("sine.inOut");
+  });
+
+  it("uses sine.inOut for long reverse and power2.out for long forward", () => {
+    expect(animationEase(720, true)).toBe("sine.inOut");
     expect(animationEase(360, false)).toBe("power2.out");
   });
 });

@@ -113,19 +113,22 @@ export function animationDurationMs(distanceDeg: number, goingBack: boolean): nu
     const floor = goingBack ? 0.55 : 0.52;
     return Math.min(ceiling, Math.max(floor, 0.48 + distanceDeg / 500));
   }
-  // Прыжок через несколько секций: медленнее 1-шага по суммарному ощущению.
-  const perStep = goingBack ? 0.2 : 0.22;
-  const floor = goingBack ? 0.85 : 0.9;
-  const ceiling = goingBack ? 1.55 : 1.7;
+  // Прыжок через несколько секций. Reverse длиннее и ровнее (шаг 17): меньше
+  // «рывков» в начале, где scale-up × эффекты били по кадрам.
+  const perStep = goingBack ? 0.28 : 0.22;
+  const floor = goingBack ? 1.15 : 0.9;
+  const ceiling = goingBack ? 2.15 : 1.7;
   return Math.min(ceiling, Math.max(floor, 0.55 + steps * perStep));
 }
 
 /**
- * 1 шаг: sine.inOut (зафиксировано).
- * Reverse / длинный: power2.out — быстрее сходит со «тяжёлого» scale-up (legacy).
+ * 1 шаг: sine.inOut (LOCKED).
+ * Длинный reverse: sine.inOut — ровнее power2.out (шаг 17).
+ * Длинный forward: power2.out.
  */
 export function animationEase(distanceDeg: number, goingBack: boolean): string {
   const steps = Math.max(1, distanceDeg / 90);
-  if (goingBack || steps > 1.5) return "power2.out";
-  return "sine.inOut";
+  if (steps <= 1.01) return "sine.inOut";
+  if (goingBack) return "sine.inOut";
+  return "power2.out";
 }
