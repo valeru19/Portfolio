@@ -25,8 +25,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition:
-    background-color 0.7s var(--ease),
-    color 0.7s var(--ease);
+    background-color var(--spiral-flip-ms) var(--spiral-flip-ease),
+    color var(--spiral-flip-ms) var(--spiral-flip-ease);
 }
 
 /* Проза секций: чуть плотнее leading, чем UI-хром на mono. */
@@ -129,23 +129,17 @@ html.is-mode-switching header {
 
 /*
   Во время поворота:
-  — hot path = transform спирали;
-  — blur статичен (роли from/dest snap в JS в старте шага);
-  — никаких filter:none / steps mid-spin: дают мерцание на land и под rotate.
+  — hot path = transform спирали + opacity вуалей;
+  — stage-цвета (body/HUD/header) анимируются через transition — НЕ глушим;
+  — у тяжёлых потомков секций transition выключаем (дорого под rotate).
 */
-body.is-spinning,
-body.is-spinning [data-spiral-root],
-body.is-spinning [data-spiral-stage],
-body.is-spinning [data-spiral-section],
-body.is-spinning [data-spiral-hud],
-body.is-spinning header {
+body.is-spinning [data-spiral-section] * {
   transition: none !important;
+  animation-play-state: paused;
 }
 
-/* Глушим filter-transition у blur-слоя на spin (leave/ahead не мигает на land).
-   WAAPI пишет inline filter на from/dest — CSS var для остальных статичен. */
-body.is-spinning .panelBlurLayer,
-body.is-spinning [data-panel-blur-layer] {
+/* Opacity-вуаль: mid-spin ведёт WAAPI — CSS transition на veil глушим. */
+body.is-spinning [data-panel-blur-veil] {
   transition: none !important;
 }
 

@@ -3,7 +3,7 @@
   inset: 0;
   overflow: hidden;
   background: var(--stage-bg);
-  transition: background-color 0.7s var(--ease);
+  transition: background-color var(--spiral-flip-ms) var(--spiral-flip-ease);
 }
 
 .stageAccessible {

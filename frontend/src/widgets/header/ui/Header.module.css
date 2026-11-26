@@ -4,6 +4,7 @@
   align-items: center;
   justify-content: space-between;
   color: var(--stage-fg);
+  transition: color var(--spiral-flip-ms) var(--spiral-flip-ease);
 }
 
 .headerAccessible {
@@ -18,9 +19,9 @@
   transform: translate3d(0, 0, 0);
   transition:
     transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.7s var(--ease),
-    border-color 0.7s var(--ease),
-    color 0.7s var(--ease);
+    background-color var(--spiral-flip-ms) var(--spiral-flip-ease),
+    border-color var(--spiral-flip-ms) var(--spiral-flip-ease),
+    color var(--spiral-flip-ms) var(--spiral-flip-ease);
 }
 
 .headerHidden {
@@ -55,6 +56,10 @@
   background: var(--stage-bg);
   border: var(--frame) solid var(--border);
   padding: 6px 10px 6px 6px;
+  transition:
+    background-color var(--spiral-flip-ms) var(--spiral-flip-ease),
+    border-color var(--spiral-flip-ms) var(--spiral-flip-ease),
+    color var(--spiral-flip-ms) var(--spiral-flip-ease);
 }
 
 .brandSpiral {
@@ -64,6 +69,7 @@
   z-index: 55;
 }
 
+/* Центральный квадратик бренда — цвет от --accent секции. */
 .monogram {
   width: 34px;
   height: 34px;
@@ -74,6 +80,9 @@
   font-family: var(--mono);
   font-size: 12px;
   font-weight: 700;
+  transition:
+    background-color var(--spiral-flip-ms) var(--spiral-flip-ease),
+    color var(--spiral-flip-ms) var(--spiral-flip-ease);
 }
 
 .actions {

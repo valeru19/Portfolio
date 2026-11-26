@@ -3,6 +3,7 @@
   margin: 0 auto;
   padding: 28px clamp(18px, 2.6vw, 36px) 64px;
   color: var(--stage-fg);
+  transition: color var(--spiral-flip-ms) var(--spiral-flip-ease);
 }
 
 .top {

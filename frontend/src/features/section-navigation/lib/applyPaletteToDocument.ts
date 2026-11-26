@@ -23,10 +23,8 @@ export function applyPaletteToDocument(palette: SectionPalette, sectionId: strin
   setVar(root, "--accent", palette.accent);
   setVar(root, "--accent-ink", palette.accentInk);
   setVar(root, "--muted", palette.muted);
-  if (document.body.style.backgroundColor !== palette.bg) {
-    document.body.style.backgroundColor = palette.bg;
-  }
-  // Сбрасываем старый inline color, если остался с прошлых версий.
+  // Не пишем body.style.backgroundColor — иначе transition по --stage-bg не работает.
+  if (document.body.style.backgroundColor) document.body.style.backgroundColor = "";
   if (document.body.style.color) document.body.style.color = "";
   if (document.body.getAttribute("data-section") !== sectionId) {
     document.body.setAttribute("data-section", sectionId);
