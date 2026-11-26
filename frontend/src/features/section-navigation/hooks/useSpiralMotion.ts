@@ -2,6 +2,12 @@ import { useCallback, useRef, type MutableRefObject } from "react";
 
 import type { SectionId } from "@/shared/content";
 
+import {
+  bakeAndAttachPanel,
+  beginBakeOpacityTurn,
+  endBakeOpacityTurn,
+  setPanelBakeVisible,
+} from "../lib/panelBake";
 import { beginBlurTurnWaapi, endBlurTurnCrossfade } from "../lib/panelBlur";
 import { loadGsap } from "../lib/loadGsap";
 import {
@@ -12,7 +18,7 @@ import {
   paintSpiralElementWithGsap,
 } from "../lib/spiralTransform";
 import { snapRotationToSection } from "../model/geometry";
-import { PANEL_STATE_ATTR, setPanelStateAttr } from "../model/panelStateAttrs";
+import { PANEL_STATE_ATTR, setBlurTurnAttr, setPanelStateAttr } from "../model/panelStateAttrs";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
 import { clampSectionIndex } from "../model/sectionIndex";
 
@@ -66,6 +72,7 @@ export function useSpiralMotion({
     blurAnimRef.current?.cancel();
     blurAnimRef.current = null;
     endBlurTurnCrossfade(blurFromRef.current, blurDestRef.current);
+    endBakeOpacityTurn(blurFromRef.current, blurDestRef.current);
     blurFromRef.current = undefined;
     blurDestRef.current = undefined;
   }, []);
@@ -153,10 +160,12 @@ export function useSpiralMotion({
         paintSpiralTransform(snapped);
         applyColors(index);
         onSettled(index);
-        // will-change / scrollable / warm — не в кадре посадки.
+        // will-change / bakeVisible / scrollable / warm — не в кадре посадки.
         requestAnimationFrame(() => {
           panelsRef.current.forEach(({ section }) => {
             if (section.style.willChange) section.style.willChange = "";
+            setPanelBakeVisible(section, false);
+            setBlurTurnAttr(section, null);
           });
           const idle = () => {
             scheduleWarm(index);
@@ -239,19 +248,19 @@ export function useSpiralMotion({
       // Stage-цвета сразу — transition на HUD/body/header.
       applyColors(destIdx);
 
-      // will-change: короткий ход — только from/dest; длинный — ещё соседи.
+      // will-change только from/dest.
+      // Длинный ход: mid = только фон frame (0 эффектов); from/dest = bake opacity (≤2).
       sectionIds.forEach((id, i) => {
         const section = panelsRef.current.get(id)?.section;
         if (!section) return;
         const nearCore = i === fromIdx || i === destIdx;
-        const near =
-          nearCore || (longJump && (Math.abs(i - fromIdx) <= 1 || Math.abs(i - destIdx) <= 1));
-        section.style.willChange = near ? "transform" : "";
-        // Далёкие на длинном ходе: far+frost (без массового content paint).
-        if (longJump && !near) {
-          setPanelStateAttr(section, PANEL_STATE_ATTR.frost, true);
-          setPanelStateAttr(section, PANEL_STATE_ATTR.blurLite, true);
-          setPanelStateAttr(section, PANEL_STATE_ATTR.far, true);
+        section.style.willChange = nearCore ? "transform" : "";
+        if (longJump) {
+          bakeAndAttachPanel(id, section);
+          setPanelBakeVisible(section, nearCore);
+          setPanelStateAttr(section, PANEL_STATE_ATTR.far, !nearCore);
+          setPanelStateAttr(section, PANEL_STATE_ATTR.frost, false);
+          setPanelStateAttr(section, PANEL_STATE_ATTR.blurLite, false);
         }
       });
 
@@ -261,11 +270,16 @@ export function useSpiralMotion({
         return;
       }
 
-      // Opacity-вуаль from/dest на любом ходе. Остальные — frost (без backdrop).
       if (fromIdx !== destIdx) {
         blurFromRef.current = fromSection;
         blurDestRef.current = destSection;
-        blurAnimRef.current = beginBlurTurnWaapi(fromSection, destSection, duration);
+        if (longJump) {
+          if (fromSection) setBlurTurnAttr(fromSection, "from");
+          if (destSection) setBlurTurnAttr(destSection, "dest");
+          blurAnimRef.current = beginBakeOpacityTurn(fromSection, destSection, duration);
+        } else {
+          blurAnimRef.current = beginBlurTurnWaapi(fromSection, destSection, duration);
+        }
       }
 
       const runTween = (gsap: NonNullable<GsapLike>) => {

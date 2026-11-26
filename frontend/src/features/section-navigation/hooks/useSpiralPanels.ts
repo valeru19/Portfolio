@@ -16,6 +16,7 @@ import {
   PANEL_VEIL_VAR,
 } from "../lib/panelBlur";
 import { paintPanelPaletteForId } from "../lib/paintPanelPalette";
+import { bakeAndAttachPanel, estimateBakeCacheBytes } from "../lib/panelBake";
 import {
   rememberPanelIntrinsicHeight,
   revealPanelFromFrost,
@@ -54,6 +55,7 @@ export function useSpiralPanels({
   const settleTimerRef = useRef<number | null>(null);
   const farBlurRafRef = useRef(0);
   const revealGenRef = useRef(0);
+  const bakeIdleRef = useRef(0);
 
   const paintAllPanelPalettes = useCallback(() => {
     sectionIds.forEach((id) => {
@@ -259,6 +261,36 @@ export function useSpiralPanels({
    * Перед длинным ходом: прогреть dest ±1 (content-visibility + decode),
    * по одной панели за кадр — без массового layout в старте твина.
    */
+  /** Idle: запечь панели по одной (текстуры для длинного reverse). */
+  const schedulePanelBakes = useCallback(() => {
+    if (isAccessible) return;
+    if (bakeIdleRef.current) return;
+    let cursor = 0;
+    const pump = () => {
+      bakeIdleRef.current = 0;
+      if (cursor >= sectionIds.length) {
+        if (import.meta.env.DEV) {
+          console.info(`[bake] cache ~${Math.round(estimateBakeCacheBytes() / 1024)} KB`);
+        }
+        return;
+      }
+      const id = sectionIds[cursor];
+      cursor += 1;
+      const nodes = id ? panelsRef.current.get(id) : undefined;
+      if (nodes && id) bakeAndAttachPanel(id, nodes.section);
+      if (typeof window.requestIdleCallback === "function") {
+        bakeIdleRef.current = window.requestIdleCallback(pump, { timeout: 400 });
+      } else {
+        bakeIdleRef.current = window.setTimeout(pump, 32);
+      }
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      bakeIdleRef.current = window.requestIdleCallback(pump, { timeout: 400 });
+    } else {
+      bakeIdleRef.current = window.setTimeout(pump, 48);
+    }
+  }, [isAccessible, sectionIds]);
+
   const prepareJump = useCallback(
     async (destIndex: number) => {
       const idxs = [destIndex - 1, destIndex, destIndex + 1].filter(
@@ -269,6 +301,11 @@ export function useSpiralPanels({
         const id = sectionIds[i];
         const nodes = id ? panelsRef.current.get(id) : undefined;
         if (nodes) batch.push(nodes);
+      }
+      // Canvas-bake синхронный и дешёвый — добиваем кэш до старта (без лишних кадров).
+      for (const id of sectionIds) {
+        const nodes = panelsRef.current.get(id);
+        if (nodes) bakeAndAttachPanel(id, nodes.section);
       }
       await warmPanelsForJump(batch);
     },
@@ -315,6 +352,7 @@ export function useSpiralPanels({
     (id: SectionId, sectionEl: HTMLElement, scrollEl: HTMLElement) => {
       panelsRef.current.set(id, { section: sectionEl, scroll: scrollEl });
       paintPanelPaletteForId(sectionEl, theme, id);
+      schedulePanelBakes();
       // Первый mount в accessible (до DomEffects) — выставляем delta на этой панели.
       if (isAccessible) {
         const index = currentIndexRef.current;
@@ -332,7 +370,7 @@ export function useSpiralPanels({
         panelsRef.current.delete(id);
       };
     },
-    [theme, isAccessible, sectionIds, currentIndexRef],
+    [theme, isAccessible, sectionIds, currentIndexRef, schedulePanelBakes],
   );
 
   return {

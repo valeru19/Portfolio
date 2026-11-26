@@ -102,12 +102,19 @@ export function SpiralPerfOverlay() {
 
   if (!enabled) return null;
 
+  const naspRows = sessionRef.current.filter((r) => r.label.startsWith("Наверх"));
+  const stepRows = sessionRef.current.filter((r) => !r.label.startsWith("Наверх"));
+  const maxOf = (rows: typeof sessionRef.current) =>
+    rows.reduce((m, r) => Math.max(m, r.deltas.length ? Math.max(...r.deltas) : 0), 0);
+
   return (
     <div className={styles.overlay} role="status" aria-live="polite">
       <div className={styles.title}>perf</div>
-      <div>max {stats.maxMs.toFixed(1)} ms</div>
+      <div>last max {stats.maxMs.toFixed(1)} ms</div>
       <div>&gt;50ms ×{stats.over50}</div>
       <div>frames {stats.frames}</div>
+      <div>Наверх max {maxOf(naspRows).toFixed(1)}</div>
+      <div>step max {maxOf(stepRows).toFixed(1)}</div>
     </div>
   );
 }
