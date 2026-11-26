@@ -8,3 +8,4 @@ coverage
 lighthouse-report.*
 .DS_Store
 Thumbs.db
+scripts/flip-shots/

@@ -14,6 +14,7 @@ export { ModeToggle } from "./ui/ModeToggle";
 export { NavSection } from "./ui/NavSection";
 export { SpiralHud } from "./ui/SpiralHud";
 export { SpiralNavigationProvider } from "./ui/SpiralNavigationProvider";
+export { SpiralPerfOverlay } from "./ui/SpiralPerfOverlay";
 export { SpiralStage } from "./ui/SpiralStage";
 export { ASPECT, AXIS, WHEEL_STEP_LOCK_MS, WHEEL_THRESHOLD } from "./model/constants";
 export { computeSpiralLayout, sectionIndexFromRotation, trimRotation } from "./model/geometry";

@@ -36,9 +36,11 @@ async function measure(page, label, action) {
   });
 
   await action();
-  await page.waitForFunction(() => !document.body.classList.contains("is-spinning"), {
-    timeout: 5000,
-  }).catch(() => {});
+  await page
+    .waitForFunction(() => !document.body.classList.contains("is-spinning"), {
+      timeout: 5000,
+    })
+    .catch(() => {});
   await page.waitForTimeout(120);
   const stats = await page.evaluate(() => {
     window.__perfStop?.();
@@ -100,7 +102,9 @@ async function main() {
     }),
   );
 
-  const modeBtn = page.getByRole("button", { name: /Обычный скролл|Спираль|Normal scroll|Spiral/i });
+  const modeBtn = page.getByRole("button", {
+    name: /Обычный скролл|Спираль|Normal scroll|Spiral/i,
+  });
   rows.push(
     await measure(page, "mode toggle", async () => {
       if (await modeBtn.count()) {

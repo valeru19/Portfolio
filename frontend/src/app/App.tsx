@@ -1,4 +1,9 @@
-import { SpiralHud, SpiralNavigationProvider, SpiralStage } from "@/features/section-navigation";
+import {
+  SpiralHud,
+  SpiralNavigationProvider,
+  SpiralPerfOverlay,
+  SpiralStage,
+} from "@/features/section-navigation";
 import { content, getVisibleSectionIds } from "@/shared/content";
 import { useT } from "@/shared/i18n";
 import { About } from "@/widgets/about";
@@ -28,6 +33,7 @@ export function App() {
         </a>
         <Header />
         <SpiralHud />
+        <SpiralPerfOverlay />
         <SpiralStage>
           <Hero />
           <About />
