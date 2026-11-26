@@ -53,7 +53,11 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   const animateToSectionRef = useRef<(index: number) => Promise<void>>(async () => undefined);
   const goToRef = useRef<(index: number) => void>(() => undefined);
 
-  currentIndexRef.current = currentIndex;
+  // Не перетирать currentIndexRef из стейта во время спина —
+  // onProgress пишет индекс по кадру, а startTransition/стейт отстаёт.
+  if (!spinningFlagRef.current) {
+    currentIndexRef.current = currentIndex;
+  }
   targetIndexRef.current = targetIndex;
 
   const cardBusyRef = useRef(false);
@@ -78,26 +82,22 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   });
 
   const onProgress = useCallback((index: number) => {
-    // Только HUD mid-turn — spinning-lock и pending не трогаем.
-    // startTransition уводит React-апдейт с sync-пути кадра GSAP.
+    // Синхронно: точка HUD = секция по углу, без отставания startTransition.
+    if (currentIndexRef.current === index) return;
     currentIndexRef.current = index;
-    startTransition(() => {
-      setCurrentIndex(index);
-    });
+    setCurrentIndex(index);
   }, []);
 
   const onSettled = useCallback(
     (index: number) => {
       currentIndexRef.current = index;
+      setCurrentIndex(index);
 
       const pending = clampSectionIndex(pendingIndexRef.current, sectionCount);
       if (pending !== index) {
-        // Очередь намерений: едем дальше без React commit на промежуточном land.
+        // Очередь намерений: едем дальше; HUD уже на фактической посадке.
         targetIndexRef.current = pending;
         spinningFlagRef.current = true;
-        startTransition(() => {
-          setCurrentIndex(index);
-        });
         void animateToSectionRef.current(pending);
         return;
       }
@@ -107,9 +107,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
       pendingIndexRef.current = index;
       const sectionId = sectionIds[index];
       if (sectionId) replaceSectionHash(sectionId);
-      // Один React commit на финальный land (HUD). startTransition — не блокировать позу.
       startTransition(() => {
-        setCurrentIndex(index);
         setTargetIndex(index);
         setIsSpinning(false);
       });
@@ -183,7 +181,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
         return;
       }
 
-      // Пока идёт поворот — только обновляем pending, без kill/restart.
+      // Пока идёт поворот — только pending (очередь). HUD ведёт onProgress по углу.
       if (spinningFlagRef.current || spinningRef.current) {
         return;
       }

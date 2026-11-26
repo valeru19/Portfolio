@@ -48,6 +48,7 @@ export function useSpiralMotion({
   spiralRef,
   panelsRef,
   onSettled,
+  onProgress,
   markActive,
   applyColors,
   clearScrollable,
@@ -55,6 +56,7 @@ export function useSpiralMotion({
   prepareJump,
   settleActivePanel,
 }: Options) {
+  const lastProgressIdxRef = useRef<number | null>(null);
   const rotationRef = useRef(0);
   const gsapRef = useRef<GsapLike | null>(null);
   const tweenRef = useRef<{ kill: () => void } | null>(null);
@@ -295,6 +297,7 @@ export function useSpiralMotion({
         }
         const state = { r: startR };
         const ease = animationEase(distanceDeg, goingBack);
+        lastProgressIdxRef.current = null;
 
         tweenRef.current = gsap.to(state, {
           r: snapped,
@@ -305,6 +308,11 @@ export function useSpiralMotion({
             if (gen !== motionGenRef.current) return;
             paintSpiralElementWithGsap(gsap, spiral, state.r);
             rotationRef.current = state.r;
+            const idx = clampSectionIndex(Math.round(-state.r / 90), sectionCount);
+            if (lastProgressIdxRef.current !== idx) {
+              lastProgressIdxRef.current = idx;
+              onProgress?.(idx);
+            }
           },
           onComplete: () => {
             if (gen !== motionGenRef.current) return;
@@ -334,6 +342,7 @@ export function useSpiralMotion({
       ensureGsap,
       finishScroll,
       isAccessible,
+      onProgress,
       panelsRef,
       prepareJump,
       sectionCount,
@@ -405,6 +414,8 @@ export function useSpiralMotion({
 
       setSpinning(true, destIdx === 0 ? "nasp" : "long");
       applyColors(destIdx);
+      // HUD сразу на dest: во время wrap слот за краем, round(rotation) врёт.
+      onProgress?.(destIdx);
 
       if (prefersReducedMotion()) {
         if (gen !== motionGenRef.current) return;
@@ -503,6 +514,7 @@ export function useSpiralMotion({
       ensureGsap,
       finishScroll,
       isAccessible,
+      onProgress,
       panelsRef,
       sectionCount,
       sectionIds,
