@@ -2,14 +2,8 @@ import { useCallback, useRef, type MutableRefObject } from "react";
 
 import type { SectionId } from "@/shared/content";
 
-import {
-  bakeAndAttachPanel,
-  beginBakeOpacityTurn,
-  endBakeOpacityTurn,
-  setPanelBakeVisible,
-} from "../lib/panelBake";
-import { beginBlurTurnWaapi, endBlurTurnCrossfade } from "../lib/panelBlur";
 import { loadGsap } from "../lib/loadGsap";
+import { beginPanelViewTurn, bumpPanelViewGeneration } from "../lib/panelViewController";
 import {
   animationDurationMs,
   animationEase,
@@ -18,7 +12,7 @@ import {
   paintSpiralElementWithGsap,
 } from "../lib/spiralTransform";
 import { snapRotationToSection } from "../model/geometry";
-import { PANEL_STATE_ATTR, setBlurTurnAttr, setPanelStateAttr } from "../model/panelStateAttrs";
+import { setBlurTurnAttr } from "../model/panelStateAttrs";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
 import { clampSectionIndex } from "../model/sectionIndex";
 
@@ -38,7 +32,7 @@ type Options = {
   applyColors: (index: number, force?: boolean) => void;
   clearScrollable: () => void;
   warmAround: (index: number) => void;
-  prepareJump: (destIndex: number) => Promise<void>;
+  prepareJump: (fromIndex: number, destIndex: number) => Promise<void>;
   settleActivePanel: (forIndex?: number) => void;
 };
 
@@ -64,18 +58,15 @@ export function useSpiralMotion({
   const settleRafRef = useRef(0);
   const warmIdleRef = useRef(0);
   const warmIdleKindRef = useRef<"timeout" | "idle">("timeout");
-  const blurFromRef = useRef<HTMLElement | undefined>(undefined);
-  const blurDestRef = useRef<HTMLElement | undefined>(undefined);
-  const blurAnimRef = useRef<{ cancel: () => void } | null>(null);
+  const viewTurnCancelRef = useRef<(() => void) | null>(null);
 
-  const clearBlurTurn = useCallback(() => {
-    blurAnimRef.current?.cancel();
-    blurAnimRef.current = null;
-    endBlurTurnCrossfade(blurFromRef.current, blurDestRef.current);
-    endBakeOpacityTurn(blurFromRef.current, blurDestRef.current);
-    blurFromRef.current = undefined;
-    blurDestRef.current = undefined;
-  }, []);
+  const clearViewTurn = useCallback(() => {
+    viewTurnCancelRef.current?.();
+    viewTurnCancelRef.current = null;
+    panelsRef.current.forEach(({ section }) => {
+      setBlurTurnAttr(section, null);
+    });
+  }, [panelsRef]);
 
   const setSpinning = useCallback((on: boolean, kind?: "step" | "nasp" | "long") => {
     spinningRef.current = on;
@@ -150,8 +141,7 @@ export function useSpiralMotion({
       paintSpiralTransform(snapped);
 
       const runPanelAttrs = () => {
-        clearBlurTurn();
-        // Near/far+reveal; без layout reads.
+        clearViewTurn();
         markActive(index);
       };
 
@@ -160,11 +150,9 @@ export function useSpiralMotion({
         paintSpiralTransform(snapped);
         applyColors(index);
         onSettled(index);
-        // will-change / bakeVisible / scrollable / warm — не в кадре посадки.
         requestAnimationFrame(() => {
           panelsRef.current.forEach(({ section }) => {
             if (section.style.willChange) section.style.willChange = "";
-            setPanelBakeVisible(section, false);
             setBlurTurnAttr(section, null);
           });
           const idle = () => {
@@ -187,7 +175,7 @@ export function useSpiralMotion({
     },
     [
       applyColors,
-      clearBlurTurn,
+      clearViewTurn,
       markActive,
       onSettled,
       paintSpiralTransform,
@@ -210,8 +198,6 @@ export function useSpiralMotion({
         return;
       }
 
-      // Без kill/restart текущего твина снаружи: goTo коалесцирует pending.
-      // Здесь kill только при явной новой цели из finishScroll→pending chain.
       const gen = ++motionGenRef.current;
       tweenRef.current?.kill();
       tweenRef.current = null;
@@ -219,7 +205,7 @@ export function useSpiralMotion({
         cancelAnimationFrame(settleRafRef.current);
         settleRafRef.current = 0;
       }
-      clearBlurTurn();
+      clearViewTurn();
       clearScrollable();
 
       const startR = rotationRef.current;
@@ -229,39 +215,24 @@ export function useSpiralMotion({
 
       const fromIdx = clampSectionIndex(Math.round(-startR / 90), sectionCount);
       const destIdx = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
-      const fromId = sectionIds[fromIdx];
-      const destId = sectionIds[destIdx];
-      const fromSection = fromId ? panelsRef.current.get(fromId)?.section : undefined;
-      const destSection = destId ? panelsRef.current.get(destId)?.section : undefined;
 
       const longJump = distanceDeg > 95;
       const spinKind = longJump ? (goingBack ? "nasp" : "long") : "step";
 
-      // Длинный ход: прогрев dest±1 ДО спина (1–2 кадра), без снятия far у всей спирали.
       if (longJump && !prefersReducedMotion()) {
-        await prepareJump(destIdx);
+        await prepareJump(fromIdx, destIdx);
         if (gen !== motionGenRef.current) return;
       }
 
       setSpinning(true, spinKind);
-
-      // Stage-цвета сразу — transition на HUD/body/header.
       applyColors(destIdx);
 
-      // will-change только from/dest.
-      // Длинный ход: все mid = непрозрачный bake (0 live-эффектов); from/dest = opacity bake.
+      // will-change только from/dest (гипотеза 5.5: не трогаем .spiral).
       sectionIds.forEach((id, i) => {
         const section = panelsRef.current.get(id)?.section;
         if (!section) return;
         const nearCore = i === fromIdx || i === destIdx;
         section.style.willChange = nearCore ? "transform" : "";
-        if (longJump) {
-          bakeAndAttachPanel(id, section);
-          setPanelBakeVisible(section, true);
-          setPanelStateAttr(section, PANEL_STATE_ATTR.far, !nearCore);
-          setPanelStateAttr(section, PANEL_STATE_ATTR.frost, false);
-          setPanelStateAttr(section, PANEL_STATE_ATTR.blurLite, false);
-        }
       });
 
       if (prefersReducedMotion()) {
@@ -271,15 +242,24 @@ export function useSpiralMotion({
       }
 
       if (fromIdx !== destIdx) {
-        blurFromRef.current = fromSection;
-        blurDestRef.current = destSection;
-        if (longJump) {
-          if (fromSection) setBlurTurnAttr(fromSection, "from");
-          if (destSection) setBlurTurnAttr(destSection, "dest");
-          blurAnimRef.current = beginBakeOpacityTurn(fromSection, destSection, duration);
-        } else {
-          blurAnimRef.current = beginBlurTurnWaapi(fromSection, destSection, duration);
-        }
+        const byIndex = new Map<number, PanelNodes>();
+        sectionIds.forEach((id, i) => {
+          const nodes = panelsRef.current.get(id);
+          if (nodes) byIndex.set(i, nodes);
+        });
+        const fromSection = byIndex.get(fromIdx)?.section;
+        const destSection = byIndex.get(destIdx)?.section;
+        if (fromSection) setBlurTurnAttr(fromSection, "from");
+        if (destSection) setBlurTurnAttr(destSection, "dest");
+        const turn = beginPanelViewTurn({
+          fromIdx,
+          destIdx,
+          sectionCount,
+          longJump,
+          durationSec: duration,
+          panels: byIndex,
+        });
+        viewTurnCancelRef.current = turn.cancel;
       }
 
       const runTween = (gsap: NonNullable<GsapLike>) => {
@@ -299,7 +279,6 @@ export function useSpiralMotion({
           overwrite: true,
           onUpdate: () => {
             if (gen !== motionGenRef.current) return;
-            // Только transform спирали — без layout reads / filter.
             paintSpiralElementWithGsap(gsap, spiral, state.r);
             rotationRef.current = state.r;
           },
@@ -326,7 +305,7 @@ export function useSpiralMotion({
     },
     [
       applyColors,
-      clearBlurTurn,
+      clearViewTurn,
       clearScrollable,
       ensureGsap,
       finishScroll,
@@ -342,6 +321,7 @@ export function useSpiralMotion({
 
   const killMotion = useCallback(() => {
     motionGenRef.current += 1;
+    bumpPanelViewGeneration();
     tweenRef.current?.kill();
     tweenRef.current = null;
     if (settleRafRef.current) {
@@ -349,9 +329,9 @@ export function useSpiralMotion({
       settleRafRef.current = 0;
     }
     cancelWarm();
-    clearBlurTurn();
+    clearViewTurn();
     setSpinning(false);
-  }, [cancelWarm, clearBlurTurn, setSpinning]);
+  }, [cancelWarm, clearViewTurn, setSpinning]);
 
   return {
     rotationRef,

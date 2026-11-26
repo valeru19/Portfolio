@@ -9,8 +9,9 @@
 - **`sectionIndex.ts`** — clamp / step индекса секции.
 - **`panelScroll.ts`** (+ **`.test.ts`**) — смягчение wheel-дельты и lerp scrollTop внутри панели.
 - **`wheelLock.ts`** (+ **`.test.ts`**) — аккумулятор колеса и временной lock шага.
-- **`panelStateAttrs.ts`** — имена `data-active` / `data-far` / `data-scrollable` и `data-spiral-*`; `setPanelStateAttr`.
-- **`panelStateCssCoupling.test.ts`** — что CSS Modules селекторы согласованы с attrs.
+- **`panelView.ts`** (+ **`.test.ts`**) — `panelViewFor` → `sharp` | `blur` | `solid` (ровно один blur: `active+1`).
+- **`panelStateAttrs.ts`** — `data-active` / `data-ahead` / `data-panel-view` / `data-scrollable` и `data-spiral-*`; `setPanelStateAttr`.
+- **`panelStateCssCoupling.test.ts`** — CSS Modules селекторы согласованы с attrs.
 - **`navigationContext.ts`** — TypeScript-тип значения Context навигации.
 - **`prefersReducedMotion.ts`** — чтение media query.
 - **`accessibleHeaderHide.ts`** (+ **`.test.ts`**) — чистая функция «прятать ли хедер» по scrollY/focus.

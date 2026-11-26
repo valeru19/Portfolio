@@ -45,8 +45,10 @@ function clearSpiralInlineStyles(
     section.style.removeProperty("--panel-blur");
     section.style.opacity = "";
     section.style.visibility = "";
-    setPanelStateAttr(section, PANEL_STATE_ATTR.far, false);
     setPanelStateAttr(section, PANEL_STATE_ATTR.ahead, false);
+    if (section.hasAttribute(PANEL_STATE_ATTR.panelView)) {
+      section.removeAttribute(PANEL_STATE_ATTR.panelView);
+    }
     scroll.style.overflow = "";
   });
 }

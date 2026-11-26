@@ -121,13 +121,12 @@
 }
 
 .spiralSection {
-  /* --panel-veil 0 = резкая, 1 = полностью под вуалью. Радиус backdrop статичен. */
-  --panel-veil: 1;
+  /* --panel-veil 0 = резкая, 1 = под вуалью. Радиус backdrop статичен. */
+  --panel-veil: 0;
   --panel-blur-radius: 16px;
   position: absolute;
   left: 0;
   top: 0;
-  /* Без radius здесь: стабильный прямоугольный hit-box под :hover. */
   border: none;
   background: transparent;
   color: var(--text);
@@ -159,112 +158,126 @@
 }
 
 /*
-  Запечённый blur: непрозрачная текстура без filter/backdrop.
-  На длинном ходе (nasp/long) — основной вид mid-панелей.
-*/
-.panelBake {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-  border-radius: inherit;
-  opacity: 0;
-  display: none;
-}
-
-.spiralSection[data-baked][data-bake-visible] .panelBake {
-  display: block;
-  opacity: 1;
-}
-
-.accessibleSection .panelBake {
-  display: none !important;
-}
-
-/*
-  Заливка-«квадратик»: закрывает контент, пока far/blur-lite.
-  Reveal = opacity 1→0 (композитор), без скачка content-visibility.
-*/
-.panelFrostFill {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  border-radius: inherit;
-  background: var(--panel);
-  opacity: 0;
-  transition: opacity var(--spiral-flip-ms) var(--spiral-flip-ease);
-}
-
-.spiralSection[data-far] .panelFrostFill,
-.spiralSection[data-blur-lite] .panelFrostFill,
-.spiralSection[data-frost] .panelFrostFill {
-  opacity: 1;
-}
-
-.spiralSection[data-revealing] .panelFrostFill {
-  opacity: 0;
-}
-
-/*
-  Вуаль: backdrop-filter радиус НЕ анимируем (дорого).
-  Кроссфейд = opacity (композитор). Лёгкий tint, чтобы текст не читался.
+  Вуаль: backdrop только у data-panel-view=blur (бюджет ≤1).
+  z-index ниже solid cover.
 */
 .panelBlurVeil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--panel) 22%, transparent);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  opacity: 0;
+  transition: opacity 0.45s var(--spiral-flip-ease);
+  will-change: auto;
+}
+
+/*
+  Solid cover выше вуали. Opacity — WAAPI (не глушится CSS transition:none).
+*/
+.panelSolidCover {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
   border-radius: inherit;
-  background: color-mix(in srgb, var(--panel) 22%, transparent);
+  background: var(--panel);
+  opacity: 0;
+}
+
+.accessibleSection .panelSolidCover {
+  display: none;
+}
+
+/* marker for CSS↔attrs coupling */
+.spiralSection[data-panel-view] {
+  /* view set by panelViewController */
+}
+
+/* sharp */
+.spiralSection[data-panel-view="sharp"] {
+  --panel-veil: 0;
+  cursor: default;
+}
+
+.spiralSection[data-panel-view="sharp"] .panelBlurVeil {
+  opacity: 0;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.spiralSection[data-panel-view="sharp"] .panelSolidCover {
+  opacity: 0;
+}
+
+/* blur — единственная панель с backdrop-filter */
+.spiralSection[data-panel-view="blur"] {
+  --panel-veil: 1;
+}
+
+.spiralSection[data-panel-view="blur"] .panelBlurVeil {
+  opacity: var(--panel-veil, 1);
   -webkit-backdrop-filter: blur(var(--panel-blur-radius));
   backdrop-filter: blur(var(--panel-blur-radius));
-  opacity: var(--panel-veil, 1);
-  /* Idle/land: короткий opacity transition; mid-spin — WAAPI (global глушит). */
-  transition: opacity 0.45s var(--spiral-flip-ease);
-  will-change: auto;
+}
+
+.spiralSection[data-panel-view="blur"] .panelSolidCover {
+  opacity: 0;
+}
+
+/* solid */
+.spiralSection[data-panel-view="solid"] .panelSolidCover {
+  opacity: 1;
+}
+
+.spiralSection[data-panel-view="solid"] .panelBlurVeil {
+  display: none;
+  opacity: 0;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: transparent;
+}
+
+.spiralSection[data-panel-view="solid"] .panelScroll {
+  content-visibility: hidden;
+  contain: layout paint;
+  contain-intrinsic-size: auto var(--panel-intrinsic-h, 480px);
+  pointer-events: none;
 }
 
 .spiralSection[data-active] {
-  --panel-veil: 0;
   cursor: default;
   z-index: 5;
 }
 
-/* Мелкая / далёкая: без backdrop (дешевле); читаемость закрывает frost-fill. */
-.spiralSection[data-blur-lite] .panelBlurVeil {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: transparent;
-  opacity: 0;
-}
-
 .spiralSection[data-blur-turn] {
-  /* role marker for coupling / WAAPI */
+  /* mid-turn role marker */
 }
 
 /*
-  Preview только у следующих (data-ahead) в покое.
-  Radius + veil opacity: плавный enter/leave без mid-spin.
+  Hover: blur — veil→0 + радиус. Solid — только радиус.
 */
 @media (hover: hover) and (pointer: fine) {
-  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]) .panelFrame {
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="blur"] .panelFrame,
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="solid"] .panelFrame {
     transition: --panel-radius 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]):hover .panelFrame {
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:hover .panelFrame {
     --panel-radius: 22%;
     transition: --panel-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]) .panelBlurVeil {
+  :global(body:not(.is-spinning))
+    .spiralSection[data-ahead][data-panel-view="blur"]
+    .panelBlurVeil {
     transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]):hover {
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="blur"]:hover {
     --panel-veil: 0;
   }
 }
@@ -276,67 +289,8 @@
   }
 }
 
-.spiralSection[data-far] .panelScroll {
-  content-visibility: auto;
-  contain: layout paint;
-  /* Реальная высота после первого рендера (см. rememberPanelIntrinsicHeight). */
-  contain-intrinsic-size: auto var(--panel-intrinsic-h, 480px);
-}
-
-.accessibleSection .panelFrostFill {
-  display: none;
-}
-
-/*
-  Длинный ход: живые эффект-слои выключены (veil/frost).
-  Вид = bake-текстура; from/dest кроссфейдят её opacity (≤2 эффекта).
-*/
-:global(body.is-spinning[data-spin-kind="nasp"]) .spiralSection .panelBlurVeil,
-:global(body.is-spinning[data-spin-kind="long"]) .spiralSection .panelBlurVeil,
-:global(body.is-spinning[data-spin-kind="nasp"]) .spiralSection .panelFrostFill,
-:global(body.is-spinning[data-spin-kind="long"]) .spiralSection .panelFrostFill {
-  display: none !important;
-}
-
-/*
-  Длинный ход: у всех baked — непрозрачная текстура (без live filter).
-  from/dest кроссфейдят opacity bake; mid держит opacity:1.
-*/
-:global(body.is-spinning[data-spin-kind="nasp"])
-  .spiralSection[data-baked][data-bake-visible]
-  .panelBake,
-:global(body.is-spinning[data-spin-kind="long"])
-  .spiralSection[data-baked][data-bake-visible]
-  .panelBake {
-  display: block;
-}
-
-:global(body.is-spinning[data-spin-kind="nasp"])
-  .spiralSection[data-baked]:not([data-blur-turn])
-  .panelBake,
-:global(body.is-spinning[data-spin-kind="long"])
-  .spiralSection[data-baked]:not([data-blur-turn])
-  .panelBake {
-  opacity: 1;
-}
-
-/* Контент mid прячем; from/dest видны под opacity bake. */
-:global(body.is-spinning[data-spin-kind="nasp"])
-  .spiralSection[data-baked]:not([data-blur-turn])
-  .panelScroll,
-:global(body.is-spinning[data-spin-kind="long"])
-  .spiralSection[data-baked]:not([data-blur-turn])
-  .panelScroll {
-  visibility: hidden;
-}
-
-/* На спине НЕ форсим content-visibility:visible у всех far —
-   это заставляло GPU красить всю спираль (особенно больно на reverse/Наверх).
-   Attrs data-far mid-turn не трогаем; на land markActive идемпотентен. */
-
 .panelScroll {
   height: 100%;
-  /* не переключать overflow через :not(.is-spinning) — белеют панели на reverse scale */
   overflow: hidden;
   padding: clamp(18px, 2.6vw, 36px);
   padding-top: 76px;
@@ -351,7 +305,6 @@
 }
 
 .spiralSection[data-active] .panelScroll[data-scrollable] {
-  /* scroll (не auto): gutter зарезервирован; thumb готов сразу при активации */
   overflow-x: hidden;
   overflow-y: scroll;
   pointer-events: auto;

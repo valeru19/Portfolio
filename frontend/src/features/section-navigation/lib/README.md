@@ -4,13 +4,13 @@
 
 ## Файлы
 
-- **`loadGsap.ts`** — динамический `import("gsap")`, кэш промиса, `force3D: "auto"`, lagSmoothing. Не тянет GSAP в accessible-бандл до нужды.
-- **`spiralTransform.ts`** — `paintSpiralElement` (rotate+scale спирали), `applySpiralLayoutToPanels` (размеры/pose каждой панели; идемпотентные width/height после remount), длительность/ease твина.
-- **`spiralTransform.test.ts`** — duration/ease.
-- **`spiralTransform.layout.test.ts`** — размеры после remount (баг accessible↔spiral).
-- **`panelBlur.ts`** — `paintPanelBlur`, `blurPxForTurnProgress` (from↑ / dest↓ / other max), константа через `PANEL_BLUR_PX`.
-- **`panelBlur.test.ts`** — юнит-тесты blur-математики.
-- **`paintPanelPalette.ts`** (+ **`.test.ts`**) — CSS-переменные палитры на конкретной панели (чтобы контент не мигал чужим `--panel`).
-- **`applyPaletteToDocument.ts`** — пишет stage/body CSS-переменные при смене секции (`applyColors`).
+- **`loadGsap.ts`** — динамический `import("gsap")`, кэш промиса, `force3D: "auto"`, lagSmoothing.
+- **`spiralTransform.ts`** — `paintSpiralElement`, layout панелей, длительность/ease твина (шаг 17 reverse).
+- **`panelViewController.ts`** (+ **`.test.ts`**) — переходы `solid↔blur↔sharp` через opacity solid-cover (WAAPI), generation-счётчик отмены; бюджет ≤1 blur.
+- **`panelBlur.ts`** — veil amount / радиус backdrop, WAAPI blur-turn helpers.
+- **`panelReveal.ts`** — `PANEL_REVEAL_MS`, `decodePanelImages`, `rememberPanelIntrinsicHeight`.
+- **`paintPanelPalette.ts`** / **`applyPaletteToDocument.ts`** — палитры панели и stage.
+
+Запечённый blur (`panelBake`) удалён в шаге 18.
 
 Вызываются из `useSpiralMotion` / `useSpiralPanels` / DomEffects.

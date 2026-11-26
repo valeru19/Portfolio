@@ -3,7 +3,6 @@ export const PANEL_STATE_ATTR = {
   active: "data-active",
   /** Секции с индексом больше текущей — «следующие», для hover-preview. */
   ahead: "data-ahead",
-  far: "data-far",
   /**
    * Accessible card-stack: смещение относительно текущей (−3…3).
    * Не boolean — пишется через setCardDeltaAttr.
@@ -16,17 +15,10 @@ export const PANEL_STATE_ATTR = {
    */
   blurTurn: "data-blur-turn",
   /**
-   * Дешёвая вуаль без backdrop-filter (панель слишком мелкая / далеко).
+   * Вид панели: sharp | blur | solid (шаг 18).
+   * Не boolean — пишется через setPanelViewAttr.
    */
-  blurLite: "data-blur-lite",
-  /** Сплошная заливка поверх контента (квадратик), пока контент не готов. */
-  frost: "data-frost",
-  /** Идёт opacity-кроссфейд frost → контент под blur. */
-  revealing: "data-revealing",
-  /** Есть запечённая текстура blur. */
-  baked: "data-baked",
-  /** Показать bake-текстуру поверх контента (длинный ход). */
-  bakeVisible: "data-bake-visible",
+  panelView: "data-panel-view",
 } as const;
 
 /** Роль панели в CSS-кроссфейде blur на перевороте. */
@@ -63,11 +55,13 @@ export const SPIRAL_DOM_ATTR = {
   blurLayer: "data-panel-blur-layer",
   /** Opacity-вуаль (backdrop-filter статичен; анимируется только opacity). */
   blurVeil: "data-panel-blur-veil",
-  /** Слой-заливка (квадратик) для плавного reveal. */
+  /**
+   * Непрозрачная заливка поверх вуали (solid cover).
+   * Alias `data-panel-frost-fill` сохранён для совместимости селекторов.
+   */
+  solidCover: "data-panel-solid-cover",
   frostFill: "data-panel-frost-fill",
-  /** Запечённый blur (img/canvas texture). */
-  bake: "data-panel-bake",
-  /** Scroll-box панели — content-visibility на reverse. */
+  /** Scroll-box панели — content-visibility на solid. */
   scroll: "data-panel-scroll",
 } as const;
 
