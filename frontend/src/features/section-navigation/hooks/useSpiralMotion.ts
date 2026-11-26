@@ -2,12 +2,7 @@ import { useCallback, useRef, type MutableRefObject } from "react";
 
 import type { SectionId } from "@/shared/content";
 
-import {
-  beginBlurTurnWaapi,
-  endBlurTurnCrossfade,
-  idleBlurPxForPanel,
-  paintPanelBlur,
-} from "../lib/panelBlur";
+import { beginBlurTurnWaapi, endBlurTurnCrossfade } from "../lib/panelBlur";
 import { loadGsap } from "../lib/loadGsap";
 import {
   animationDurationMs,
@@ -47,7 +42,6 @@ export function useSpiralMotion({
   spiralRef,
   panelsRef,
   onSettled,
-  onProgress: _onProgress,
   markActive,
   applyColors,
   clearScrollable,
@@ -220,9 +214,8 @@ export function useSpiralMotion({
         setPanelStateAttr(section, PANEL_STATE_ATTR.far, false);
       });
 
-      const longBack = goingBack && distanceDeg > 95;
-      // Палитра mid-jump на reverse — лишний style thrash; красим на settle.
-      if (!longBack) applyColors(destIdx);
+      // Stage-цвета сразу — transition на HUD/body/header (не transition:none).
+      applyColors(destIdx);
 
       if (prefersReducedMotion()) {
         if (gen !== motionGenRef.current) return;
@@ -230,35 +223,20 @@ export function useSpiralMotion({
         return;
       }
 
-      // Blur: короткий ход вперёд — WAAPI кроссфейд from/dest (не GSAP onUpdate).
-      // Reverse / длинный прыжок (scale-up): snap; mid-jump blur только у from/dest —
-      // filter на промежуточных × scale-up давал кадры ~400ms на «Наверх».
+      // Opacity-вуаль from/dest на любом ходе (в т.ч. «Наверх»). Остальные остаются под вуалью.
+      // Далёкие на длинном ходе — blur-lite (tint), чтобы не держать много backdrop-слоёв.
+      if (distanceDeg > 95) {
+        sectionIds.forEach((id, i) => {
+          if (i === fromIdx || i === destIdx) return;
+          if (Math.abs(i - fromIdx) <= 1 || Math.abs(i - destIdx) <= 1) return;
+          const section = panelsRef.current.get(id)?.section;
+          if (section) setPanelStateAttr(section, PANEL_STATE_ATTR.blurLite, true);
+        });
+      }
       if (fromIdx !== destIdx) {
-        const fromEnd = idleBlurPxForPanel(fromIdx, destIdx);
-        const destStart = idleBlurPxForPanel(destIdx, fromIdx);
         blurFromRef.current = fromSection;
         blurDestRef.current = destSection;
-        const useWaapi = !goingBack && distanceDeg <= 95;
-        if (useWaapi) {
-          blurAnimRef.current = beginBlurTurnWaapi(
-            fromSection,
-            destSection,
-            duration,
-            fromEnd,
-            destStart,
-          );
-        } else if (longBack) {
-          sectionIds.forEach((id, i) => {
-            const section = panelsRef.current.get(id)?.section;
-            if (!section) return;
-            if (i === fromIdx) paintPanelBlur(section, fromEnd);
-            else if (i === destIdx) paintPanelBlur(section, 0);
-            else paintPanelBlur(section, 0);
-          });
-        } else {
-          if (fromSection) paintPanelBlur(fromSection, fromEnd);
-          if (destSection && destSection !== fromSection) paintPanelBlur(destSection, 0);
-        }
+        blurAnimRef.current = beginBlurTurnWaapi(fromSection, destSection, duration);
       }
 
       const runTween = (gsap: NonNullable<GsapLike>) => {

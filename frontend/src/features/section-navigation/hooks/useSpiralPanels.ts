@@ -5,8 +5,18 @@ import { sectionPaletteForId } from "@/shared/content/sectionPalettes";
 import type { Theme } from "@/shared/theme";
 
 import { applyPaletteToDocument } from "../lib/applyPaletteToDocument";
-import { idleBlurPxForPanel, paintPanelBlur } from "../lib/panelBlur";
+import {
+  BLUR_LITE_SCALE,
+  effectivePanelScale,
+  idleVeilAmount,
+  paintBlurLiteFlag,
+  paintPanelVeil,
+  panelBlurPxForScale,
+  PANEL_BLUR_RADIUS_VAR,
+  PANEL_VEIL_VAR,
+} from "../lib/panelBlur";
 import { paintPanelPaletteForId } from "../lib/paintPanelPalette";
+import { PANEL_BLUR_PX } from "../model/constants";
 import { PANEL_STATE_ATTR, setCardDeltaAttr, setPanelStateAttr } from "../model/panelStateAttrs";
 
 /** Короткая пауза после settle compositor, прежде чем включить overflow. */
@@ -78,22 +88,35 @@ export function useSpiralPanels({
         setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, !isOn && i > index);
         setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.far, isFar);
         if (nodes.section.style.opacity !== "1") nodes.section.style.opacity = "1";
-        if (nodes.section.style.visibility !== "visible") nodes.section.style.visibility = "visible";
+        if (nodes.section.style.visibility !== "visible")
+          nodes.section.style.visibility = "visible";
         if (nodes.section.style.clipPath) nodes.section.style.clipPath = "";
         // Поднимаем только текущую — без boost соседей (наезд при flip).
         const z = isOn ? "5" : "1";
         if (nodes.section.style.zIndex !== z) nodes.section.style.zIndex = z;
 
-        const blurPx = idleBlurPxForPanel(i, index);
+        const scale = effectivePanelScale(i, index);
+        const radius = isOn ? PANEL_BLUR_PX : panelBlurPxForScale(scale);
+        // Backdrop только у ближайших соседей; |Δ|>1 — tint-вуаль (дешевле, без snap).
+        paintBlurLiteFlag(
+          nodes.section,
+          !isOn && (scale < BLUR_LITE_SCALE || Math.abs(i - index) > 1),
+        );
+
         if (isFar) {
-          // Far: attrs сразу, blur батчами в следующих кадрах.
+          // Far: attrs сразу, veil батчами (CSS opacity transition — без snap).
           farBlurQueue.push(nodes.section);
           return;
         }
-        paintPanelBlur(nodes.section, blurPx);
+        // Соседи: без inline --panel-veil, чтобы ahead:hover работал.
+        if (isOn) {
+          paintPanelVeil(nodes.section, 0, radius);
+        } else {
+          nodes.section.style.removeProperty(PANEL_VEIL_VAR);
+          nodes.section.style.setProperty(PANEL_BLUR_RADIUS_VAR, `${radius}px`);
+        }
       });
 
-      // Батч far blur: по 1–2 панели за rAF, без longtask на «Наверх».
       let cursor = 0;
       const pumpFar = () => {
         const slice = farBlurQueue.slice(cursor, cursor + FAR_BLUR_BATCH);
@@ -101,7 +124,11 @@ export function useSpiralPanels({
         for (const section of slice) {
           const id = section.id as SectionId;
           const i = sectionIds.indexOf(id);
-          paintPanelBlur(section, idleBlurPxForPanel(i, index));
+          const scale = effectivePanelScale(i, index);
+          paintBlurLiteFlag(section, scale < BLUR_LITE_SCALE);
+          // Far уже под вуалью; только радиус + лёгкий CSS transition если нужно.
+          section.style.removeProperty(PANEL_VEIL_VAR);
+          paintPanelVeil(section, idleVeilAmount(i, index), panelBlurPxForScale(scale));
         }
         if (cursor < farBlurQueue.length) {
           farBlurRafRef.current = requestAnimationFrame(pumpFar);
@@ -132,7 +159,9 @@ export function useSpiralPanels({
         setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, false);
         setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.far, false);
         if (nodes.section.style.filter) nodes.section.style.filter = "";
-        nodes.section.style.removeProperty("--panel-blur");
+        nodes.section.style.removeProperty("--panel-veil");
+        nodes.section.style.removeProperty("--panel-blur-radius");
+        setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.blurLite, false);
 
         if (isOn) {
           setPanelStateAttr(nodes.scroll, PANEL_STATE_ATTR.scrollable, true);

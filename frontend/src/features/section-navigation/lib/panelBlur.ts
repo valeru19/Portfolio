@@ -1,35 +1,39 @@
 import { ASPECT, PANEL_BLUR_PX } from "../model/constants";
-import { SPIRAL_DOM_ATTR, setBlurTurnAttr, type BlurTurnRole } from "../model/panelStateAttrs";
+import {
+  PANEL_STATE_ATTR,
+  SPIRAL_DOM_ATTR,
+  setBlurTurnAttr,
+  setPanelStateAttr,
+  type BlurTurnRole,
+} from "../model/panelStateAttrs";
 
 /**
- * Idle/spin blur через --panel-blur на section (наследуется blur-слоем).
- * Hover (ahead): CSS filter blur(0) с transition — переменную не трогаем.
- * Turn: WAAPI на blur-слое (не покадровая запись из GSAP onUpdate).
+ * Blur через opacity-вуаль (backdrop-filter радиус статичен).
+ * Turn: WAAPI opacity на from/dest — не меняем filter mid-spin.
  */
-export const PANEL_BLUR_VAR = "--panel-blur";
-/** Длительность CSS-кроссфейда --panel-blur на from/dest (legacy fallback). */
+export const PANEL_VEIL_VAR = "--panel-veil";
+export const PANEL_BLUR_RADIUS_VAR = "--panel-blur-radius";
+/** @deprecated alias для тестов/старых импортов — пишем радиус, не filter. */
+export const PANEL_BLUR_VAR = PANEL_BLUR_RADIUS_VAR;
 export const BLUR_TURN_MS_VAR = "--blur-turn-ms";
 
-/** Минимальный CSS-радиус, чтобы текст соседа оставался нечитаемым. */
-export const MIN_PANEL_BLUR_PX = 8;
+/** Минимальный радиус backdrop у видимых соседей. */
+export const MIN_PANEL_BLUR_PX = 10;
 
-/** Blur для панели в покое без учёта scale (базовый потолок). */
+/**
+ * Ниже этого экранного scale — data-blur-lite (без backdrop-filter).
+ * Соседи (~0.62) остаются с backdrop; дальше — дешёвый tint (текст всё равно нечитаем).
+ */
+export const BLUR_LITE_SCALE = 0.5;
+
 export function inactivePanelBlurPx(): number {
   return PANEL_BLUR_PX;
 }
 
-/**
- * Эффективный экранный scale панели i при активной activeIdx:
- * ASPECT^(i - activeIdx). Позади (>1) CSS-blur режем, чтобы screen blur ≈ PANEL_BLUR_PX.
- */
 export function effectivePanelScale(panelIndex: number, activeIndex: number): number {
   return Math.pow(ASPECT, panelIndex - activeIndex);
 }
 
-/**
- * CSS blur-радиус с учётом scale. Вид на экране у соседей ~PANEL_BLUR_PX,
- * у далёких «позади» не раздувается до сотен px.
- */
 export function panelBlurPxForScale(
   effectiveScale: number,
   maxBlurPx = PANEL_BLUR_PX,
@@ -41,16 +45,17 @@ export function panelBlurPxForScale(
   return Math.max(minBlurPx, quantizeBlurPx(capped));
 }
 
-/** Idle blur панели относительно текущей (с учётом scale). */
+/** Idle: 0 = резкая (active), 1 = под вуалью. */
+export function idleVeilAmount(panelIndex: number, activeIndex: number): number {
+  return panelIndex === activeIndex ? 0 : 1;
+}
+
+/** @deprecated для старых тестов progress→px; veil использует amount 0..1. */
 export function idleBlurPxForPanel(panelIndex: number, activeIndex: number): number {
   if (panelIndex === activeIndex) return 0;
   return panelBlurPxForScale(effectivePanelScale(panelIndex, activeIndex));
 }
 
-/**
- * Кроссфейд blur на перевороте спирали.
- * progress 0 — ещё на from (резкая), 1 — приземлились на dest (резкая).
- */
 export function blurPxForTurnProgress(
   role: "from" | "dest" | "other",
   progress: number,
@@ -62,160 +67,162 @@ export function blurPxForTurnProgress(
   return maxBlurPx;
 }
 
-/**
- * Округление blur для меньшего числа style-записей.
- */
+/** Veil amount mid-turn: from 0→1, dest 1→0, other 1. */
+export function veilAmountForTurnProgress(
+  role: "from" | "dest" | "other",
+  progress: number,
+): number {
+  const t = Math.min(1, Math.max(0, progress));
+  if (role === "from") return t;
+  if (role === "dest") return 1 - t;
+  return 1;
+}
+
 export function quantizeBlurPx(blurPx: number, stepPx = 1): number {
   if (blurPx <= 0.05) return 0;
   const step = Math.max(1, stepPx);
   return Math.round(blurPx / step) * step;
 }
 
-function blurLayerOf(section: HTMLElement): HTMLElement | null {
-  return section.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.blurLayer}]`);
+function veilOf(section: HTMLElement): HTMLElement | null {
+  return (
+    section.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.blurVeil}]`) ??
+    section.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.blurLayer}]`)
+  );
 }
 
-/** Пишет --panel-blur (не style.filter на section). */
-export function paintPanelBlur(section: HTMLElement, blurPx: number, stepPx = 1): void {
-  const q = quantizeBlurPx(blurPx, stepPx);
-  const next = `${q}px`;
-  if (section.style.getPropertyValue(PANEL_BLUR_VAR) !== next) {
-    section.style.setProperty(PANEL_BLUR_VAR, next);
+/** Пишет opacity вуали 0..1 и статичный радиус backdrop. */
+export function paintPanelVeil(
+  section: HTMLElement,
+  veilAmount: number,
+  blurRadiusPx = PANEL_BLUR_PX,
+): void {
+  const amount = Math.min(1, Math.max(0, veilAmount));
+  const next = String(Number(amount.toFixed(3)));
+  if (section.style.getPropertyValue(PANEL_VEIL_VAR) !== next) {
+    section.style.setProperty(PANEL_VEIL_VAR, next);
   }
-  if (section.style.filter) section.style.filter = "";
-  const layer = blurLayerOf(section);
-  if (layer?.style.filter) layer.style.filter = "";
-}
-
-export function clearPanelBlur(section: HTMLElement): void {
-  if (section.style.getPropertyValue(PANEL_BLUR_VAR)) {
-    section.style.removeProperty(PANEL_BLUR_VAR);
-  }
-  if (section.style.filter) section.style.filter = "";
-  const layer = blurLayerOf(section);
-  if (layer?.style.filter) layer.style.filter = "";
-  if (layer?.style.willChange) layer.style.willChange = "";
-}
-
-type BlurAnimHandle = {
-  cancel: () => void;
-};
-
-const activeBlurAnims = new WeakMap<HTMLElement, Animation>();
-
-function cancelLayerAnim(layer: HTMLElement): void {
-  const prev = activeBlurAnims.get(layer);
-  if (prev) {
-    prev.cancel();
-    activeBlurAnims.delete(layer);
+  const radius = `${quantizeBlurPx(blurRadiusPx)}px`;
+  if (section.style.getPropertyValue(PANEL_BLUR_RADIUS_VAR) !== radius) {
+    section.style.setProperty(PANEL_BLUR_RADIUS_VAR, radius);
   }
 }
 
 /**
- * WAAPI-кроссфейд filter на blur-слое from/dest.
- * Один запуск на ход (не onUpdate GSAP). will-change только на время анимации.
+ * Совместимость: blurPx>0 → вуаль 1, blurPx=0 → вуаль 0.
+ * Радиус пишется отдельно через paintPanelVeil / markActive.
+ */
+export function paintPanelBlur(section: HTMLElement, blurPx: number, stepPx = 1): void {
+  const q = quantizeBlurPx(blurPx, stepPx);
+  paintPanelVeil(section, q <= 0 ? 0 : 1, q > 0 ? q : PANEL_BLUR_PX);
+}
+
+export function clearPanelBlur(section: HTMLElement): void {
+  if (section.style.getPropertyValue(PANEL_VEIL_VAR)) {
+    section.style.removeProperty(PANEL_VEIL_VAR);
+  }
+  if (section.style.getPropertyValue(PANEL_BLUR_RADIUS_VAR)) {
+    section.style.removeProperty(PANEL_BLUR_RADIUS_VAR);
+  }
+  const veil = veilOf(section);
+  if (veil?.style.opacity) veil.style.opacity = "";
+  if (veil?.style.willChange) veil.style.willChange = "";
+}
+
+const activeVeilAnims = new WeakMap<HTMLElement, Animation>();
+
+function cancelVeilAnim(veil: HTMLElement): void {
+  const prev = activeVeilAnims.get(veil);
+  if (prev) {
+    prev.cancel();
+    activeVeilAnims.delete(veil);
+  }
+}
+
+type BlurAnimHandle = { cancel: () => void };
+
+/**
+ * WAAPI opacity на вуали from/dest (композитор).
+ * Радиус backdrop не трогаем. will-change только на время хода.
  */
 export function beginBlurTurnWaapi(
   fromSection: HTMLElement | undefined,
   destSection: HTMLElement | undefined,
   durationSec: number,
-  fromEndBlurPx: number,
-  destStartBlurPx: number,
 ): BlurAnimHandle {
   const durationMs = Math.max(16, durationSec * 1000);
   const easing = "ease-in-out";
   const animations: Animation[] = [];
 
-  const arm = (
-    section: HTMLElement,
-    role: BlurTurnRole,
-    startPx: number,
-    endPx: number,
-  ): void => {
-    const layer = blurLayerOf(section);
-    if (!layer || typeof layer.animate !== "function") {
-      // Fallback: мгновенный snap через переменную.
-      setBlurTurnAttr(section, role);
-      paintPanelBlur(section, endPx);
+  const arm = (section: HTMLElement, role: BlurTurnRole, start: number, end: number): void => {
+    const veil = veilOf(section);
+    setBlurTurnAttr(section, role);
+    paintPanelVeil(section, start);
+    if (!veil || typeof veil.animate !== "function") {
+      paintPanelVeil(section, end);
       return;
     }
-    cancelLayerAnim(layer);
-    setBlurTurnAttr(section, role);
-    paintPanelBlur(section, startPx);
-    layer.style.willChange = "filter";
-    const anim = layer.animate(
-      [{ filter: `blur(${quantizeBlurPx(startPx)}px)` }, { filter: `blur(${quantizeBlurPx(endPx)}px)` }],
-      { duration: durationMs, easing, fill: "forwards" },
-    );
-    activeBlurAnims.set(layer, anim);
+    cancelVeilAnim(veil);
+    veil.style.willChange = "opacity";
+    const anim = veil.animate([{ opacity: start }, { opacity: end }], {
+      duration: durationMs,
+      easing,
+      fill: "forwards",
+    });
+    activeVeilAnims.set(veil, anim);
     animations.push(anim);
     void anim.finished
       .then(() => {
-        paintPanelBlur(section, endPx);
-        layer.style.filter = "";
-        layer.style.willChange = "";
-        activeBlurAnims.delete(layer);
+        paintPanelVeil(section, end);
+        veil.style.opacity = "";
+        veil.style.willChange = "";
+        activeVeilAnims.delete(veil);
       })
       .catch(() => {
-        layer.style.willChange = "";
-        activeBlurAnims.delete(layer);
+        veil.style.willChange = "";
+        activeVeilAnims.delete(veil);
       });
   };
 
-  if (fromSection) arm(fromSection, "from", 0, fromEndBlurPx);
-  if (destSection && destSection !== fromSection) {
-    arm(destSection, "dest", destStartBlurPx, 0);
-  }
+  if (fromSection) arm(fromSection, "from", 0, 1);
+  if (destSection && destSection !== fromSection) arm(destSection, "dest", 1, 0);
 
   return {
     cancel: () => {
       for (const anim of animations) anim.cancel();
-      if (fromSection) {
-        const layer = blurLayerOf(fromSection);
-        if (layer) {
-          cancelLayerAnim(layer);
-          layer.style.filter = "";
-          layer.style.willChange = "";
-        }
-      }
-      if (destSection) {
-        const layer = blurLayerOf(destSection);
-        if (layer) {
-          cancelLayerAnim(layer);
-          layer.style.filter = "";
-          layer.style.willChange = "";
-        }
+      for (const section of [fromSection, destSection]) {
+        if (!section) continue;
+        const veil = veilOf(section);
+        if (!veil) continue;
+        cancelVeilAnim(veil);
+        veil.style.opacity = "";
+        veil.style.willChange = "";
       }
     },
   };
 }
 
-/**
- * Legacy CSS @property кроссфейд (fallback / тесты).
- * Предпочтительно beginBlurTurnWaapi.
- */
+/** Legacy CSS var crossfade — теперь тоже через veil amount. */
 export function beginBlurTurnCrossfade(
   fromSection: HTMLElement | undefined,
   destSection: HTMLElement | undefined,
   durationSec: number,
   maxBlurPx = PANEL_BLUR_PX,
 ): void {
+  void maxBlurPx;
   const ms = `${Math.max(0.01, durationSec)}s`;
-
-  const arm = (section: HTMLElement, role: BlurTurnRole, startPx: number, endPx: number) => {
+  const arm = (section: HTMLElement, role: BlurTurnRole, start: number, end: number) => {
     setBlurTurnAttr(section, null);
-    paintPanelBlur(section, startPx);
+    paintPanelVeil(section, start);
     void section.offsetWidth;
     section.style.setProperty(BLUR_TURN_MS_VAR, ms);
     setBlurTurnAttr(section, role);
-    paintPanelBlur(section, endPx);
+    paintPanelVeil(section, end);
   };
-
-  if (fromSection) arm(fromSection, "from", 0, maxBlurPx);
-  if (destSection && destSection !== fromSection) arm(destSection, "dest", maxBlurPx, 0);
+  if (fromSection) arm(fromSection, "from", 0, 1);
+  if (destSection && destSection !== fromSection) arm(destSection, "dest", 1, 0);
 }
 
-/** Снять роль/длительность кроссфейда (перед markActive / kill). */
 export function endBlurTurnCrossfade(...sections: Array<HTMLElement | undefined>): void {
   for (const section of sections) {
     if (!section) continue;
@@ -223,11 +230,16 @@ export function endBlurTurnCrossfade(...sections: Array<HTMLElement | undefined>
     if (section.style.getPropertyValue(BLUR_TURN_MS_VAR)) {
       section.style.removeProperty(BLUR_TURN_MS_VAR);
     }
-    const layer = blurLayerOf(section);
-    if (layer) {
-      cancelLayerAnim(layer);
-      if (layer.style.filter) layer.style.filter = "";
-      if (layer.style.willChange) layer.style.willChange = "";
+    const veil = veilOf(section);
+    if (veil) {
+      cancelVeilAnim(veil);
+      if (veil.style.opacity) veil.style.opacity = "";
+      if (veil.style.willChange) veil.style.willChange = "";
     }
   }
+}
+
+/** Пометить мелкую панель дешёвой вуалью (без backdrop-filter). */
+export function paintBlurLiteFlag(section: HTMLElement, lite: boolean): void {
+  setPanelStateAttr(section, PANEL_STATE_ATTR.blurLite, lite);
 }

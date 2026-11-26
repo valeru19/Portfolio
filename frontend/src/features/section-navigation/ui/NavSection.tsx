@@ -47,28 +47,31 @@ export function NavSection({ id, children, className, ...aria }: Props) {
     <section
       ref={sectionRef}
       id={id}
-      className={cn(
-        isAccessible ? styles.accessibleSection : styles.spiralSection,
-        className,
-      )}
+      className={cn(isAccessible ? styles.accessibleSection : styles.spiralSection, className)}
       {...{ [SPIRAL_DOM_ATTR.section]: "" }}
       onClick={onSectionClick}
       {...aria}
     >
       {/*
-        Frame + blur-слой нужны спирали. В accessible — passthrough (см. CSS),
-        чтобы не размонтировать children при смене режима.
+        Контент резкий; blur — статичная backdrop-вуаль с opacity.
+        В accessible вуаль passthrough (см. CSS).
       */}
       <div className={styles.panelFrame}>
-        <div className={styles.panelBlurLayer} {...{ [SPIRAL_DOM_ATTR.blurLayer]: "" }}>
-          <div
-            ref={scrollRef}
-            className={cn(styles.panelScroll, isAccessible && styles.accessibleCardBody)}
-            {...{ [SPIRAL_DOM_ATTR.scroll]: "" }}
-          >
-            {children}
-          </div>
+        <div
+          ref={scrollRef}
+          className={cn(styles.panelScroll, isAccessible && styles.accessibleCardBody)}
+          {...{ [SPIRAL_DOM_ATTR.scroll]: "" }}
+        >
+          {children}
         </div>
+        <div
+          className={styles.panelBlurVeil}
+          aria-hidden="true"
+          {...{
+            [SPIRAL_DOM_ATTR.blurVeil]: "",
+            [SPIRAL_DOM_ATTR.blurLayer]: "",
+          }}
+        />
       </div>
     </section>
   );

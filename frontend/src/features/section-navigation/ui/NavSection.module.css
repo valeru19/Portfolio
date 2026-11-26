@@ -34,7 +34,7 @@
     box-shadow 0.4s var(--card-ease);
 }
 
-/* Общая DOM-ветка со спиралью: frame/blur — прозрачный passthrough. */
+/* Общая DOM-ветка со спиралью: frame/вуаль — прозрачный passthrough. */
 .accessibleSection .panelFrame {
   border: none;
   background: transparent;
@@ -43,8 +43,8 @@
   transform: none;
 }
 
-.accessibleSection .panelBlurLayer {
-  filter: none;
+.accessibleSection .panelBlurVeil {
+  display: none;
 }
 
 .accessibleSection[data-card-delta] {
@@ -121,12 +121,13 @@
 }
 
 .spiralSection {
-  /* --panel-blur пишется inline на section и наследуется во frame. */
-  --panel-blur: 0px;
+  /* --panel-veil 0 = резкая, 1 = полностью под вуалью. Радиус backdrop статичен. */
+  --panel-veil: 1;
+  --panel-blur-radius: 16px;
   position: absolute;
   left: 0;
   top: 0;
-  /* Без radius/filter здесь: стабильный прямоугольный hit-box под :hover. */
+  /* Без radius здесь: стабильный прямоугольный hit-box под :hover. */
   border: none;
   background: transparent;
   color: var(--text);
@@ -134,7 +135,6 @@
   cursor: pointer;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
-  /* Ниже active — следующие DOM-соседи (следующая страница) не должны перекрывать текущую. */
   z-index: 1;
   contain: layout style;
   transition: none;
@@ -142,48 +142,61 @@
 
 .panelFrame {
   --panel-radius: 0.01px;
+  position: relative;
   box-sizing: border-box;
   width: 100%;
   height: 100%;
   overflow: hidden;
   isolation: isolate;
   border: var(--frame) solid var(--border);
-  /* Непрозрачный фон: иначе соседний резкий текст просвечивает сквозь blur. */
   background: var(--panel);
   background-clip: padding-box;
   color: var(--text);
   border-radius: var(--panel-radius);
   transform: translateZ(0);
   backface-visibility: hidden;
-  /* Без transition radius/filter: leave tween мигал 2× под spiral transform. */
   transition: none;
 }
 
-/* Blur на внутреннем слое: filter не размывает углы поверх overflow родителя.
-   Без translateZ(0): лишний compositor-слой × filter под rotate спирали = hitch. */
-.panelBlurLayer {
-  width: 100%;
-  height: 100%;
-  filter: blur(var(--panel-blur));
-  backface-visibility: hidden;
-  /* База без transition — land markActive не tween'ит все панели. */
-  transition: none;
+/*
+  Вуаль: backdrop-filter радиус НЕ анимируем (дорого).
+  Кроссфейд = opacity (композитор). Лёгкий tint, чтобы текст не читался.
+*/
+.panelBlurVeil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--panel) 22%, transparent);
+  -webkit-backdrop-filter: blur(var(--panel-blur-radius));
+  backdrop-filter: blur(var(--panel-blur-radius));
+  opacity: var(--panel-veil, 1);
+  /* Idle/land: короткий opacity transition; mid-spin — WAAPI (global глушит). */
+  transition: opacity 0.45s var(--spiral-flip-ease);
+  will-change: auto;
 }
 
 .spiralSection[data-active] {
+  --panel-veil: 0;
   cursor: default;
   z-index: 5;
 }
 
-/* Роль mid-turn оставлена для coupling/тестов; tween отключён (мерцание под rotate). */
+/* Мелкая / далёкая панель: без backdrop-filter (дешевле), плотный frost — текст нечитаем. */
+.spiralSection[data-blur-lite] .panelBlurVeil {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: color-mix(in srgb, var(--panel) 82%, var(--text) 18%);
+}
+
 .spiralSection[data-blur-turn] {
-  /* no-op */
+  /* role marker for coupling / WAAPI */
 }
 
 /*
   Preview только у следующих (data-ahead) в покое.
-  Radius + filter: enter/leave оба плавные; не вешаем transition на все панели.
-  Mid-spin blur роли snap'аются в JS — без CSS-tween (мерцание под rotate).
+  Radius + veil opacity: плавный enter/leave без mid-spin.
 */
 @media (hover: hover) and (pointer: fine) {
   :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]) .panelFrame {
@@ -195,20 +208,18 @@
     transition: --panel-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Leave: transition на базе ahead; enter: на :hover (чуть быстрее). */
-  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]) .panelBlurLayer {
-    transition: filter 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]) .panelBlurVeil {
+    transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]):hover .panelBlurLayer {
-    filter: blur(0px);
-    transition: filter 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:not([data-active]):hover {
+    --panel-veil: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .panelFrame,
-  .panelBlurLayer {
+  .panelBlurVeil {
     transition: none;
   }
 }

@@ -15,6 +15,10 @@ export const PANEL_STATE_ATTR = {
    * Не boolean — пишется через setBlurTurnAttr.
    */
   blurTurn: "data-blur-turn",
+  /**
+   * Дешёвая вуаль без backdrop-filter (панель слишком мелкая / далеко).
+   */
+  blurLite: "data-blur-lite",
 } as const;
 
 /** Роль панели в CSS-кроссфейде blur на перевороте. */
@@ -47,8 +51,10 @@ export const SPIRAL_DOM_ATTR = {
   stage: "data-spiral-stage",
   section: "data-spiral-section",
   hud: "data-spiral-hud",
-  /** Слой с filter:blur (far глушим на спине — см. global.css). */
+  /** Устаревший alias — вуаль; оставлен для coupling-тестов. */
   blurLayer: "data-panel-blur-layer",
+  /** Opacity-вуаль (backdrop-filter статичен; анимируется только opacity). */
+  blurVeil: "data-panel-blur-veil",
   /** Scroll-box панели — content-visibility на reverse. */
   scroll: "data-panel-scroll",
 } as const;
