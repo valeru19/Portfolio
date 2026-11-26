@@ -38,6 +38,11 @@ export type TurnPlan = {
   goingBack: boolean;
   durationSec: number;
   panels: Map<number, PanelNodesLike>;
+  /**
+   * Ход через круг: только from→dest, промежуточные не мелькают,
+   * blur на dest+1 — после посадки.
+   */
+  wrapsRing?: boolean;
 };
 
 function sleep(ms: number): Promise<void> {
@@ -73,7 +78,7 @@ export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () =>
   const durationMs = Math.max(PANEL_VIEW_MS, plan.durationSec * 1000);
   const viewMs = Math.min(PANEL_VIEW_MS, durationMs);
   const handles: LayerAnimHandle[] = [];
-  const { fromIdx, destIdx, sectionCount, longJump, goingBack, panels } = plan;
+  const { fromIdx, destIdx, sectionCount, longJump, goingBack, panels, wrapsRing } = plan;
 
   const oldBlurIdx = fromIdx + 1 < sectionCount ? fromIdx + 1 : -1;
   const nextBlurIdx = destIdx + 1 < sectionCount ? destIdx + 1 : -1;
@@ -81,7 +86,37 @@ export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () =>
   const fromNodes = panels.get(fromIdx);
   const destNodes = panels.get(destIdx);
 
-  // ——— Длинный reverse (Наверх): dest/dest+1 уже под cover в prepareJump ———
+  // ——— Wrap через круг: только from и dest, без промежуточных ———
+  if (wrapsRing) {
+    for (let i = 0; i < sectionCount; i += 1) {
+      const nodes = panels.get(i);
+      if (!nodes) continue;
+      if (i === fromIdx || i === destIdx) continue;
+      forceSolidInstant(nodes);
+      if (nodes.section.style.opacity !== "0") nodes.section.style.opacity = "0";
+      if (nodes.section.style.visibility !== "hidden") {
+        nodes.section.style.visibility = "hidden";
+      }
+    }
+    if (fromNodes) void transitionToSolid(fromNodes, gen, durationMs);
+    if (destNodes) {
+      const destWas = readPanelViewAttr(destNodes.section);
+      if (destWas === "blur") {
+        handles.push(transitionBlurToSharp(destNodes.section, durationMs));
+      } else {
+        void transitionSolidToSharp(destNodes, gen, durationMs);
+      }
+    }
+    return {
+      gen,
+      cancel: () => {
+        bumpPanelViewGeneration();
+        for (const h of handles) h.cancel();
+      },
+    };
+  }
+
+  // ——— Длинный reverse (legacy Наверх): dest/dest+1 уже под cover в prepareJump ———
   if (longJump && goingBack) {
     for (let i = 0; i < sectionCount; i += 1) {
       const nodes = panels.get(i);

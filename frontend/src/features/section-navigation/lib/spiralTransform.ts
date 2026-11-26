@@ -70,11 +70,16 @@ export function resetSpiralPaintCache(): void {
  * Раскладка панелей. Позу пишем через CSS transform (не gsap.set на каждую панель) —
  * gsap.set на 7 узлах перед reverse/Наверх давал заметный hitch на старте твина.
  */
+/**
+ * Раскладка панелей по индексу слота.
+ * `layoutIndexById` — временные слоты (ход через круг: dest на from+steps).
+ */
 export function applySpiralLayoutToPanels(
   spiral: HTMLElement,
   sectionIds: SectionId[],
   panels: Map<SectionId, PanelNodes>,
   gsap: GsapLike | null,
+  layoutIndexById?: ReadonlyMap<SectionId, number>,
 ): void {
   const layout = computeSpiralLayout(window.innerWidth, window.innerHeight);
   const widthPx = `${layout.panelWidth}px`;
@@ -91,8 +96,9 @@ export function applySpiralLayoutToPanels(
     if (nodes.section.style.transformOrigin !== layout.transformOrigin) {
       nodes.section.style.transformOrigin = layout.transformOrigin;
     }
-    const rotation = panelRotationAtIndex(index);
-    const scale = panelScaleAtIndex(index);
+    const slot = layoutIndexById?.get(id) ?? index;
+    const rotation = panelRotationAtIndex(slot);
+    const scale = panelScaleAtIndex(slot);
     const pose = `rotate(${rotation}deg) scale(${scale}) translate3d(0,0,0)`;
     if (nodes.section.style.transform !== pose) {
       nodes.section.style.transform = pose;

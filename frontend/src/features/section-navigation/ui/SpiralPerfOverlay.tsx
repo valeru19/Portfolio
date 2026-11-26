@@ -89,7 +89,12 @@ export function SpiralPerfOverlay() {
         frames: deltas.length,
         startDelayMs,
       });
-      const kindLabel = kindRef.current === "nasp" ? "Наверх" : kindRef.current;
+      const kindLabel =
+        kindRef.current === "nasp"
+          ? "Наверх"
+          : kindRef.current === "long"
+            ? "wrap/long"
+            : kindRef.current;
       const label = `${kindLabel}#${sessionRef.current.length + 1}`;
       sessionRef.current.push({ label, deltas, startDelayMs });
       console.table(

@@ -11,9 +11,10 @@ import {
   paintSpiralElement,
   paintSpiralElementWithGsap,
 } from "../lib/spiralTransform";
-import { snapRotationToSection } from "../model/geometry";
+import { rotationForSectionIndex, snapRotationToSection } from "../model/geometry";
 import { setBlurTurnAttr } from "../model/panelStateAttrs";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
+import { planMoveFromSection } from "../model/ringNavigation";
 import { clampSectionIndex } from "../model/sectionIndex";
 
 import type { PanelNodes } from "./useSpiralPanels";
@@ -338,6 +339,192 @@ export function useSpiralMotion({
     ],
   );
 
+  /**
+   * Вперёд через край круга: dest временно в слоте from+steps,
+   * промежуточные скрыты; после посадки — rebase layout и rotation.
+   */
+  const animateRingWrap = useCallback(
+    async (fromIdx: number, destIdx: number, steps: number) => {
+      if (isAccessible || steps <= 0) return;
+      const gen = ++motionGenRef.current;
+      tweenRef.current?.kill();
+      tweenRef.current = null;
+      if (settleRafRef.current) {
+        cancelAnimationFrame(settleRafRef.current);
+        settleRafRef.current = 0;
+      }
+      abortViewTurn();
+      clearScrollable();
+
+      const startR = rotationRef.current;
+      const endR = startR - steps * 90;
+      const distanceDeg = Math.abs(endR - startR);
+      const duration = animationDurationMs(distanceDeg, false);
+      const destId = sectionIds[destIdx];
+      const spiral = spiralRef.current;
+
+      const layoutIndexById = new Map<SectionId, number>();
+      sectionIds.forEach((id, i) => layoutIndexById.set(id, i));
+      if (destId) layoutIndexById.set(destId, fromIdx + steps);
+
+      if (spiral) {
+        applySpiralLayoutToPanels(
+          spiral,
+          sectionIds,
+          panelsRef.current,
+          gsapRef.current,
+          layoutIndexById,
+        );
+      }
+
+      // Скрыть всё, кроме from и dest — без мелькания промежуточных.
+      sectionIds.forEach((id, i) => {
+        const section = panelsRef.current.get(id)?.section;
+        if (!section) return;
+        if (i === fromIdx || i === destIdx) {
+          section.style.opacity = "1";
+          section.style.visibility = "visible";
+          section.style.willChange = "transform";
+          return;
+        }
+        section.style.opacity = "0";
+        section.style.visibility = "hidden";
+        section.style.willChange = "";
+      });
+
+      if (!prefersReducedMotion()) {
+        await prepareJump(fromIdx, destIdx, false);
+        if (gen !== motionGenRef.current) return;
+      }
+
+      setSpinning(true, destIdx === 0 ? "nasp" : "long");
+      applyColors(destIdx);
+
+      if (prefersReducedMotion()) {
+        if (gen !== motionGenRef.current) return;
+        sectionIds.forEach((id) => {
+          const section = panelsRef.current.get(id)?.section;
+          if (!section) return;
+          section.style.opacity = "1";
+          section.style.visibility = "visible";
+        });
+        if (spiral) {
+          applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
+        }
+        finishScroll(rotationForSectionIndex(destIdx));
+        return;
+      }
+
+      const byIndex = new Map<number, PanelNodes>();
+      sectionIds.forEach((id, i) => {
+        const nodes = panelsRef.current.get(id);
+        if (nodes) byIndex.set(i, nodes);
+      });
+      const fromSection = byIndex.get(fromIdx)?.section;
+      const destSection = byIndex.get(destIdx)?.section;
+      if (fromSection) setBlurTurnAttr(fromSection, "from");
+      if (destSection) setBlurTurnAttr(destSection, "dest");
+      const turn = beginPanelViewTurn({
+        fromIdx,
+        destIdx,
+        sectionCount,
+        longJump: steps > 1,
+        goingBack: false,
+        durationSec: duration,
+        panels: byIndex,
+        wrapsRing: true,
+      });
+      viewTurnCancelRef.current = turn.cancel;
+
+      const restoreAndFinish = () => {
+        sectionIds.forEach((id) => {
+          const section = panelsRef.current.get(id)?.section;
+          if (!section) return;
+          section.style.opacity = "1";
+          section.style.visibility = "visible";
+          section.style.willChange = "";
+        });
+        const sp = spiralRef.current;
+        if (sp) {
+          applySpiralLayoutToPanels(sp, sectionIds, panelsRef.current, gsapRef.current);
+        }
+        finishScroll(rotationForSectionIndex(destIdx));
+      };
+
+      const runTween = (gsap: NonNullable<GsapLike>) => {
+        if (gen !== motionGenRef.current) return;
+        const sp = spiralRef.current;
+        if (!sp) {
+          restoreAndFinish();
+          return;
+        }
+        const state = { r: startR };
+        const ease = animationEase(distanceDeg, false);
+        tweenRef.current = gsap.to(state, {
+          r: endR,
+          duration,
+          ease,
+          overwrite: true,
+          onUpdate: () => {
+            if (gen !== motionGenRef.current) return;
+            paintSpiralElementWithGsap(gsap, sp, state.r);
+            rotationRef.current = state.r;
+          },
+          onComplete: () => {
+            if (gen !== motionGenRef.current) return;
+            tweenRef.current = null;
+            restoreAndFinish();
+          },
+        });
+      };
+
+      if (gsapRef.current) {
+        runTween(gsapRef.current);
+        return;
+      }
+      const gsap = await ensureGsap();
+      if (gen !== motionGenRef.current) return;
+      if (!gsap) {
+        restoreAndFinish();
+        return;
+      }
+      runTween(gsap);
+    },
+    [
+      abortViewTurn,
+      applyColors,
+      clearScrollable,
+      ensureGsap,
+      finishScroll,
+      isAccessible,
+      panelsRef,
+      prepareJump,
+      sectionCount,
+      sectionIds,
+      setSpinning,
+      spiralRef,
+    ],
+  );
+
+  /** goTo через planMove: wrap / forward / back. */
+  const animateToSection = useCallback(
+    async (targetIndex: number) => {
+      if (isAccessible) return;
+      const fromIdx = clampSectionIndex(Math.round(-rotationRef.current / 90), sectionCount);
+      const plan = planMoveFromSection(fromIdx, targetIndex, sectionCount);
+      if (plan.direction === "noop") {
+        if (!spinningRef.current) finishScroll(rotationForSectionIndex(fromIdx));
+        return;
+      }
+      if (plan.wrapsRing) {
+        await animateRingWrap(fromIdx, plan.targetSection, plan.steps);
+        return;
+      }
+      await animateToRotation(rotationForSectionIndex(plan.targetSection));
+    },
+    [animateRingWrap, animateToRotation, finishScroll, isAccessible, sectionCount],
+  );
+
   const killMotion = useCallback(() => {
     motionGenRef.current += 1;
     bumpPanelViewGeneration();
@@ -350,7 +537,16 @@ export function useSpiralMotion({
     cancelWarm();
     abortViewTurn();
     setSpinning(false);
-  }, [abortViewTurn, cancelWarm, setSpinning]);
+    // На случай убитого wrap — вернуть видимость панелей.
+    panelsRef.current.forEach(({ section }) => {
+      if (section.style.visibility === "hidden") section.style.visibility = "visible";
+      if (section.style.opacity === "0") section.style.opacity = "1";
+    });
+    const spiral = spiralRef.current;
+    if (spiral && !isAccessible) {
+      applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
+    }
+  }, [abortViewTurn, cancelWarm, isAccessible, panelsRef, sectionIds, setSpinning, spiralRef]);
 
   return {
     rotationRef,
@@ -358,6 +554,7 @@ export function useSpiralMotion({
     paintSpiralTransform,
     buildSpiral,
     animateToRotation,
+    animateToSection,
     ensureGsap,
     killMotion,
   };

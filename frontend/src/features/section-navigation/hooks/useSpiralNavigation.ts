@@ -10,7 +10,7 @@ import {
   MODE_TRANSITION_ENTER_MS,
   MODE_TRANSITION_EXIT_MS,
 } from "../model/constants";
-import { rotationForSectionIndex } from "../model/geometry";
+import { replaceSectionHash, sectionIndexFromHash } from "../lib/sectionHash";
 import type { ModeTransitionPhase, SpiralNavigationValue } from "../model/navigationContext";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
 import { clampSectionIndex, stepSectionIndex } from "../model/sectionIndex";
@@ -32,8 +32,12 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   const { isAccessible, setAccessible } = useAccessibleMode();
   const sectionCount = sectionIds.length;
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [targetIndex, setTargetIndex] = useState(0);
+  const initialFromHash =
+    typeof window !== "undefined"
+      ? (sectionIndexFromHash(window.location.hash, sectionIds) ?? 0)
+      : 0;
+  const [currentIndex, setCurrentIndex] = useState(initialFromHash);
+  const [targetIndex, setTargetIndex] = useState(initialFromHash);
   const [isSpinning, setIsSpinning] = useState(false);
   const [modeTransitionPhase, setModeTransitionPhase] = useState<ModeTransitionPhase>("idle");
   const modeTransitionGenRef = useRef(0);
@@ -41,11 +45,12 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
 
   const spiralRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLElement | null>(null);
-  const currentIndexRef = useRef(0);
-  const targetIndexRef = useRef(0);
-  const pendingIndexRef = useRef(0);
+  const currentIndexRef = useRef(initialFromHash);
+  const targetIndexRef = useRef(initialFromHash);
+  const pendingIndexRef = useRef(initialFromHash);
   const spinningFlagRef = useRef(false);
   const animateToRotationRef = useRef<(rotation: number) => Promise<void>>(async () => undefined);
+  const animateToSectionRef = useRef<(index: number) => Promise<void>>(async () => undefined);
   const goToRef = useRef<(index: number) => void>(() => undefined);
 
   currentIndexRef.current = currentIndex;
@@ -93,13 +98,15 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
         startTransition(() => {
           setCurrentIndex(index);
         });
-        void animateToRotationRef.current(rotationForSectionIndex(pending));
+        void animateToSectionRef.current(pending);
         return;
       }
 
       spinningFlagRef.current = false;
       targetIndexRef.current = index;
       pendingIndexRef.current = index;
+      const sectionId = sectionIds[index];
+      if (sectionId) replaceSectionHash(sectionId);
       // Один React commit на финальный land (HUD). startTransition — не блокировать позу.
       startTransition(() => {
         setCurrentIndex(index);
@@ -107,7 +114,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
         setIsSpinning(false);
       });
     },
-    [sectionCount],
+    [sectionCount, sectionIds],
   );
 
   const {
@@ -116,6 +123,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     paintSpiralTransform,
     buildSpiral,
     animateToRotation,
+    animateToSection,
     ensureGsap,
     killMotion,
   } = useSpiralMotion({
@@ -135,6 +143,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   });
 
   animateToRotationRef.current = animateToRotation;
+  animateToSectionRef.current = animateToSection;
 
   const goTo = useCallback(
     (index: number) => {
@@ -156,6 +165,8 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
         setCurrentIndex(next);
         applyColors(next, true);
         markAccessibleCards(next);
+        const sectionId = sectionIds[next];
+        if (sectionId) replaceSectionHash(sectionId);
 
         if (!prefersReducedMotion()) {
           cardBusyRef.current = true;
@@ -180,9 +191,17 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
       // Без setState на старте твина: targetIndex/isSpinning в React никто в UI
       // не читает на каждом кадре, а commit всего дерева давал подёргивание.
       spinningFlagRef.current = true;
-      void animateToRotation(rotationForSectionIndex(next));
+      void animateToSection(next);
     },
-    [animateToRotation, applyColors, isAccessible, markAccessibleCards, sectionCount, spinningRef],
+    [
+      animateToSection,
+      applyColors,
+      isAccessible,
+      markAccessibleCards,
+      sectionCount,
+      sectionIds,
+      spinningRef,
+    ],
   );
 
   goToRef.current = goTo;
