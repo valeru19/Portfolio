@@ -274,11 +274,18 @@
   :global(body:not(.is-spinning))
     .spiralSection[data-ahead][data-panel-view="blur"]
     .panelBlurVeil {
-    transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.45s ease-in-out;
   }
 
+  /* Плавное снятие blur при наведении на следующую (единственную blur) секцию */
   :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="blur"]:hover {
     --panel-veil: 0;
+  }
+
+  :global(body:not(.is-spinning))
+    .spiralSection[data-ahead][data-panel-view="blur"]:hover
+    .panelBlurVeil {
+    opacity: 0;
   }
 }
 

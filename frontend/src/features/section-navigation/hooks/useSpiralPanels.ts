@@ -9,10 +9,11 @@ import { paintPanelPaletteForId } from "../lib/paintPanelPalette";
 import {
   applyPanelViewsInstant,
   bumpPanelViewGeneration,
+  prepareLongJumpViews,
   revealNextBlurAfterLand,
   settlePanelViewsAfterLand,
 } from "../lib/panelViewController";
-import { decodePanelImages, rememberPanelIntrinsicHeight } from "../lib/panelReveal";
+import { decodePanelImages } from "../lib/panelReveal";
 import { PANEL_STATE_ATTR, setCardDeltaAttr, setPanelStateAttr } from "../model/panelStateAttrs";
 
 /** Короткая пауза после settle compositor, прежде чем включить overflow. */
@@ -176,23 +177,13 @@ export function useSpiralPanels({
   );
 
   /**
-   * Перед длинным ходом: только from/dest, по одной панели за кадр (≤1–2 кадра).
+   * Перед длинным ходом: только dest и dest+1 под непрозрачной заливкой
+   * (контент включён, decode, вуаль на dest+1). Поворот стартует ≤150 мс.
    */
   const prepareJump = useCallback(
-    async (fromIndex: number, destIndex: number) => {
-      const idxs = [fromIndex, destIndex].filter(
-        (i, pos, arr) => i >= 0 && i < sectionIds.length && arr.indexOf(i) === pos,
-      );
-      for (const i of idxs) {
-        const id = sectionIds[i];
-        const nodes = id ? panelsRef.current.get(id) : undefined;
-        if (!nodes) continue;
-        decodePanelImages(nodes.section);
-        rememberPanelIntrinsicHeight(nodes.scroll);
-        await new Promise<void>((resolve) => {
-          requestAnimationFrame(() => resolve());
-        });
-      }
+    async (_fromIndex: number, destIndex: number, goingBack = false) => {
+      const byIndex = indexMap(sectionIds, panelsRef.current);
+      await prepareLongJumpViews(byIndex, destIndex, sectionIds.length, goingBack);
     },
     [sectionIds],
   );

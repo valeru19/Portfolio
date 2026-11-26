@@ -32,7 +32,7 @@ type Options = {
   applyColors: (index: number, force?: boolean) => void;
   clearScrollable: () => void;
   warmAround: (index: number) => void;
-  prepareJump: (fromIndex: number, destIndex: number) => Promise<void>;
+  prepareJump: (fromIndex: number, destIndex: number, goingBack?: boolean) => Promise<void>;
   settleActivePanel: (forIndex?: number) => void;
 };
 
@@ -60,8 +60,17 @@ export function useSpiralMotion({
   const warmIdleKindRef = useRef<"timeout" | "idle">("timeout");
   const viewTurnCancelRef = useRef<(() => void) | null>(null);
 
-  const clearViewTurn = useCallback(() => {
+  /** Прерывание хода: отмена отложенных шагов вида + сброс маркеров. */
+  const abortViewTurn = useCallback(() => {
     viewTurnCancelRef.current?.();
+    viewTurnCancelRef.current = null;
+    panelsRef.current.forEach(({ section }) => {
+      setBlurTurnAttr(section, null);
+    });
+  }, [panelsRef]);
+
+  /** Посадка: только маркеры. Не трогаем gen — fade cover dest+1 должен доиграть. */
+  const clearBlurTurnAttrs = useCallback(() => {
     viewTurnCancelRef.current = null;
     panelsRef.current.forEach(({ section }) => {
       setBlurTurnAttr(section, null);
@@ -141,7 +150,7 @@ export function useSpiralMotion({
       paintSpiralTransform(snapped);
 
       const runPanelAttrs = () => {
-        clearViewTurn();
+        clearBlurTurnAttrs();
         markActive(index);
       };
 
@@ -175,7 +184,7 @@ export function useSpiralMotion({
     },
     [
       applyColors,
-      clearViewTurn,
+      clearBlurTurnAttrs,
       markActive,
       onSettled,
       paintSpiralTransform,
@@ -205,7 +214,7 @@ export function useSpiralMotion({
         cancelAnimationFrame(settleRafRef.current);
         settleRafRef.current = 0;
       }
-      clearViewTurn();
+      abortViewTurn();
       clearScrollable();
 
       const startR = rotationRef.current;
@@ -220,17 +229,26 @@ export function useSpiralMotion({
       const spinKind = longJump ? (goingBack ? "nasp" : "long") : "step";
 
       if (longJump && !prefersReducedMotion()) {
-        await prepareJump(fromIdx, destIdx);
+        await prepareJump(fromIdx, destIdx, goingBack);
         if (gen !== motionGenRef.current) return;
       }
 
       setSpinning(true, spinKind);
-      applyColors(destIdx);
+      // На длинном reverse не гоняем stage-color transition весь ход —
+      // это полный перекрас экрана на каждом кадре + и так тяжёлый scale-up.
+      // Цвет применится в finishScroll. Вперёд / шаг — как раньше.
+      if (!(longJump && goingBack)) {
+        applyColors(destIdx);
+      }
 
-      // will-change только from/dest (гипотеза 5.5: не трогаем .spiral).
+      // will-change только from/dest; на nasp — ни у кого (меньше layer thrash).
       sectionIds.forEach((id, i) => {
         const section = panelsRef.current.get(id)?.section;
         if (!section) return;
+        if (longJump && goingBack) {
+          section.style.willChange = "";
+          return;
+        }
         const nearCore = i === fromIdx || i === destIdx;
         section.style.willChange = nearCore ? "transform" : "";
       });
@@ -256,6 +274,7 @@ export function useSpiralMotion({
           destIdx,
           sectionCount,
           longJump,
+          goingBack,
           durationSec: duration,
           panels: byIndex,
         });
@@ -305,7 +324,7 @@ export function useSpiralMotion({
     },
     [
       applyColors,
-      clearViewTurn,
+      abortViewTurn,
       clearScrollable,
       ensureGsap,
       finishScroll,
@@ -329,9 +348,9 @@ export function useSpiralMotion({
       settleRafRef.current = 0;
     }
     cancelWarm();
-    clearViewTurn();
+    abortViewTurn();
     setSpinning(false);
-  }, [cancelWarm, clearViewTurn, setSpinning]);
+  }, [abortViewTurn, cancelWarm, setSpinning]);
 
   return {
     rotationRef,
