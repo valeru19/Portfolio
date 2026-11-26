@@ -5,7 +5,8 @@
 ## Файлы
 
 - **`loadGsap.ts`** — динамический `import("gsap")`, кэш промиса, `force3D: "auto"`, lagSmoothing.
-- **`spiralTransform.ts`** — `paintSpiralElement`, layout панелей, длительность/ease твина; Наверх — `sine.inOut` (пик на середине пути).
+- **`spiralTransform.ts`** — `paintSpiralElement`, layout панелей (опц. слоты для wrap), длительность/ease твина.
+- **`sectionHash.ts`** — `#sectionId` ↔ индекс, `replaceState` без push истории.
 - **`panelLayerAnimator.ts`** (+ **`.test.ts`**) — один WAAPI-аниматор opacity на слой: `readLayerOpacity` / `commitStyles` / continue-from-current, ease-in-out, 480 мс.
 - **`panelViewDom.ts`** — cover/veil selectors, idle radius без инлайнового `--panel-veil` (иначе hover ломается).
 - **`panelViewTransitions.ts`** — solid↔blur↔sharp; sharp→blur напрямую (cover=0); prepare under cover.
