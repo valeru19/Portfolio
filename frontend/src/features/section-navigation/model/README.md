@@ -10,6 +10,7 @@
 - **`panelScroll.ts`** (+ **`.test.ts`**) — смягчение wheel-дельты и lerp scrollTop внутри панели.
 - **`wheelLock.ts`** (+ **`.test.ts`**) — аккумулятор колеса и временной lock шага.
 - **`panelView.ts`** (+ **`.test.ts`**) — `panelViewFor` → `sharp` | `blur` | `solid` (ровно один blur: `active+1`).
+- **`ringNavigation.ts`** (+ **`.test.ts`**) — `planMove` / виртуальный индекс `v`: далёкий назад → вперёд через круг (`RING_BACK_THRESHOLD`).
 - **`panelStateAttrs.ts`** — `data-active` / `data-ahead` / `data-panel-view` / `data-scrollable` и `data-spiral-*`; `setPanelStateAttr`.
 - **`panelStateCssCoupling.test.ts`** — CSS Modules селекторы согласованы с attrs.
 - **`navigationContext.ts`** — TypeScript-тип значения Context навигации.
