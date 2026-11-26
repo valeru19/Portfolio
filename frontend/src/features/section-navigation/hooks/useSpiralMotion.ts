@@ -245,8 +245,7 @@ export function useSpiralMotion({
         if (!section) return;
         const nearCore = i === fromIdx || i === destIdx;
         const near =
-          nearCore ||
-          (longJump && (Math.abs(i - fromIdx) <= 1 || Math.abs(i - destIdx) <= 1));
+          nearCore || (longJump && (Math.abs(i - fromIdx) <= 1 || Math.abs(i - destIdx) <= 1));
         section.style.willChange = near ? "transform" : "";
         // Далёкие на длинном ходе: far+frost (без массового content paint).
         if (longJump && !near) {
