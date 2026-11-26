@@ -1,20 +1,25 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
 import { describe, expect, it } from "vitest";
 
 import { PANEL_STATE_ATTR } from "./panelStateAttrs";
 
-const featureRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
-const globalCssPath = join(featureRoot, "../../app/styles/global.css");
+/**
+ * Без node:fs/path — иначе tsc -b падает (tsconfig.app без @types/node).
+ * Vite отдаёт CSS как raw-строки через import.meta.glob.
+ */
+const moduleCss = import.meta.glob("../ui/*.module.css", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+
+const globalCssModules = import.meta.glob("../../app/styles/global.css", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
 
 function collectCssSources(): string {
-  const moduleFiles = readdirSync(join(featureRoot, "ui"))
-    .filter((name) => name.endsWith(".module.css"))
-    .map((name) => readFileSync(join(featureRoot, "ui", name), "utf8"));
-  const globalCss = readFileSync(globalCssPath, "utf8");
-  return [...moduleFiles, globalCss].join("\n");
+  return [...Object.values(moduleCss), ...Object.values(globalCssModules)].join("\n");
 }
 
 describe("panel state CSS coupling", () => {
