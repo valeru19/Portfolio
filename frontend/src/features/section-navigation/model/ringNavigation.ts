@@ -132,15 +132,15 @@ export function canStepGesture(
  * Карта слотов раскладки: на последней секции первая → слот N.
  * Иначе undefined (обычные индексы).
  */
-export function ringLayoutIndexBySectionIds(
-  sectionIds: readonly string[],
+export function ringLayoutIndexBySectionIds<T extends string = string>(
+  sectionIds: readonly T[],
   activeIndex: number,
-): Map<string, number> | undefined {
+): Map<T, number> | undefined {
   const N = sectionIds.length;
   if (N <= 1 || activeIndex !== N - 1) return undefined;
   const firstId = sectionIds[0];
   if (!firstId) return undefined;
-  const map = new Map<string, number>();
+  const map = new Map<T, number>();
   sectionIds.forEach((id, i) => map.set(id, i));
   map.set(firstId, N);
   return map;

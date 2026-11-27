@@ -30,7 +30,7 @@ describe("paintInfinityGhosts slot colors", () => {
     ]);
 
     // На последней: hero в слоте N → ghosts с N+1.
-    const ring = new Map<string, number>([
+    const ring = new Map<SectionId, number>([
       ["hero", 3],
       ["about", 1],
       ["stack", 2],
