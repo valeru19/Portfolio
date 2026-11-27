@@ -118,10 +118,12 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   const {
     rotationRef,
     spinningRef,
+    springBusyRef,
     paintSpiralTransform,
     buildSpiral,
     animateToRotation,
     animateToSection,
+    playEdgeSpring,
     ensureGsap,
     killMotion,
   } = useSpiralMotion({
@@ -206,9 +208,15 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
 
   const goNext = useCallback(() => {
     const next = stepSectionIndex(pendingIndexRef.current, 1, sectionCount);
-    if (next === pendingIndexRef.current) return;
+    if (next === pendingIndexRef.current) {
+      // На последней «Дальше» / жест вперёд → пружина, не круг.
+      if (!isAccessible && pendingIndexRef.current >= sectionCount - 1) {
+        playEdgeSpring();
+      }
+      return;
+    }
     goTo(next);
-  }, [goTo, sectionCount]);
+  }, [goTo, isAccessible, playEdgeSpring, sectionCount]);
 
   const goPrev = useCallback(() => {
     const next = stepSectionIndex(pendingIndexRef.current, -1, sectionCount);
@@ -225,10 +233,15 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   const onStep = useCallback(
     (direction: 1 | -1) => {
       const next = stepSectionIndex(pendingIndexRef.current, direction, sectionCount);
-      if (next === pendingIndexRef.current) return;
+      if (next === pendingIndexRef.current) {
+        if (!isAccessible && direction === 1 && pendingIndexRef.current >= sectionCount - 1) {
+          playEdgeSpring();
+        }
+        return;
+      }
       goTo(next);
     },
-    [goTo, sectionCount],
+    [goTo, isAccessible, playEdgeSpring, sectionCount],
   );
 
   const getIsBusy = useCallback(
@@ -236,8 +249,9 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
       modeTransitionPhase !== "idle" ||
       spinningFlagRef.current ||
       spinningRef.current ||
+      springBusyRef.current ||
       (isAccessible && cardBusyRef.current),
-    [isAccessible, modeTransitionPhase, spinningRef],
+    [isAccessible, modeTransitionPhase, spinningRef, springBusyRef],
   );
 
   const inputEnabled = modeTransitionPhase === "idle";

@@ -68,3 +68,7 @@ export const PANEL_FLAT_PREP_MS = 180;
 
 /** Порог «осталось ≤1 шаг» для проявления dest/next на длинном ходе (градусы). */
 export const LONG_JUMP_REVEAL_REMAINING_DEG = 90;
+
+/** Пружина на последней секции: угол выноса вперёд (градусы) и длительность (мс). */
+export const EDGE_SPRING_DEG = 7;
+export const EDGE_SPRING_MS = 450;
