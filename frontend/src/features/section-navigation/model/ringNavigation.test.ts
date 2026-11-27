@@ -61,45 +61,49 @@ describe("planMove", () => {
     });
   });
 
-  it("threshold 4 keeps one more reverse", () => {
+  it("threshold 4 keeps one more reverse; target 0 still wraps when beyond", () => {
     expect(planMove(5, 1, 8, 4)).toEqual({
       direction: "back",
       steps: 4,
       wrapsRing: false,
       targetSection: 1,
     });
-    // target 0 всегда reverse, даже если back > threshold.
     expect(planMove(5, 0, 8, 4)).toEqual({
-      direction: "back",
-      steps: 5,
-      wrapsRing: false,
+      direction: "forward",
+      steps: 8 - 5 + 0,
+      wrapsRing: true,
       targetSection: 0,
     });
   });
 
-  it.each([1, 2, 3, 5, 8])("Наверх (target 0) from every section is reverse, N=%s", (N) => {
+  it.each([1, 2, 3, 5, 8])("Наверх (target 0) from every section, N=%s", (N) => {
     for (let s = 0; s < N; s += 1) {
       const plan = planMoveFromSection(s, 0, N, RING_BACK_THRESHOLD);
       if (s === 0) {
         expect(plan.direction).toBe("noop");
         continue;
       }
-      expect(plan).toMatchObject({
-        direction: "back",
-        steps: s,
-        wrapsRing: false,
-        targetSection: 0,
-      });
+      const back = s;
+      if (back <= RING_BACK_THRESHOLD) {
+        expect(plan).toMatchObject({ direction: "back", steps: back, wrapsRing: false });
+      } else {
+        expect(plan).toMatchObject({
+          direction: "forward",
+          steps: N - s,
+          wrapsRing: true,
+          targetSection: 0,
+        });
+      }
     }
   });
 
-  it("Наверх from last is reverse along spiral (not 1-step wrap)", () => {
+  it("Наверх from last is one forward wrap step when N > threshold+1", () => {
     const N = 7;
     const plan = planMoveFromSection(N - 1, 0, N);
     expect(plan).toEqual({
-      direction: "back",
-      steps: N - 1,
-      wrapsRing: false,
+      direction: "forward",
+      steps: 1,
+      wrapsRing: true,
       targetSection: 0,
     });
   });

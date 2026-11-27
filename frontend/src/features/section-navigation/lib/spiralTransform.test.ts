@@ -30,8 +30,8 @@ describe("animationEase", () => {
     expect(animationEase(90, true)).toBe("sine.inOut");
   });
 
-  it("uses sine.inOut for long reverse and power2.out for long forward", () => {
+  it("uses sine.inOut for long reverse and long forward (circle accel/decel)", () => {
     expect(animationEase(720, true)).toBe("sine.inOut");
-    expect(animationEase(360, false)).toBe("power2.out");
+    expect(animationEase(360, false)).toBe("sine.inOut");
   });
 });

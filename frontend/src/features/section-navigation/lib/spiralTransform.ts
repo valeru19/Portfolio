@@ -178,13 +178,11 @@ export function animationDurationMs(distanceDeg: number, goingBack: boolean): nu
 }
 
 /**
- * 1 шаг: sine.inOut (LOCKED).
- * Длинный reverse: sine.inOut — ускорение к половине, замедление после.
- * Длинный forward: power2.out.
+ * 1 шаг и длинный ход (в т.ч. круг вперёд): sine.inOut —
+ * разгон до середины пути, торможение после. Не ослаблять разгон (не power2.out).
  */
-export function animationEase(distanceDeg: number, goingBack: boolean): string {
-  const steps = Math.max(1, distanceDeg / 90);
-  if (steps <= 1.01) return "sine.inOut";
-  if (goingBack) return "sine.inOut";
-  return "power2.out";
+export function animationEase(distanceDeg: number, _goingBack: boolean): string {
+  void distanceDeg;
+  void _goingBack;
+  return "sine.inOut";
 }

@@ -41,12 +41,18 @@ export function beginPanelViewTurn(plan: TurnPlan): TurnHandle {
     for (const h of handles) h.cancel();
   };
 
-  // Wrap через круг: dest/next уже под cover (prepareRingWrapViews); остальные → flat.
+  // Wrap через круг: dest/next уже под cover (prepareRingWrapViews).
+  // Остальные — forceSolidInstant (без батч-анимаций): иначе на #contacts
+  // UpdateTiles ~28 слоёв + ActivateSyncTree 24 мс на старте 1-step wrap.
   if (wrapsRing) {
-    const prepMs = Math.min(PANEL_VIEW_MS, Math.max(150, Math.round(durationMs * 0.12)));
     const skip = new Set<number>([destIdx]);
     if (nextBlurIdx >= 0) skip.add(nextBlurIdx);
-    void flattenPanelsBatched(panels, gen, prepMs, skip);
+    for (let i = 0; i < sectionCount; i += 1) {
+      if (skip.has(i)) continue;
+      const nodes = panels.get(i);
+      if (!nodes) continue;
+      if (readPanelViewAttr(nodes.section) !== "solid") forceSolidInstant(nodes);
+    }
     return {
       gen,
       cancel,

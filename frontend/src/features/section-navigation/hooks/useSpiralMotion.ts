@@ -469,8 +469,7 @@ export function useSpiralMotion({
 
       const fromSection = panelsRef.current.get(sectionIds[fromIdx] ?? "")?.section;
       const destSection = destId ? panelsRef.current.get(destId)?.section : undefined;
-      if (fromSection) fromSection.style.willChange = "transform";
-      if (destSection) destSection.style.willChange = "transform";
+      // Без will-change на панелях: на wrap с #contacts слой thrash (RasterTask × layer 25/27).
 
       applyColors(destIdx);
       lastProgressIdxRef.current = fromIdx;
@@ -494,10 +493,6 @@ export function useSpiralMotion({
         steps > 1 ? LONG_JUMP_REVEAL_REMAINING_DEG : Math.min(24, LONG_JUMP_REVEAL_REMAINING_DEG);
 
       const landCanonical = () => {
-        sectionIds.forEach((id) => {
-          const section = panelsRef.current.get(id)?.section;
-          if (section?.style.willChange) section.style.willChange = "";
-        });
         // Один кадр: R и слоты как при первой загрузке на dest.
         finishScroll(rotationForSectionIndex(destIdx), { instantStageColor: true });
       };

@@ -1,0 +1,189 @@
+{
+  "createdAt": "2026-11-27T14:41:07.587Z",
+  "base": "http://127.0.0.1:4210/Portfolio/",
+  "from1Based": 7,
+  "viewport": "1912x1000",
+  "software": true,
+  "frameMaxMs": 183.29999999999995,
+  "frameOver100": 3,
+  "longFrames": [
+    {
+      "i": 6,
+      "d": 183.3
+    },
+    {
+      "i": 17,
+      "d": 150
+    },
+    {
+      "i": 15,
+      "d": 116.7
+    },
+    {
+      "i": 8,
+      "d": 66.7
+    },
+    {
+      "i": 12,
+      "d": 66.7
+    },
+    {
+      "i": 13,
+      "d": 66.6
+    }
+  ],
+  "topTraceEventsMs": [
+    {
+      "name": "RunTask",
+      "count": 63,
+      "maxMs": 100.2,
+      "sumMs": 1353.5
+    },
+    {
+      "name": "TileManager::CheckForCompletedTasksAndIssueSignals",
+      "count": 2,
+      "maxMs": 26.4,
+      "sumMs": 33.3
+    },
+    {
+      "name": "TileManager::CheckPendingGpuWorkAndIssueSignals",
+      "count": 2,
+      "maxMs": 26.4,
+      "sumMs": 33.3
+    },
+    {
+      "name": "LayerTreeHostImpl::ActivateSyncTree",
+      "count": 2,
+      "maxMs": 24.5,
+      "sumMs": 48.7
+    },
+    {
+      "name": "TreeSynchronizer::PushLayerPropertiesTo.Active",
+      "count": 2,
+      "maxMs": 24.4,
+      "sumMs": 48.6
+    },
+    {
+      "name": "WidgetBaseInputHandler::OnHandleInputEvent",
+      "count": 1,
+      "maxMs": 16.3,
+      "sumMs": 16.3
+    },
+    {
+      "name": "WebFrameWidgetImpl::HandleInputEvent",
+      "count": 1,
+      "maxMs": 16.3,
+      "sumMs": 16.3
+    },
+    {
+      "name": "EventHandler::handleMouseReleaseEvent",
+      "count": 1,
+      "maxMs": 16.3,
+      "sumMs": 16.3
+    },
+    {
+      "name": "LocalFrameView::RunStyleAndLayoutLifecyclePhases",
+      "count": 1,
+      "maxMs": 14.4,
+      "sumMs": 14.4
+    },
+    {
+      "name": "LocalFrameView::UpdateStyleAndLayout",
+      "count": 1,
+      "maxMs": 14.4,
+      "sumMs": 14.4
+    },
+    {
+      "name": "Blink.Layout.UpdateTime",
+      "count": 1,
+      "maxMs": 12.4,
+      "sumMs": 12.4
+    },
+    {
+      "name": "LocalFrameView::layout",
+      "count": 1,
+      "maxMs": 12.3,
+      "sumMs": 12.3
+    },
+    {
+      "name": "Layout",
+      "count": 1,
+      "maxMs": 12.3,
+      "sumMs": 12.3
+    },
+    {
+      "name": "LocalFrameView::performLayout",
+      "count": 1,
+      "maxMs": 12.3,
+      "sumMs": 12.3
+    },
+    {
+      "name": "ProxyImpl::ScheduledActionDraw",
+      "count": 10,
+      "maxMs": 12,
+      "sumMs": 87.9
+    },
+    {
+      "name": "MainFrame.Draw",
+      "count": 10,
+      "maxMs": 12,
+      "sumMs": 87.9
+    },
+    {
+      "name": "ProxyMain::BeginMainFrame",
+      "count": 5,
+      "maxMs": 8.5,
+      "sumMs": 31.7
+    },
+    {
+      "name": "WebFrameWidgetImpl::BeginMainFrame",
+      "count": 2,
+      "maxMs": 6.8,
+      "sumMs": 12.6
+    },
+    {
+      "name": "Blink.Animate.UpdateTime",
+      "count": 2,
+      "maxMs": 6.8,
+      "sumMs": 12.6
+    },
+    {
+      "name": "PageAnimator::serviceScriptedAnimations",
+      "count": 2,
+      "maxMs": 6.8,
+      "sumMs": 12.5
+    },
+    {
+      "name": "FrameRequestCallbackCollection::ExecuteFrameCallbacks",
+      "count": 2,
+      "maxMs": 6.8,
+      "sumMs": 12.2
+    },
+    {
+      "name": "FireAnimationFrame",
+      "count": 2,
+      "maxMs": 6.6,
+      "sumMs": 11.7
+    },
+    {
+      "name": "AsyncTask Run",
+      "count": 2,
+      "maxMs": 6.6,
+      "sumMs": 11.7
+    },
+    {
+      "name": "RasterizerTaskImpl::RunOnWorkerThread",
+      "count": 1,
+      "maxMs": 5.4,
+      "sumMs": 5.4
+    },
+    {
+      "name": "RasterTask",
+      "count": 1,
+      "maxMs": 5.4,
+      "sumMs": 5.4
+    }
+  ],
+  "heavyPaintRaster": [],
+  "eventCount": 170529
+}

@@ -1,0 +1,2040 @@
+{
+  "createdAt": "2026-11-27T16:03:49.926Z",
+  "base": "http://127.0.0.1:4210/Portfolio/",
+  "runs": 5,
+  "rows": [
+    {
+      "label": "Наверх from 5 #1 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2349.7,
+      "frames": 134,
+      "avg": 17.4,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #1 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1717.9,
+      "frames": 93,
+      "avg": 18.3,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #1 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1799.1,
+      "frames": 99,
+      "avg": 18.1,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #1 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2086.1,
+      "frames": 114,
+      "avg": 18.2,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 2,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #1 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2319,
+      "frames": 132,
+      "avg": 17.5,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #2 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2346.2,
+      "frames": 131,
+      "avg": 17.9,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #2 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1703.6,
+      "frames": 90,
+      "avg": 18.8,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #2 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1790.9,
+      "frames": 99,
+      "avg": 17.9,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #2 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2095.3,
+      "frames": 118,
+      "avg": 17.7,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #2 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2320.6,
+      "frames": 133,
+      "avg": 17.4,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #3 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2342.2,
+      "frames": 128,
+      "avg": 18.3,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #3 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1717,
+      "frames": 89,
+      "avg": 19.2,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #3 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1779.2,
+      "frames": 98,
+      "avg": 18,
+      "p95": 33.3,
+      "max": 66.7,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #3 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2093.3,
+      "frames": 112,
+      "avg": 18.6,
+      "p95": 33.4,
+      "max": 66.6,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #3 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2345.5,
+      "frames": 129,
+      "avg": 18.2,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #4 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2346,
+      "frames": 129,
+      "avg": 18.1,
+      "p95": 33.3,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #4 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1706,
+      "frames": 91,
+      "avg": 18.6,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #4 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1753.9,
+      "frames": 97,
+      "avg": 18,
+      "p95": 33.3,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #4 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2102.3,
+      "frames": 119,
+      "avg": 17.6,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #4 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2323.7,
+      "frames": 130,
+      "avg": 17.7,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #5 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2348.2,
+      "frames": 131,
+      "avg": 17.9,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #5 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1715.6,
+      "frames": 89,
+      "avg": 19.2,
+      "p95": 33.4,
+      "max": 66.6,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #5 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 1780.8,
+      "frames": 100,
+      "avg": 17.7,
+      "p95": 33.4,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #5 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2126,
+      "frames": 116,
+      "avg": 18.3,
+      "p95": 33.3,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #5 [1912x1000|cpu1|hash=none]",
+      "startDelayMs": 2306.5,
+      "frames": 131,
+      "avg": 17.5,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #1 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2323.5,
+      "frames": 132,
+      "avg": 17.5,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #1 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1701,
+      "frames": 92,
+      "avg": 18.4,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #1 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1744.2,
+      "frames": 97,
+      "avg": 17.8,
+      "p95": 33.3,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #1 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2132.8,
+      "frames": 117,
+      "avg": 18.1,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #1 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2386.8,
+      "frames": 126,
+      "avg": 18.9,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #2 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2317.5,
+      "frames": 130,
+      "avg": 17.7,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #2 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1717,
+      "frames": 91,
+      "avg": 18.8,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #2 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1809.3,
+      "frames": 99,
+      "avg": 18.2,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #2 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2089.1,
+      "frames": 115,
+      "avg": 18.1,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #2 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2360.5,
+      "frames": 129,
+      "avg": 18.2,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #3 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2346.9,
+      "frames": 127,
+      "avg": 18.3,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #3 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1716.1,
+      "frames": 88,
+      "avg": 19.3,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #3 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1792.7,
+      "frames": 97,
+      "avg": 18.4,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #3 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2099.8,
+      "frames": 115,
+      "avg": 18.2,
+      "p95": 33.4,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #3 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2327.2,
+      "frames": 130,
+      "avg": 17.8,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #4 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2326.3,
+      "frames": 128,
+      "avg": 18.1,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #4 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1714.3,
+      "frames": 88,
+      "avg": 19.3,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #4 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1761.5,
+      "frames": 98,
+      "avg": 17.8,
+      "p95": 33.3,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #4 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2092.4,
+      "frames": 116,
+      "avg": 18,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #4 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2319.8,
+      "frames": 132,
+      "avg": 17.5,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #5 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2327.6,
+      "frames": 131,
+      "avg": 17.7,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #5 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1716.4,
+      "frames": 89,
+      "avg": 19.1,
+      "p95": 33.4,
+      "max": 66.6,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #5 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 1815.9,
+      "frames": 100,
+      "avg": 18,
+      "p95": 33.3,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #5 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2109.3,
+      "frames": 115,
+      "avg": 18.2,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #5 [1912x1000|cpu1|hash=contacts]",
+      "startDelayMs": 2318.3,
+      "frames": 131,
+      "avg": 17.6,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #1 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2315.5,
+      "frames": 135,
+      "avg": 17.1,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #1 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1737.1,
+      "frames": 83,
+      "avg": 20.8,
+      "p95": 49.9,
+      "max": 83.3,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #1 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1761.5,
+      "frames": 102,
+      "avg": 17.1,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #1 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2076.6,
+      "frames": 122,
+      "avg": 17,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #1 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2299,
+      "frames": 135,
+      "avg": 16.9,
+      "p95": 16.8,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #2 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2315.6,
+      "frames": 137,
+      "avg": 16.8,
+      "p95": 16.7,
+      "max": 33.5,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #2 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1704.8,
+      "frames": 94,
+      "avg": 18,
+      "p95": 33.4,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #2 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1769.6,
+      "frames": 102,
+      "avg": 17.3,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #2 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2091.8,
+      "frames": 122,
+      "avg": 17,
+      "p95": 16.7,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #2 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2325.4,
+      "frames": 137,
+      "avg": 16.9,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #3 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2301.4,
+      "frames": 134,
+      "avg": 17.1,
+      "p95": 16.7,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #3 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1715.3,
+      "frames": 94,
+      "avg": 18.2,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #3 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1730.3,
+      "frames": 101,
+      "avg": 17.1,
+      "p95": 16.8,
+      "max": 33.3,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #3 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2089,
+      "frames": 123,
+      "avg": 16.9,
+      "p95": 16.7,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #3 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2315.7,
+      "frames": 137,
+      "avg": 16.8,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #4 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2314.3,
+      "frames": 136,
+      "avg": 16.9,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #4 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1713.4,
+      "frames": 95,
+      "avg": 17.9,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #4 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1752,
+      "frames": 101,
+      "avg": 17.3,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #4 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2079.7,
+      "frames": 120,
+      "avg": 17.2,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #4 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2346.9,
+      "frames": 137,
+      "avg": 17,
+      "p95": 16.7,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #5 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2313.5,
+      "frames": 135,
+      "avg": 17.1,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #5 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1709.3,
+      "frames": 94,
+      "avg": 18.1,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #5 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 1754.3,
+      "frames": 100,
+      "avg": 17.4,
+      "p95": 33.4,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #5 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2096.4,
+      "frames": 123,
+      "avg": 17,
+      "p95": 16.7,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #5 [1440x900|cpu1|hash=none]",
+      "startDelayMs": 2318.4,
+      "frames": 134,
+      "avg": 17.2,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #1 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2321.7,
+      "frames": 134,
+      "avg": 17.3,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #1 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1717,
+      "frames": 96,
+      "avg": 17.7,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #1 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1742.8,
+      "frames": 101,
+      "avg": 17.2,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #1 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2083.9,
+      "frames": 121,
+      "avg": 17.1,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #1 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2311.1,
+      "frames": 137,
+      "avg": 16.8,
+      "p95": 16.8,
+      "max": 33.3,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #2 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2317.6,
+      "frames": 136,
+      "avg": 17,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #2 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1708.8,
+      "frames": 97,
+      "avg": 17.5,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #2 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1731.9,
+      "frames": 100,
+      "avg": 17.2,
+      "p95": 16.8,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #2 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2082.4,
+      "frames": 123,
+      "avg": 16.8,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #2 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2306.2,
+      "frames": 137,
+      "avg": 16.8,
+      "p95": 16.8,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #3 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2338.3,
+      "frames": 138,
+      "avg": 16.9,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #3 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1713.7,
+      "frames": 96,
+      "avg": 17.8,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #3 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1754.9,
+      "frames": 97,
+      "avg": 18,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #3 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2094.2,
+      "frames": 119,
+      "avg": 17.5,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #3 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2332.9,
+      "frames": 134,
+      "avg": 17.3,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #4 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2316.5,
+      "frames": 133,
+      "avg": 17.4,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #4 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1704.8,
+      "frames": 94,
+      "avg": 18,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #4 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1727.6,
+      "frames": 101,
+      "avg": 17,
+      "p95": 16.7,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #4 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2104.8,
+      "frames": 126,
+      "avg": 16.7,
+      "p95": 16.7,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #4 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2314,
+      "frames": 139,
+      "avg": 16.6,
+      "p95": 16.8,
+      "max": 33.3,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #5 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2324,
+      "frames": 136,
+      "avg": 17,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #5 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1720,
+      "frames": 98,
+      "avg": 17.5,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #5 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 1718.1,
+      "frames": 101,
+      "avg": 17,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #5 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2081.3,
+      "frames": 124,
+      "avg": 16.7,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #5 [1440x900|cpu1|hash=contacts]",
+      "startDelayMs": 2309.7,
+      "frames": 138,
+      "avg": 16.6,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #1 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2368.9,
+      "frames": 133,
+      "avg": 17.7,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #1 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1803.3,
+      "frames": 92,
+      "avg": 19.5,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #1 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1832.6,
+      "frames": 95,
+      "avg": 19.1,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #1 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2153.5,
+      "frames": 109,
+      "avg": 19.7,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #1 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2422.4,
+      "frames": 126,
+      "avg": 19.2,
+      "p95": 33.4,
+      "max": 83.3,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #2 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2368.3,
+      "frames": 129,
+      "avg": 18.2,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #2 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1781.9,
+      "frames": 92,
+      "avg": 19.2,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #2 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1842,
+      "frames": 96,
+      "avg": 19.1,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 2,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #2 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2129.1,
+      "frames": 110,
+      "avg": 19.3,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #2 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2428.5,
+      "frames": 126,
+      "avg": 19.2,
+      "p95": 33.4,
+      "max": 66.7,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #3 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2402.4,
+      "frames": 127,
+      "avg": 18.8,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #3 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1762,
+      "frames": 90,
+      "avg": 19.4,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #3 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1864.8,
+      "frames": 90,
+      "avg": 20.5,
+      "p95": 50,
+      "max": 83.3,
+      "over50": 2,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #3 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2141.9,
+      "frames": 111,
+      "avg": 19.1,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #3 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2389.9,
+      "frames": 125,
+      "avg": 19,
+      "p95": 33.3,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #4 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2393.4,
+      "frames": 126,
+      "avg": 18.9,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #4 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1773.1,
+      "frames": 92,
+      "avg": 19.2,
+      "p95": 33.3,
+      "max": 50.1,
+      "over50": 2,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #4 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1841.1,
+      "frames": 98,
+      "avg": 18.8,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #4 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2138.4,
+      "frames": 110,
+      "avg": 19.3,
+      "p95": 33.4,
+      "max": 83.3,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #4 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2487.8,
+      "frames": 120,
+      "avg": 20.6,
+      "p95": 49.9,
+      "max": 83.4,
+      "over50": 2,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #5 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2379.7,
+      "frames": 120,
+      "avg": 19.7,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #5 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1761.6,
+      "frames": 84,
+      "avg": 20.7,
+      "p95": 50,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #5 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 1872.1,
+      "frames": 96,
+      "avg": 19.4,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #5 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2172.8,
+      "frames": 112,
+      "avg": 19.2,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #5 [1912x1000|cpu4|hash=none]",
+      "startDelayMs": 2416.1,
+      "frames": 126,
+      "avg": 19.1,
+      "p95": 33.3,
+      "max": 66.7,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #1 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2460,
+      "frames": 129,
+      "avg": 18.9,
+      "p95": 33.3,
+      "max": 83.3,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #1 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1789.4,
+      "frames": 90,
+      "avg": 19.7,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #1 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1865.7,
+      "frames": 94,
+      "avg": 19.7,
+      "p95": 33.4,
+      "max": 83.2,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #1 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2182.8,
+      "frames": 110,
+      "avg": 19.8,
+      "p95": 33.4,
+      "max": 66.6,
+      "over50": 2,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #1 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2442.9,
+      "frames": 122,
+      "avg": 19.9,
+      "p95": 33.4,
+      "max": 83.3,
+      "over50": 2,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #2 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2390.9,
+      "frames": 128,
+      "avg": 18.5,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #2 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1762.1,
+      "frames": 92,
+      "avg": 19,
+      "p95": 33.3,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #2 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1899.3,
+      "frames": 93,
+      "avg": 20.2,
+      "p95": 33.4,
+      "max": 83.3,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #2 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2164.8,
+      "frames": 113,
+      "avg": 19.1,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #2 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2443.4,
+      "frames": 119,
+      "avg": 20.5,
+      "p95": 33.4,
+      "max": 83.3,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #3 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2408.3,
+      "frames": 122,
+      "avg": 19.7,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #3 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1750.7,
+      "frames": 94,
+      "avg": 18.6,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #3 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1827.1,
+      "frames": 97,
+      "avg": 18.8,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #3 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2158.9,
+      "frames": 114,
+      "avg": 18.9,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #3 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2419.9,
+      "frames": 129,
+      "avg": 18.6,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #4 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2376.8,
+      "frames": 129,
+      "avg": 18.3,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #4 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1774.1,
+      "frames": 91,
+      "avg": 19.3,
+      "p95": 33.4,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #4 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1806,
+      "frames": 95,
+      "avg": 19,
+      "p95": 33.3,
+      "max": 83.4,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #4 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2156.2,
+      "frames": 101,
+      "avg": 21.2,
+      "p95": 33.4,
+      "max": 99.9,
+      "over50": 4,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #4 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2431.7,
+      "frames": 125,
+      "avg": 19.4,
+      "p95": 33.3,
+      "max": 66.7,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #5 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2387.9,
+      "frames": 126,
+      "avg": 18.9,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #5 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1781.8,
+      "frames": 82,
+      "avg": 21.5,
+      "p95": 50,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #5 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 1850.9,
+      "frames": 93,
+      "avg": 19.8,
+      "p95": 33.4,
+      "max": 83.4,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #5 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2170.3,
+      "frames": 108,
+      "avg": 20,
+      "p95": 33.4,
+      "max": 83.4,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #5 [1912x1000|cpu4|hash=contacts]",
+      "startDelayMs": 2388.5,
+      "frames": 124,
+      "avg": 19.2,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #1 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2364.4,
+      "frames": 138,
+      "avg": 17,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #1 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1780.2,
+      "frames": 98,
+      "avg": 18.1,
+      "p95": 33.4,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #1 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1813.4,
+      "frames": 96,
+      "avg": 18.8,
+      "p95": 33.3,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #1 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2137.7,
+      "frames": 117,
+      "avg": 18.2,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #1 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2428.2,
+      "frames": 133,
+      "avg": 18.1,
+      "p95": 33.3,
+      "max": 83.4,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #2 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2394.8,
+      "frames": 135,
+      "avg": 17.6,
+      "p95": 33.2,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #2 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1792.4,
+      "frames": 100,
+      "avg": 17.8,
+      "p95": 33.3,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #2 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1799,
+      "frames": 99,
+      "avg": 18,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #2 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2141.2,
+      "frames": 117,
+      "avg": 18.2,
+      "p95": 33.3,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #2 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2391.9,
+      "frames": 135,
+      "avg": 17.6,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #3 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2369.8,
+      "frames": 137,
+      "avg": 17.2,
+      "p95": 16.8,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #3 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1771.3,
+      "frames": 98,
+      "avg": 17.9,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #3 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1824.4,
+      "frames": 100,
+      "avg": 18.1,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #3 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2126,
+      "frames": 119,
+      "avg": 17.8,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #3 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2375.1,
+      "frames": 135,
+      "avg": 17.5,
+      "p95": 16.8,
+      "max": 66.6,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #4 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2372.1,
+      "frames": 136,
+      "avg": 17.3,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #4 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1798.4,
+      "frames": 98,
+      "avg": 18.1,
+      "p95": 33.4,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #4 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1830.8,
+      "frames": 99,
+      "avg": 18.3,
+      "p95": 33.3,
+      "max": 66.7,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #4 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2150,
+      "frames": 119,
+      "avg": 17.9,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #4 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2361.3,
+      "frames": 134,
+      "avg": 17.5,
+      "p95": 33.2,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #5 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2380.7,
+      "frames": 136,
+      "avg": 17.4,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #5 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1791,
+      "frames": 100,
+      "avg": 17.8,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #5 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 1799.9,
+      "frames": 102,
+      "avg": 17.5,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #5 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2138,
+      "frames": 118,
+      "avg": 18,
+      "p95": 33.3,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #5 [1440x900|cpu4|hash=none]",
+      "startDelayMs": 2373.8,
+      "frames": 136,
+      "avg": 17.4,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #1 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2483.6,
+      "frames": 139,
+      "avg": 17.8,
+      "p95": 16.8,
+      "max": 100,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #1 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1802.9,
+      "frames": 97,
+      "avg": 18.4,
+      "p95": 33.4,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #1 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1798.7,
+      "frames": 98,
+      "avg": 18.3,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #1 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2161.2,
+      "frames": 117,
+      "avg": 18.3,
+      "p95": 33.3,
+      "max": 66.8,
+      "over50": 2,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #1 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2416.1,
+      "frames": 132,
+      "avg": 18.2,
+      "p95": 33.3,
+      "max": 100,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #2 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2390.9,
+      "frames": 136,
+      "avg": 17.5,
+      "p95": 33.2,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #2 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1778,
+      "frames": 101,
+      "avg": 17.4,
+      "p95": 33.2,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #2 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1830.9,
+      "frames": 101,
+      "avg": 17.9,
+      "p95": 33.3,
+      "max": 50.1,
+      "over50": 1,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #2 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2125.1,
+      "frames": 120,
+      "avg": 17.6,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #2 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2378.4,
+      "frames": 136,
+      "avg": 17.4,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #3 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2376.5,
+      "frames": 135,
+      "avg": 17.5,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #3 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1763.6,
+      "frames": 96,
+      "avg": 18.2,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #3 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1811.3,
+      "frames": 101,
+      "avg": 17.8,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #3 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2126.6,
+      "frames": 121,
+      "avg": 17.5,
+      "p95": 33.2,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #3 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2365.3,
+      "frames": 135,
+      "avg": 17.5,
+      "p95": 33.3,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #4 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2378.4,
+      "frames": 137,
+      "avg": 17.3,
+      "p95": 16.8,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #4 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1771.2,
+      "frames": 102,
+      "avg": 17.2,
+      "p95": 16.8,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #4 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1812.3,
+      "frames": 100,
+      "avg": 17.9,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #4 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2145.2,
+      "frames": 121,
+      "avg": 17.7,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #4 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2375,
+      "frames": 138,
+      "avg": 17.2,
+      "p95": 16.8,
+      "max": 49.9,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 5 #5 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2390,
+      "frames": 137,
+      "avg": 17.4,
+      "p95": 16.8,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 6 #5 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1769.8,
+      "frames": 98,
+      "avg": 17.9,
+      "p95": 33.3,
+      "max": 33.4,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "Наверх from 7 #5 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 1814.4,
+      "frames": 101,
+      "avg": 17.8,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->2 #5 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2126.1,
+      "frames": 120,
+      "avg": 17.6,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    },
+    {
+      "label": "7->3 #5 [1440x900|cpu4|hash=contacts]",
+      "startDelayMs": 2387.3,
+      "frames": 136,
+      "avg": 17.4,
+      "p95": 33.3,
+      "max": 50,
+      "over50": 0,
+      "over100": 0
+    }
+  ],
+  "failures": 0,
+  "summary": {
+    "Наверх from 5": {
+      "n": 40,
+      "avg": 45,
+      "max": 100,
+      "over100Runs": 0
+    },
+    "Наверх from 6": {
+      "n": 40,
+      "avg": 47.9,
+      "max": 83.3,
+      "over100Runs": 0
+    },
+    "Наверх from 7": {
+      "n": 40,
+      "avg": 52.1,
+      "max": 83.4,
+      "over100Runs": 0
+    },
+    "7->2": {
+      "n": 40,
+      "avg": 49.6,
+      "max": 99.9,
+      "over100Runs": 0
+    },
+    "7->3": {
+      "n": 40,
+      "avg": 51.7,
+      "max": 100,
+      "over100Runs": 0
+    }
+  }
+}
