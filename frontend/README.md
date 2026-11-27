@@ -1,4 +1,4 @@
-# Frontend (Vite + React + TypeScript)
+﻿# Frontend (Vite + React + TypeScript)
 
 Лендинг-резюме на FSD. Подробные описания **каждого файла** — в `README.md` внутри соответствующих папок `src/`, `public/`, `vite-plugins/` и т.д.
 
@@ -45,7 +45,6 @@ npm run test
 | Widgets | [`src/widgets/README.md`](src/widgets/README.md) |
 | Статика | [`public/README.md`](public/README.md) |
 | SEO-плагин | [`vite-plugins/README.md`](vite-plugins/README.md) |
-| Legacy HTML | [`legacy/README.md`](legacy/README.md) |
 
 ## Файлы в корне `frontend/`
 

@@ -1,4 +1,4 @@
-# Valeru — лендинг-резюме + заявки и отзывы
+﻿# Valeru — лендинг-резюме + заявки и отзывы
 
 React-фронтенд (`frontend/`) и FastAPI-бэкенд (`backend/`).
 
@@ -71,7 +71,6 @@ Portfolio/
 │   │   ├── entities/         # карточки сущностей
 │   │   └── shared/           # UI, i18n, theme, API-клиент, контент
 │   ├── public/               # статика (иконки, логотипы)
-│   ├── legacy/               # старый однофайловый лендинг (пока сохранён)
 │   ├── vite-plugins/         # SEO-инъекция в dist/index.html
 │   └── dist/                 # результат `npm run build`
 ├── backend/                  # FastAPI + SQLite
