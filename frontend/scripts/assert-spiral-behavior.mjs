@@ -63,7 +63,7 @@ async function record(page, ms = 1600) {
 }
 
 async function go(page, index) {
-  await page.locator("[data-spiral-hud] button").nth(index).click();
+  await page.locator("nav[data-spiral-hud] button").nth(index).click();
   await waitSpin(page, true, 3000);
   await waitSpin(page, false, 8000);
   await page.waitForTimeout(700);
@@ -120,24 +120,28 @@ async function main() {
 
   // Пружина на последней: виды/hash не меняются, transform двигается.
   await go(page, last);
-  const before = await page.evaluate(() => ({
-    hash: location.hash,
-    views: [...document.querySelectorAll("[data-spiral-section]")].map((el) =>
-      el.getAttribute("data-panel-view"),
-    ),
-    tf: (document.querySelector("[data-spiral-root]") || document.querySelector(".spiral"))?.style
-      .transform,
-  }));
-  const midSpring = page.waitForTimeout(160).then(() =>
-    page.evaluate(() => ({
+  const before = await page.evaluate(() => {
+    const spiral = document.querySelector("[data-spiral-root]");
+    return {
+      hash: location.hash,
       views: [...document.querySelectorAll("[data-spiral-section]")].map((el) =>
         el.getAttribute("data-panel-view"),
       ),
-      hash: location.hash,
-      tf: (document.querySelector("[data-spiral-root]") || document.querySelector(".spiral"))?.style
-        .transform,
-      spinning: document.body.classList.contains("is-spinning"),
-    })),
+      tf: spiral ? getComputedStyle(spiral).transform : "",
+    };
+  });
+  const midSpring = page.waitForTimeout(160).then(() =>
+    page.evaluate(() => {
+      const spiral = document.querySelector("[data-spiral-root]");
+      return {
+        views: [...document.querySelectorAll("[data-spiral-section]")].map((el) =>
+          el.getAttribute("data-panel-view"),
+        ),
+        hash: location.hash,
+        tf: spiral ? getComputedStyle(spiral).transform : "",
+        spinning: document.body.classList.contains("is-spinning"),
+      };
+    }),
   );
   await page.keyboard.press("ArrowDown");
   const midS = await midSpring;
@@ -158,30 +162,19 @@ async function main() {
   if (!(midS.tf && midS.tf !== before.tf)) fail("spring: transform did not move");
 
   await go(page, last);
-  const naspSamples = [];
-  const naspLoop = (async () => {
-    const t0 = Date.now();
-    while (Date.now() - t0 < 3800) {
-      const s = await sample(page);
-      const spinning = await page.evaluate(() => document.body.classList.contains("is-spinning"));
-      naspSamples.push({ spinning, s });
-      await page.waitForTimeout(16);
-    }
-  })();
-  await page.waitForTimeout(40);
   const link = page.getByRole("link", { name: /Наверх|Back to top|Top/i });
   if ((await link.count()) > 0) await link.first().click({ force: true });
-  else await page.locator("[data-spiral-hud] button").first().click();
-  await naspLoop;
-  const afterLand = naspSamples.filter((x) => !x.spinning).slice(-5);
-  for (const a of afterLand) {
-    if (a.s[0]?.view !== "sharp" || a.s[1]?.view !== "blur") {
-      fail(`nasp land views ${a.s[0]?.view}/${a.s[1]?.view}`);
-      break;
-    }
-    const live = a.s.filter((p) => p.liveBlur).length;
-    if (live !== 1) fail(`nasp land liveBlur=${live}`);
+  else await page.locator("nav[data-spiral-hud] button").first().click();
+  await waitSpin(page, true, 4000);
+  await waitSpin(page, false, 12000);
+  await page.waitForTimeout(900);
+  const land = await sample(page);
+  if (land[0]?.view !== "sharp" || land[1]?.view !== "blur") {
+    fail(`nasp land views ${land[0]?.view}/${land[1]?.view}`);
   }
+  const liveLand = land.filter((p) => p.liveBlur).length;
+  if (liveLand !== 1) fail(`nasp land liveBlur=${liveLand}`);
+  if (!land.some((p) => p.active && p.view === "sharp")) fail("nasp land: active not sharp");
 
   await browser.close();
   if (failed) {

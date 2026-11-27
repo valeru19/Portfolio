@@ -123,7 +123,7 @@ async function measure(page, label, action) {
 }
 
 async function goToIndex(page, index) {
-  const dots = page.locator("[data-spiral-hud] button");
+  const dots = page.locator("nav[data-spiral-hud] button");
   await dots.nth(index).click();
   await waitSpin(page, true, 3000);
   await waitSpin(page, false, 8000);
@@ -136,7 +136,7 @@ async function clickTop(page) {
     await link.first().click({ force: true });
     return;
   }
-  await page.locator("[data-spiral-hud] button").first().click();
+  await page.locator("nav[data-spiral-hud] button").first().click();
 }
 
 async function main() {
@@ -200,11 +200,12 @@ async function main() {
   await goToIndex(page, 0);
   rows.push(
     await measure(page, "0->last", async () => {
-      await page.locator("[data-spiral-hud] button").last().click();
+      await page.locator("nav[data-spiral-hud] button").last().click();
       await waitSpin(page, true);
     }),
   );
 
+  await goToIndex(page, 0);
   const idleBlur = await page.evaluate(() => {
     let liveBlur = 0;
     const detail = [];

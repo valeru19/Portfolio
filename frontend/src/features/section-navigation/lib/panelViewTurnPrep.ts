@@ -78,22 +78,28 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Ждём спад вуали dest, иначе при fade cover у i+2 будет 2 live backdrop.
- * Конфликт: «fade cover с первого кадра» ↔ «≤1 blur». Готовим под cover сразу,
- * fade начинаем в ходе (после handoff dest), не после посадки.
+ * Ждём, пока dest перестанет быть live-blur (view≠blur или filter снят),
+ * иначе fade cover у i+2 даёт два живых blur.
+ * Готовим next под cover сразу; fade — после handoff dest, ещё во время хода.
  */
 export async function waitDestVeilLow(
   destSection: HTMLElement | undefined,
   gen: number,
 ): Promise<void> {
   if (!destSection) return;
-  const veil = veilOf(destSection);
   const start = performance.now();
   while (performance.now() - start < 420) {
     if (gen !== currentPanelViewGeneration()) return;
-    if (!veil) return;
-    const op = Number(getComputedStyle(veil).opacity);
-    if (!Number.isFinite(op) || op < 0.15) return;
+    const view = destSection.getAttribute("data-panel-view");
+    if (view !== "blur") return;
+    const scroll = destSection.querySelector<HTMLElement>("[data-panel-scroll]");
+    const filter = scroll ? getComputedStyle(scroll).filter : "none";
+    if (!filter.includes("blur")) return;
+    const veil = veilOf(destSection);
+    if (veil) {
+      const op = Number(getComputedStyle(veil).opacity);
+      if (Number.isFinite(op) && op < 0.15) return;
+    }
     await nextFrame();
   }
 }

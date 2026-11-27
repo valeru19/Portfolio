@@ -204,7 +204,9 @@ export function transitionSharpToBlur(section: HTMLElement, durationMs: number):
 /** blur → sharp: вуаль 1→0 при живом backdrop, затем sharp. */
 export function transitionBlurToSharp(section: HTMLElement, durationMs: number): LayerAnimHandle {
   clearCoverInline(section, 0);
-  setPanelViewAttr(section, "blur");
+  // Сразу sharp: filter:blur на контенте снимается, иначе i+2 после fade cover
+  // даёт второй живой blur (вуаль больше не несёт blur).
+  setPanelViewAttr(section, "sharp");
   paintViewRadius(section);
   const veil = veilOf(section);
   if (!veil || prefersReducedMotion()) {
@@ -214,8 +216,6 @@ export function transitionBlurToSharp(section: HTMLElement, durationMs: number):
   let cancelled = false;
   void animateLayerOpacity(veil, 0, durationMs).then(() => {
     if (cancelled) return;
-    setPanelViewAttr(section, "sharp");
-    paintViewRadius(section);
     veil.style.opacity = "";
   });
   return {
