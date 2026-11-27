@@ -1,7 +1,17 @@
-/** Маркеры состояния панелей спирали — пара к attribute-селекторам CSS Modules. */
+/**
+ * Маркеры состояния панелей спирали — пара к attribute-селекторам CSS Modules.
+ *
+ * Шаг 17 v2 — три роли: active / next / flat.
+ * - `data-active` → active (резкая)
+ * - `data-ahead` → только next (active+1): hover-unblur и скругление
+ * - `data-panel-view`: sharp=active, blur=next, solid=flat
+ *
+ * Устаревшие data-far / data-blur-lite / data-frost / data-revealing сняты.
+ * `data-blur-turn` — только mid-turn маркер from|dest (не вид панели).
+ */
 export const PANEL_STATE_ATTR = {
   active: "data-active",
-  /** Любая неактивная плитка спирали — hover-скругление (прошлые, будущие, ring-next). */
+  /** Только следующая секция (next) — hover-preview скругления и unblur. */
   ahead: "data-ahead",
   /**
    * Accessible card-stack: смещение относительно текущей (−3…3).
@@ -15,7 +25,7 @@ export const PANEL_STATE_ATTR = {
    */
   blurTurn: "data-blur-turn",
   /**
-   * Вид панели: sharp | blur | solid (шаг 18).
+   * Вид: sharp (active) | blur (next) | solid (flat).
    * Не boolean — пишется через setPanelViewAttr.
    */
   panelView: "data-panel-view",

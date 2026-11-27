@@ -30,4 +30,11 @@ describe("panel state CSS coupling", () => {
     );
     expect(missing, `CSS missing rules for: ${missing.join(", ")}`).toEqual([]);
   });
+
+  it("flat/solid has no border and hides scroll content (step 17)", () => {
+    const cssBundle = collectCssSources();
+    expect(cssBundle).toMatch(/data-panel-view="solid"[\s\S]*?border:\s*none/);
+    expect(cssBundle).toMatch(/data-panel-view="solid"[\s\S]*?content-visibility:\s*hidden/);
+    expect(cssBundle).toMatch(/data-panel-view="blur"[\s\S]*?backdrop-filter:\s*blur/);
+  });
 });
