@@ -67,18 +67,12 @@ export function NavSection({ id, children, className, ...aria }: Props) {
         <div
           className={styles.panelBlurVeil}
           aria-hidden="true"
-          {...{
-            [SPIRAL_DOM_ATTR.blurVeil]: "",
-            [SPIRAL_DOM_ATTR.blurLayer]: "",
-          }}
+          {...{ [SPIRAL_DOM_ATTR.blurVeil]: "" }}
         />
         <div
           className={styles.panelSolidCover}
           aria-hidden="true"
-          {...{
-            [SPIRAL_DOM_ATTR.solidCover]: "",
-            [SPIRAL_DOM_ATTR.frostFill]: "",
-          }}
+          {...{ [SPIRAL_DOM_ATTR.solidCover]: "" }}
         />
       </div>
     </section>

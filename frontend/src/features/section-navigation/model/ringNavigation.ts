@@ -27,18 +27,7 @@ export function sectionFromV(v: number, sectionCount: number): number {
   return mod;
 }
 
-/** Номер круга (floor). */
-export function ringFromV(v: number, sectionCount: number): number {
-  if (sectionCount <= 0) return 0;
-  return Math.floor(v / sectionCount);
-}
-
-/** Ключ панели / стабильный id-слот для DOM (не перебазируется). */
-export function panelKeyFromV(v: number): string {
-  return `v${v}`;
-}
-
-export function clampSection(section: number, sectionCount: number): number {
+function clampSection(section: number, sectionCount: number): number {
   if (sectionCount <= 0) return 0;
   return Math.min(sectionCount - 1, Math.max(0, Math.trunc(section)));
 }
@@ -103,45 +92,4 @@ export function planMoveFromSection(
 ): MovePlan {
   const current = clampSection(currentSection, sectionCount);
   return planMove(current, targetSection, sectionCount, backThreshold);
-}
-
-/** Новый v после выполнения плана. */
-export function applyMovePlan(currentV: number, plan: MovePlan): number {
-  if (plan.direction === "noop" || plan.steps <= 0) return currentV;
-  if (plan.direction === "forward") return currentV + plan.steps;
-  return currentV - plan.steps;
-}
-
-/**
- * Жест шага ±1 с границы круга.
- * false = запрещён (с первой назад / с последней вперёд).
- */
-export function canStepGesture(
-  currentSection: number,
-  direction: 1 | -1,
-  sectionCount: number,
-): boolean {
-  if (sectionCount <= 0) return false;
-  const current = clampSection(currentSection, sectionCount);
-  if (direction === 1 && current >= sectionCount - 1) return false;
-  if (direction === -1 && current <= 0) return false;
-  return true;
-}
-
-/**
- * Карта слотов раскладки: на последней секции первая → слот N.
- * Иначе undefined (обычные индексы).
- */
-export function ringLayoutIndexBySectionIds<T extends string = string>(
-  sectionIds: readonly T[],
-  activeIndex: number,
-): Map<T, number> | undefined {
-  const N = sectionIds.length;
-  if (N <= 1 || activeIndex !== N - 1) return undefined;
-  const firstId = sectionIds[0];
-  if (!firstId) return undefined;
-  const map = new Map<T, number>();
-  sectionIds.forEach((id, i) => map.set(id, i));
-  map.set(firstId, N);
-  return map;
 }

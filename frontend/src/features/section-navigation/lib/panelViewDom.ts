@@ -11,17 +11,11 @@ export type PanelNodesLike = {
 };
 
 export function solidCoverOf(section: HTMLElement): HTMLElement | null {
-  return (
-    section.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.solidCover}]`) ??
-    section.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.frostFill}]`)
-  );
+  return section.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.solidCover}]`);
 }
 
 export function veilOf(section: HTMLElement): HTMLElement | null {
-  return (
-    section.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.blurVeil}]`) ??
-    section.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.blurLayer}]`)
-  );
+  return section.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.blurVeil}]`);
 }
 
 export function nextFrame(): Promise<void> {

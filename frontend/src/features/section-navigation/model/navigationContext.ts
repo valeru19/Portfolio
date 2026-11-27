@@ -34,6 +34,3 @@ export type SpiralNavigationValue = SpiralNavigationApi & SpiralNavigationState;
 
 export const SpiralNavigationApiContext = createContext<SpiralNavigationApi | null>(null);
 export const SpiralNavigationStateContext = createContext<SpiralNavigationState | null>(null);
-
-/** @deprecated используйте Api/State контексты; оставлен для merge-хука. */
-export const SpiralNavigationContext = createContext<SpiralNavigationValue | null>(null);

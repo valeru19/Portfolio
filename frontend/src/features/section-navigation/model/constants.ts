@@ -1,4 +1,4 @@
-/** Константы золотой спирали из legacy (φ ≈ ASPECT). */
+/** Константы золотой спирали (φ ≈ ASPECT). */
 export const ASPECT = 0.618033;
 export const AXIS = 0.7237;
 /**
@@ -59,12 +59,6 @@ export const PANEL_BLUR_PX = 16;
 
 /** Декоративные solid-квадраты «бесконечной» спирали за последней секцией. */
 export const SPIRAL_INFINITY_GHOST_COUNT = 12;
-
-/**
- * Перед длинным ходом: рамка → цвет фона, затем border:none (мс).
- * Контент from кроссфейдится в flat за тот же бюджет.
- */
-export const PANEL_FLAT_PREP_MS = 180;
 
 /** Порог «осталось ≤1 шаг» для проявления dest/next на длинном ходе (градусы). */
 export const LONG_JUMP_REVEAL_REMAINING_DEG = 90;

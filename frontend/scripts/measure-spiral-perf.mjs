@@ -1,10 +1,10 @@
 /**
- * Spiral frame probe (step 19).
+ * Замер кадров спирали (Chromium / Playwright).
  * Usage: node scripts/measure-spiral-perf.mjs [baseUrl] [--software]
  *
- * Окно: от клика до конца всех анимаций вида + 500 мс.
- * Пишет startDelayMs (клик → первый кадр is-spinning).
- * 5 прогонов на сценарий. blur под opaque cover не считается «живым».
+ * Окно: от клика до конца анимаций + 500 мс.
+ * 5 прогонов: одиночные ходы, Наверх, ход после Наверх, пружина.
+ * Живой blur: data-panel-view=blur + filter:blur на scroll при открытом cover.
  */
 import { chromium } from "playwright";
 
@@ -72,24 +72,13 @@ async function measure(page, label, action) {
 
       let liveBlur = 0;
       for (const el of document.querySelectorAll("[data-spiral-section]")) {
-        const cover =
-          el.querySelector("[data-panel-solid-cover]") ||
-          el.querySelector("[data-panel-frost-fill]");
+        if (el.getAttribute("data-panel-view") !== "blur") continue;
+        const cover = el.querySelector("[data-panel-solid-cover]");
         const coverOp = cover ? Number(getComputedStyle(cover).opacity) : 0;
-        // Под непрозрачной заливкой blur не виден — не считаем «живым».
         if (Number.isFinite(coverOp) && coverOp > 0.95) continue;
-
-        const veil =
-          el.querySelector("[data-panel-blur-veil]") || el.querySelector("[data-panel-blur-layer]");
-        if (!veil) continue;
-        const cs = getComputedStyle(veil);
-        if (cs.display === "none" || cs.visibility === "hidden") continue;
-        if (Number(cs.opacity) < 0.02) continue;
-        const bf = cs.backdropFilter || cs.webkitBackdropFilter || "none";
-        const filter = cs.filter || "none";
-        if ((bf && bf !== "none") || (filter && filter !== "none" && filter.includes("blur"))) {
-          liveBlur += 1;
-        }
+        const scroll = el.querySelector("[data-panel-scroll]");
+        const filter = scroll ? getComputedStyle(scroll).filter || "none" : "none";
+        if (filter.includes("blur")) liveBlur += 1;
       }
       window.__perf.blurMax = Math.max(window.__perf.blurMax, liveBlur);
       window.__perf.blurSamples += 1;
@@ -179,13 +168,31 @@ async function main() {
     );
   }
 
+  const lastIdx = (await page.locator("[data-spiral-section]").count()) - 1;
+
   for (let run = 0; run < RUNS; run += 1) {
-    await goToIndex(page, 6);
+    await goToIndex(page, lastIdx);
     await page.waitForTimeout(120);
     rows.push(
-      await measure(page, `Наверх from 6 #${run + 1}`, async () => {
+      await measure(page, `Наверх from last #${run + 1}`, async () => {
         await clickTop(page);
         await waitSpin(page, true);
+      }),
+    );
+    rows.push(
+      await measure(page, `after-Наверх 0->1 #${run + 1}`, async () => {
+        await page.keyboard.press("ArrowDown");
+        await waitSpin(page, true);
+      }),
+    );
+  }
+
+  for (let run = 0; run < RUNS; run += 1) {
+    await goToIndex(page, lastIdx);
+    rows.push(
+      await measure(page, `spring last #${run + 1}`, async () => {
+        await page.keyboard.press("ArrowDown");
+        await page.waitForTimeout(500);
       }),
     );
   }
@@ -203,21 +210,13 @@ async function main() {
     const detail = [];
     for (const el of document.querySelectorAll("[data-spiral-section]")) {
       const view = el.getAttribute("data-panel-view");
-      const cover =
-        el.querySelector("[data-panel-solid-cover]") || el.querySelector("[data-panel-frost-fill]");
+      const cover = el.querySelector("[data-panel-solid-cover]");
       const coverOp = cover ? Number(getComputedStyle(cover).opacity) : 0;
-      const veil = el.querySelector("[data-panel-blur-veil]");
-      const cs = veil ? getComputedStyle(veil) : null;
-      const bf = cs ? cs.backdropFilter || cs.webkitBackdropFilter || "none" : "none";
-      const on =
-        cs &&
-        !(Number.isFinite(coverOp) && coverOp > 0.95) &&
-        cs.display !== "none" &&
-        Number(cs.opacity) > 0.02 &&
-        bf &&
-        bf !== "none";
+      const scroll = el.querySelector("[data-panel-scroll]");
+      const filter = scroll ? getComputedStyle(scroll).filter || "none" : "none";
+      const on = view === "blur" && !(coverOp > 0.95) && filter.includes("blur");
       if (on) liveBlur += 1;
-      detail.push({ id: el.id, view, bf, opacity: cs ? Number(cs.opacity) : 0, coverOp });
+      detail.push({ id: el.id, view, filter, coverOp });
     }
     return { liveBlur, detail };
   });

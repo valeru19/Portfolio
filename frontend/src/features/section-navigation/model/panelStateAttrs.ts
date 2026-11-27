@@ -1,13 +1,10 @@
 /**
  * Маркеры состояния панелей спирали — пара к attribute-селекторам CSS Modules.
  *
- * Шаг 17 v2 — три роли: active / next / flat.
- * - `data-active` → active (резкая)
- * - `data-ahead` → только next (active+1): hover-unblur и скругление
- * - `data-panel-view`: sharp=active, blur=next, solid=flat
- *
- * Устаревшие data-far / data-blur-lite / data-frost / data-revealing сняты.
- * `data-blur-turn` — только mid-turn маркер from|dest (не вид панели).
+ * - `data-active` → резкая (sharp) панель
+ * - `data-ahead` → следующая (blur): hover-unblur и скругление
+ * - `data-panel-view`: sharp | blur | solid
+ * - `data-blur-turn` — mid-turn маркер from|dest (не вид панели)
  */
 export const PANEL_STATE_ATTR = {
   active: "data-active",
@@ -61,16 +58,10 @@ export const SPIRAL_DOM_ATTR = {
   stage: "data-spiral-stage",
   section: "data-spiral-section",
   hud: "data-spiral-hud",
-  /** Устаревший alias — вуаль; оставлен для coupling-тестов. */
-  blurLayer: "data-panel-blur-layer",
-  /** Opacity-вуаль (backdrop-filter статичен; анимируется только opacity). */
+  /** Opacity-вуаль над blur-контентом. */
   blurVeil: "data-panel-blur-veil",
-  /**
-   * Непрозрачная заливка поверх вуали (solid cover).
-   * Alias `data-panel-frost-fill` сохранён для совместимости селекторов.
-   */
+  /** Непрозрачная заливка поверх вуали (solid). */
   solidCover: "data-panel-solid-cover",
-  frostFill: "data-panel-frost-fill",
   /** Scroll-box панели — content-visibility на solid. */
   scroll: "data-panel-scroll",
   /** Декоративный solid-квадрат бесконечного хвоста спирали. */

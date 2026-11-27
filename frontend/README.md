@@ -1,4 +1,4 @@
-﻿# Frontend (Vite + React + TypeScript)
+# Frontend (Vite + React + TypeScript)
 
 Лендинг-резюме на FSD. Подробные описания **каждого файла** — в `README.md` внутри соответствующих папок `src/`, `public/`, `vite-plugins/` и т.д.
 

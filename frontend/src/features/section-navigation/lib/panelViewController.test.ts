@@ -16,7 +16,6 @@ function makePanel(): { section: HTMLElement; scroll: HTMLElement; cover: HTMLEl
   const veil = document.createElement("div");
   scroll.setAttribute(SPIRAL_DOM_ATTR.scroll, "");
   cover.setAttribute(SPIRAL_DOM_ATTR.solidCover, "");
-  cover.setAttribute(SPIRAL_DOM_ATTR.frostFill, "");
   veil.setAttribute(SPIRAL_DOM_ATTR.blurVeil, "");
   cover.style.opacity = "1";
   section.append(scroll, cover, veil);

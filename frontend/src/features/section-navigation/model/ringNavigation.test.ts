@@ -1,24 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  RING_BACK_THRESHOLD,
-  applyMovePlan,
-  canStepGesture,
-  panelKeyFromV,
-  planMove,
-  planMoveFromSection,
-  ringFromV,
-  ringLayoutIndexBySectionIds,
-  sectionFromV,
-} from "./ringNavigation";
+import { RING_BACK_THRESHOLD, planMove, planMoveFromSection, sectionFromV } from "./ringNavigation";
 
-describe("sectionFromV / ringFromV", () => {
+describe("sectionFromV", () => {
   it("maps v across many rings", () => {
     const N = 5;
     let v = 0;
     for (let i = 0; i < 40; i += 1) {
       expect(sectionFromV(v, N)).toBe(i % N);
-      expect(ringFromV(v, N)).toBe(Math.floor(i / N));
       v += 1;
     }
   });
@@ -26,7 +15,6 @@ describe("sectionFromV / ringFromV", () => {
   it("handles N=1", () => {
     expect(sectionFromV(0, 1)).toBe(0);
     expect(sectionFromV(7, 1)).toBe(0);
-    expect(ringFromV(7, 1)).toBe(7);
   });
 });
 
@@ -120,60 +108,11 @@ describe("planMove", () => {
     });
   });
 
-  it("applyMovePlan grows v across rings", () => {
-    let v = 0;
-    const N = 5;
-    for (let i = 0; i < 12; i += 1) {
-      const plan = planMove(v, sectionFromV(v + 1, N), N);
-      v = applyMovePlan(v, plan);
-    }
-    expect(v).toBe(12);
-    expect(sectionFromV(v, N)).toBe(2);
-    expect(ringFromV(v, N)).toBe(2);
-  });
-
   it("wrap then section matches target", () => {
     const N = 8;
     const currentV = 6;
     const plan = planMove(currentV, 1, N, 3);
     expect(plan.wrapsRing).toBe(true);
-    const next = applyMovePlan(currentV, plan);
-    expect(sectionFromV(next, N)).toBe(1);
-  });
-});
-
-describe("canStepGesture", () => {
-  it("blocks forward on last and back on first", () => {
-    expect(canStepGesture(0, -1, 5)).toBe(false);
-    expect(canStepGesture(0, 1, 5)).toBe(true);
-    expect(canStepGesture(4, 1, 5)).toBe(false);
-    expect(canStepGesture(4, -1, 5)).toBe(true);
-    expect(canStepGesture(2, 1, 5)).toBe(true);
-  });
-
-  it("N=2 edges", () => {
-    expect(canStepGesture(0, -1, 2)).toBe(false);
-    expect(canStepGesture(1, 1, 2)).toBe(false);
-  });
-});
-
-describe("panelKeyFromV", () => {
-  it("is unique per v", () => {
-    expect(panelKeyFromV(0)).toBe("v0");
-    expect(panelKeyFromV(9)).toBe("v9");
-  });
-});
-
-describe("ringLayoutIndexBySectionIds", () => {
-  const ids = ["hero", "about", "stack", "contacts"];
-
-  it("moves first to slot N on last section", () => {
-    const map = ringLayoutIndexBySectionIds(ids, 3);
-    expect(map?.get("hero")).toBe(4);
-    expect(map?.get("contacts")).toBe(3);
-  });
-
-  it("returns undefined when not on last", () => {
-    expect(ringLayoutIndexBySectionIds(ids, 2)).toBeUndefined();
+    expect(sectionFromV(currentV + plan.steps, N)).toBe(1);
   });
 });

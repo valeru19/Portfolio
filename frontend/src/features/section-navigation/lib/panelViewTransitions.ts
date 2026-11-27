@@ -142,7 +142,9 @@ export async function transitionSolidToSharp(
   nodes: PanelNodesLike,
   gen: number,
   durationMs: number,
-  opts?: { /** Контент уже decode под cover (ring-next) — fade сразу, без 2 кадров паузы. */ ready?: boolean },
+  opts?: {
+    /** Контент уже decode под cover (ring-next) — fade сразу, без 2 кадров паузы. */ ready?: boolean;
+  },
 ): Promise<void> {
   if (gen !== viewGen) return;
   const { section, scroll } = nodes;

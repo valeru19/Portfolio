@@ -118,7 +118,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   const {
     rotationRef,
     spinningRef,
-    springBusyRef,
+    edgeSpringRef,
     paintSpiralTransform,
     buildSpiral,
     animateToRotation,
@@ -249,9 +249,9 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
       modeTransitionPhase !== "idle" ||
       spinningFlagRef.current ||
       spinningRef.current ||
-      springBusyRef.current ||
+      edgeSpringRef.current.busy ||
       (isAccessible && cardBusyRef.current),
-    [isAccessible, modeTransitionPhase, spinningRef, springBusyRef],
+    [edgeSpringRef, isAccessible, modeTransitionPhase, spinningRef],
   );
 
   const inputEnabled = modeTransitionPhase === "idle";

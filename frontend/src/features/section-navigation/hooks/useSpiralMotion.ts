@@ -3,12 +3,18 @@ import { useCallback, useRef, type MutableRefObject } from "react";
 import type { SectionId } from "@/shared/content";
 
 import { withStageBgTransitionDisabled } from "../lib/applyPaletteToDocument";
+import {
+  cancelEdgeSpringAnimation,
+  playEdgeSpringAnimation,
+  type EdgeSpringController,
+} from "../lib/edgeSpring";
 import { loadGsap } from "../lib/loadGsap";
 import {
   beginPanelViewTurn,
   bumpPanelViewGeneration,
   prepareRingWrapViews,
 } from "../lib/panelViewController";
+import { runSpiralRotationTween, type GsapLike } from "../lib/spiralMotionTween";
 import {
   animationDurationMs,
   animationEase,
@@ -17,24 +23,14 @@ import {
   paintSpiralElementWithGsap,
   resetSpiralPaintCache,
 } from "../lib/spiralTransform";
-import {
-  EDGE_SPRING_DEG,
-  EDGE_SPRING_MS,
-  LONG_JUMP_REVEAL_REMAINING_DEG,
-} from "../model/constants";
-import {
-  rotationForSectionIndex,
-  snapRotationToSection,
-  spiralScaleFromRotation,
-} from "../model/geometry";
+import { LONG_JUMP_REVEAL_REMAINING_DEG } from "../model/constants";
+import { rotationForSectionIndex, snapRotationToSection } from "../model/geometry";
 import { setBlurTurnAttr } from "../model/panelStateAttrs";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
 import { planMoveFromSection } from "../model/ringNavigation";
 import { clampSectionIndex } from "../model/sectionIndex";
 
 import type { PanelNodes } from "./useSpiralPanels";
-
-type GsapLike = Awaited<ReturnType<typeof loadGsap>>;
 
 type Options = {
   sectionIds: SectionId[];
@@ -77,21 +73,10 @@ export function useSpiralMotion({
   const warmIdleRef = useRef(0);
   const warmIdleKindRef = useRef<"timeout" | "idle">("timeout");
   const viewTurnCancelRef = useRef<(() => void) | null>(null);
-  const springAnimRef = useRef<Animation | null>(null);
-  const springBusyRef = useRef(false);
+  const edgeSpringRef = useRef<EdgeSpringController>({ anim: null, busy: false });
 
   const cancelEdgeSpring = useCallback(() => {
-    if (springAnimRef.current) {
-      springAnimRef.current.cancel();
-      springAnimRef.current = null;
-    }
-    if (!springBusyRef.current) return;
-    springBusyRef.current = false;
-    const spiral = spiralRef.current;
-    if (spiral) {
-      resetSpiralPaintCache();
-      paintSpiralElement(spiral, rotationRef.current);
-    }
+    cancelEdgeSpringAnimation(edgeSpringRef.current, spiralRef.current, rotationRef.current);
   }, [spiralRef]);
 
   /** Прерывание хода: отмена отложенных шагов вида + сброс маркеров. */
@@ -114,7 +99,6 @@ export function useSpiralMotion({
   const setSpinning = useCallback((on: boolean, kind?: "step" | "nasp" | "long") => {
     spinningRef.current = on;
     document.body.classList.toggle("is-spinning", on);
-    document.body.classList.remove("is-spinning-back");
     if (on && kind) document.body.dataset.spinKind = kind;
     else delete document.body.dataset.spinKind;
   }, []);
@@ -251,55 +235,22 @@ export function useSpiralMotion({
     ],
   );
 
-  /**
-   * Пружина только на последней: чуть вперёд и обратно.
-   * Меняет только transform спирали (WAAPI), без видов/цветов/HUD/hash.
-   */
+  /** Пружина на последней секции: только transform спирали (WAAPI). */
   const playEdgeSpring = useCallback(() => {
     if (isAccessible || prefersReducedMotion()) return;
-    if (spinningRef.current || springBusyRef.current) return;
+    if (spinningRef.current || edgeSpringRef.current.busy) return;
     const spiral = spiralRef.current;
     if (!spiral) return;
-
     const baseR = rotationRef.current;
-    const peakR = baseR - EDGE_SPRING_DEG;
-    const baseScale = spiralScaleFromRotation(baseR);
-    const peakScale = spiralScaleFromRotation(peakR);
-    const tf = (r: number, s: number) => `rotate(${r}deg) scale(${s}) translate3d(0,0,0)`;
-
-    cancelEdgeSpring();
-    if (gsapRef.current) {
-      gsapRef.current.set(spiral, { clearProps: "transform" });
-    }
-    resetSpiralPaintCache();
-    springBusyRef.current = true;
-
-    const anim = spiral.animate(
-      [
-        { transform: tf(baseR, baseScale) },
-        { transform: tf(peakR, peakScale), offset: 0.38 },
-        { transform: tf(baseR, baseScale) },
-      ],
-      {
-        duration: EDGE_SPRING_MS,
-        easing: "cubic-bezier(0.22, 1.15, 0.36, 1)",
-        fill: "forwards",
+    playEdgeSpringAnimation({
+      spiral,
+      baseRotation: baseR,
+      controller: edgeSpringRef.current,
+      clearGsapTransform: (el) => {
+        gsapRef.current?.set(el, { clearProps: "transform" });
       },
-    );
-    springAnimRef.current = anim;
-    const finish = () => {
-      if (springAnimRef.current !== anim) return;
-      springAnimRef.current = null;
-      springBusyRef.current = false;
-      paintSpiralElement(spiral, baseR);
-      rotationRef.current = baseR;
-    };
-    anim.onfinish = finish;
-    anim.oncancel = () => {
-      if (springAnimRef.current === anim) springAnimRef.current = null;
-      springBusyRef.current = false;
-    };
-  }, [cancelEdgeSpring, isAccessible, spiralRef]);
+    });
+  }, [isAccessible, spiralRef]);
 
   const animateToRotation = useCallback(
     async (targetRotation: number) => {
@@ -390,48 +341,41 @@ export function useSpiralMotion({
       }
 
       const runTween = (gsap: NonNullable<GsapLike>) => {
-        if (gen !== motionGenRef.current) return;
         const spiral = spiralRef.current;
         if (!spiral) {
           finishScroll(snapped);
           return;
         }
-        const state = { r: startR };
-        const ease = animationEase(distanceDeg, goingBack);
         lastProgressIdxRef.current = null;
-        let nearLandDone = false;
-
-        tweenRef.current = gsap.to(state, {
-          r: snapped,
+        runSpiralRotationTween({
+          gsap,
+          spiral,
+          startR,
+          endR: snapped,
           duration,
-          ease,
-          overwrite: true,
-          onUpdate: () => {
-            if (gen !== motionGenRef.current) return;
-            paintSpiralElementWithGsap(gsap, spiral, state.r);
-            rotationRef.current = state.r;
-            const idx = clampSectionIndex(Math.round(-state.r / 90), sectionCount);
+          ease: animationEase(distanceDeg, goingBack),
+          refs: {
+            motionGen: gen,
+            isCurrent: () => gen === motionGenRef.current,
+            setTween: (tween) => {
+              tweenRef.current = tween;
+            },
+            setRotation: (r) => {
+              rotationRef.current = r;
+            },
+          },
+          onFrame: (r) => {
+            const idx = clampSectionIndex(Math.round(-r / 90), sectionCount);
             if (lastProgressIdxRef.current !== idx) {
               lastProgressIdxRef.current = idx;
               onProgress?.(idx);
             }
-            if (longJump && onNearLand && !nearLandDone) {
-              const remaining = Math.abs(snapped - state.r);
-              if (remaining <= LONG_JUMP_REVEAL_REMAINING_DEG) {
-                nearLandDone = true;
-                onNearLand();
-              }
-            }
           },
-          onComplete: () => {
-            if (gen !== motionGenRef.current) return;
-            tweenRef.current = null;
-            if (longJump && onNearLand && !nearLandDone) {
-              nearLandDone = true;
-              onNearLand();
-            }
-            finishScroll(snapped);
-          },
+          nearLand:
+            longJump && onNearLand
+              ? { remainingDeg: LONG_JUMP_REVEAL_REMAINING_DEG, run: onNearLand }
+              : undefined,
+          onComplete: () => finishScroll(snapped),
         });
       };
 
@@ -562,48 +506,39 @@ export function useSpiralMotion({
         finishScroll(rotationForSectionIndex(destIdx), { instantStageColor: true });
       };
 
+      const span = startR - endR || 1;
       const runTween = (gsap: NonNullable<GsapLike>) => {
-        if (gen !== motionGenRef.current) return;
         const sp = spiralRef.current;
         if (!sp) {
           landCanonical();
           return;
         }
-        const state = { r: startR };
-        const ease = animationEase(distanceDeg, false);
-        const span = startR - endR || 1;
-        let nearLandDone = false;
-        tweenRef.current = gsap.to(state, {
-          r: endR,
+        runSpiralRotationTween({
+          gsap,
+          spiral: sp,
+          startR,
+          endR,
           duration,
-          ease,
-          overwrite: true,
-          onUpdate: () => {
-            if (gen !== motionGenRef.current) return;
-            paintSpiralElementWithGsap(gsap, sp, state.r);
-            rotationRef.current = state.r;
-            const t = (startR - state.r) / span;
+          ease: animationEase(distanceDeg, false),
+          refs: {
+            motionGen: gen,
+            isCurrent: () => gen === motionGenRef.current,
+            setTween: (tween) => {
+              tweenRef.current = tween;
+            },
+            setRotation: (r) => {
+              rotationRef.current = r;
+            },
+          },
+          onFrame: (r) => {
+            const t = (startR - r) / span;
             if (t >= 0.5 && lastProgressIdxRef.current !== destIdx) {
               lastProgressIdxRef.current = destIdx;
               onProgress?.(destIdx);
             }
-            if (onNearLand && !nearLandDone) {
-              const remaining = Math.abs(endR - state.r);
-              if (remaining <= revealDeg) {
-                nearLandDone = true;
-                onNearLand();
-              }
-            }
           },
-          onComplete: () => {
-            if (gen !== motionGenRef.current) return;
-            tweenRef.current = null;
-            if (onNearLand && !nearLandDone) {
-              nearLandDone = true;
-              onNearLand();
-            }
-            landCanonical();
-          },
+          nearLand: onNearLand ? { remainingDeg: revealDeg, run: onNearLand } : undefined,
+          onComplete: landCanonical,
         });
       };
 
@@ -705,7 +640,7 @@ export function useSpiralMotion({
   return {
     rotationRef,
     spinningRef,
-    springBusyRef,
+    edgeSpringRef,
     paintSpiralTransform,
     buildSpiral,
     animateToRotation,
