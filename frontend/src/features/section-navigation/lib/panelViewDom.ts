@@ -63,6 +63,7 @@ export function applyViewInstant(section: HTMLElement, view: PanelView): void {
   const veil = veilOf(section);
   if (cover) {
     cancelLayerAnim(cover);
+    if (cover.style.display === "none") cover.style.display = "";
     cover.style.opacity = view === "solid" ? "1" : "0";
     cover.style.willChange = "";
   }
@@ -70,7 +71,10 @@ export function applyViewInstant(section: HTMLElement, view: PanelView): void {
     cancelLayerAnim(veil);
     veil.style.opacity = "";
     veil.style.willChange = "";
+    veil.style.filter = "";
   }
+  if (section.style.filter) section.style.filter = "";
+  if (section.style.willChange) section.style.willChange = "";
   setPanelViewAttr(section, view);
   paintViewRadius(section);
 }

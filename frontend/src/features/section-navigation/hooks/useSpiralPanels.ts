@@ -88,8 +88,8 @@ export function useSpiralPanels({
         const isRingNextSolid = index === lastIdx && lastIdx > 0 && i === 0;
         writes.push(() => {
           setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.active, isOn);
-          // Все неактивные плитки спирали (прошлые, будущие, ring-next) — hover-скругление.
-          setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, !isOn);
+          // Шаг 17: ahead только у next (active+1) — hover-unblur / скругление.
+          setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, !isOn && i === index + 1);
           if (nodes.section.style.opacity !== "1") nodes.section.style.opacity = "1";
           if (nodes.section.style.visibility !== "visible") {
             nodes.section.style.visibility = "visible";
@@ -250,7 +250,7 @@ export function useSpiralPanels({
         const list = [...byIndex.entries()].map(([index, nodes]) => ({ index, nodes }));
         applyPanelViewsInstant(list, active, sectionIds.length);
         setPanelStateAttr(sectionEl, PANEL_STATE_ATTR.active, sectionIds.indexOf(id) === active);
-        setPanelStateAttr(sectionEl, PANEL_STATE_ATTR.ahead, sectionIds.indexOf(id) !== active);
+        setPanelStateAttr(sectionEl, PANEL_STATE_ATTR.ahead, sectionIds.indexOf(id) === active + 1);
       }
       return () => {
         panelsRef.current.delete(id);

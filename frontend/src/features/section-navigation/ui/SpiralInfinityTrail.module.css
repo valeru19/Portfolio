@@ -4,9 +4,8 @@
   top: 0;
   left: 0;
   z-index: 0;
-  /* Hover-скругление как у панелей; клики не перехватываем у секций выше по z-index. */
-  pointer-events: auto;
-  cursor: pointer;
+  /* Шаг 17: hover только у next-секции — ghost декоративны, без pointer. */
+  pointer-events: none;
   /* Рамка как у panelFrame: --frame + цвет --border секции (не заливка). */
   border-radius: var(--panel-radius);
   border: var(--frame) solid currentColor;
@@ -19,20 +18,3 @@
   visibility: visible;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  :global(body:not(.is-spinning)) .ghost {
-    transition: --panel-radius 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  :global(body:not(.is-spinning)) .ghost:hover {
-    z-index: 3;
-    --panel-radius: 22%;
-    transition: --panel-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ghost {
-    transition: none;
-  }
-}
