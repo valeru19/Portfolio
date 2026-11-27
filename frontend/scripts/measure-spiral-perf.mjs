@@ -152,24 +152,26 @@ async function main() {
   await page.waitForTimeout(1500);
 
   const rows = [];
-
-  for (let run = 0; run < RUNS; run += 1) {
-    await goToIndex(page, 0);
-    rows.push(
-      await measure(page, `0->1 #${run + 1}`, async () => {
-        await page.keyboard.press("ArrowDown");
-        await waitSpin(page, true);
-      }),
-    );
-    rows.push(
-      await measure(page, `1->0 #${run + 1}`, async () => {
-        await page.keyboard.press("ArrowUp");
-        await waitSpin(page, true);
-      }),
-    );
-  }
-
   const lastIdx = (await page.locator("[data-spiral-section]").count()) - 1;
+
+  // Все соседние пары вперёд/назад × RUNS (требование §6).
+  for (let run = 0; run < RUNS; run += 1) {
+    for (let i = 0; i < lastIdx; i += 1) {
+      await goToIndex(page, i);
+      rows.push(
+        await measure(page, `${i}->${i + 1} #${run + 1}`, async () => {
+          await page.keyboard.press("ArrowDown");
+          await waitSpin(page, true);
+        }),
+      );
+      rows.push(
+        await measure(page, `${i + 1}->${i} #${run + 1}`, async () => {
+          await page.keyboard.press("ArrowUp");
+          await waitSpin(page, true);
+        }),
+      );
+    }
+  }
 
   for (let run = 0; run < RUNS; run += 1) {
     await goToIndex(page, lastIdx);

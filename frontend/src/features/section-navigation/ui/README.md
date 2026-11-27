@@ -10,4 +10,4 @@
 - **`SpiralHud.tsx`** / **`SpiralHud.module.css`** — счётчик «01 of 07», точки секций, Next; скрыт в accessible.
 - **`ModeToggle.tsx`** / **`ModeToggle.module.css`** — кнопка «обычный скролл» / обратно на спираль.
 
-Виджет [`widgets/spiral-nav`](../../../widgets/spiral-nav/README.md) обычно монтирует HUD + toggle рядом с хедером; секции контента используют `NavSection`.
+HUD и ModeToggle монтируются из app/layout рядом с хедером; секции контента используют `NavSection`.
