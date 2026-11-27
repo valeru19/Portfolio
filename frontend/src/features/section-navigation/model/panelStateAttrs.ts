@@ -1,7 +1,7 @@
 /** Маркеры состояния панелей спирали — пара к attribute-селекторам CSS Modules. */
 export const PANEL_STATE_ATTR = {
   active: "data-active",
-  /** Секции с индексом больше текущей — «следующие», для hover-preview. */
+  /** Любая неактивная плитка спирали — hover-скругление (прошлые, будущие, ring-next). */
   ahead: "data-ahead",
   /**
    * Accessible card-stack: смещение относительно текущей (−3…3).

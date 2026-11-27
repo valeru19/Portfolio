@@ -84,11 +84,12 @@ export function useSpiralPanels({
         const nodes = panelsRef.current.get(id);
         if (!nodes) return;
         const isOn = i === index;
-        // Кольцевая первая на последней: залитый квадрат в слоте N (не hover-ahead).
+        // Кольцевая первая на последней: залитый квадрат в слоте N.
         const isRingNextSolid = index === lastIdx && lastIdx > 0 && i === 0;
         writes.push(() => {
           setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.active, isOn);
-          setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, !isOn && i > index);
+          // Все неактивные плитки спирали (прошлые, будущие, ring-next) — hover-скругление.
+          setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, !isOn);
           if (nodes.section.style.opacity !== "1") nodes.section.style.opacity = "1";
           if (nodes.section.style.visibility !== "visible") {
             nodes.section.style.visibility = "visible";
@@ -175,8 +176,11 @@ export function useSpiralPanels({
       warmSection(index);
       if (index > 0) warmSection(index - 1);
       if (index < sectionIds.length - 1) warmSection(index + 1);
-      // На последней кольцевая «следующая» = первая.
-      else if (sectionIds.length > 1) warmSection(0);
+      else if (sectionIds.length > 1) {
+        // На последней: кольцевая первая + вторая (blur после wrap).
+        warmSection(0);
+        if (sectionIds.length > 2) warmSection(1);
+      }
     },
     [sectionIds.length, warmSection],
   );
@@ -246,7 +250,7 @@ export function useSpiralPanels({
         const list = [...byIndex.entries()].map(([index, nodes]) => ({ index, nodes }));
         applyPanelViewsInstant(list, active, sectionIds.length);
         setPanelStateAttr(sectionEl, PANEL_STATE_ATTR.active, sectionIds.indexOf(id) === active);
-        setPanelStateAttr(sectionEl, PANEL_STATE_ATTR.ahead, sectionIds.indexOf(id) > active);
+        setPanelStateAttr(sectionEl, PANEL_STATE_ATTR.ahead, sectionIds.indexOf(id) !== active);
       }
       return () => {
         panelsRef.current.delete(id);

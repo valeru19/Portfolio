@@ -115,8 +115,9 @@ describe("useSpiralPanels settleActivePanel", () => {
     expect(aboutSection.style.zIndex).toBe("5");
     expect(stackSection.style.zIndex).toBe("1");
     expect(heroSection.style.zIndex).toBe("1");
+    // Все неактивные плитки (прошлые и будущие) — data-ahead для hover-скругления.
     expect(stackSection.hasAttribute(PANEL_STATE_ATTR.ahead)).toBe(true);
-    expect(heroSection.hasAttribute(PANEL_STATE_ATTR.ahead)).toBe(false);
+    expect(heroSection.hasAttribute(PANEL_STATE_ATTR.ahead)).toBe(true);
     expect(aboutSection.hasAttribute(PANEL_STATE_ATTR.ahead)).toBe(false);
   });
 

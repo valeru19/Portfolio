@@ -33,4 +33,5 @@ export {
   revealNextBlurAfterLand,
   prepareLongJumpViews,
   armHiddenRingNext,
+  armWrapAheadBlur,
 } from "./panelViewTurn";

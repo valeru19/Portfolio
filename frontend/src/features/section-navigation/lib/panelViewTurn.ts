@@ -39,8 +39,8 @@ export type TurnPlan = {
   durationSec: number;
   panels: Map<number, PanelNodesLike>;
   /**
-   * Ход через круг: только from→dest, промежуточные не мелькают,
-   * blur на dest+1 — после посадки.
+   * Ход через круг: from→dest; dest+1 (вторая после wrap) —
+   * blur под cover заранее, fade cover во время хода.
    */
   wrapsRing?: boolean;
 };
@@ -86,20 +86,40 @@ export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () =>
   const fromNodes = panels.get(fromIdx);
   const destNodes = panels.get(destIdx);
 
-  // ——— Wrap: dest заранее под cover + opacity 0 → показать и снять cover. ———
+  // ——— Wrap: всё плавно — без forceSolidInstant / applyViewInstant. ———
   if (wrapsRing) {
+    // N=2: dest+1 === from — blur после посадки, не во время хода.
+    const wrapBlurIdx =
+      destIdx + 1 < sectionCount && destIdx + 1 !== fromIdx ? destIdx + 1 : -1;
+
     for (let i = 0; i < sectionCount; i += 1) {
       const nodes = panels.get(i);
       if (!nodes) continue;
-      if (i === fromIdx || i === destIdx) continue;
-      if (readPanelViewAttr(nodes.section) !== "solid") forceSolidInstant(nodes);
+      if (i === fromIdx || i === destIdx || i === wrapBlurIdx) continue;
+      // Плавный уход в solid вместо мгновенного выключения.
+      if (readPanelViewAttr(nodes.section) !== "solid") {
+        void transitionToSolid(nodes, gen, durationMs);
+      }
     }
     if (fromNodes) void transitionToSolid(fromNodes, gen, durationMs);
     if (destNodes) {
-      // Появление по канону: opacity 1, контент уже под cover → fade cover.
       destNodes.section.style.opacity = "1";
       destNodes.section.style.visibility = "visible";
-      void transitionSolidToSharp(destNodes, gen, durationMs);
+      // Ring-next уже decode под cover — fade сразу, синхронно с твином.
+      void transitionSolidToSharp(destNodes, gen, durationMs, { ready: true });
+    }
+    if (wrapBlurIdx >= 0) {
+      const wrapBlur = panels.get(wrapBlurIdx);
+      if (wrapBlur) {
+        void (async () => {
+          if (readPanelViewAttr(wrapBlur.section) !== "blur") {
+            await prepareBlurUnderCover(wrapBlur);
+          }
+          if (gen !== currentPanelViewGeneration()) return;
+          // Не ждём veil dest (sharp без вуали) — плавный fade cover со старта хода.
+          void fadeCoverToReveal(wrapBlur.section, gen, viewMs);
+        })();
+      }
     }
     return {
       gen,
@@ -286,6 +306,10 @@ export async function settlePanelViewsAfterLand(
   // Не bump gen: иначе отменится fade cover i+2 / dest+1, начатый со стартом хода.
   const gen = currentPanelViewGeneration();
   const blurIdx = activeIndex + 1 < sectionCount ? activeIndex + 1 : -1;
+  const onLast = sectionCount > 1 && activeIndex === sectionCount - 1;
+  // На последней: слот N = первая под cover; вторая = blur под cover к wrap.
+  const ringNextIdx = onLast ? 0 : -1;
+  const wrapAheadIdx = onLast && sectionCount > 2 ? 1 : -1;
 
   for (let i = 0; i < sectionCount; i += 1) {
     if (gen !== currentPanelViewGeneration()) return gen;
@@ -295,17 +319,35 @@ export async function settlePanelViewsAfterLand(
     const have = readPanelViewAttr(nodes.section);
 
     if (want === "sharp") {
-      applyViewInstant(nodes.section, "sharp");
+      // Уже sharp / cover доигрывает — не cancel WAAPI (мигание после Наверх).
+      if (have !== "sharp") {
+        void transitionSolidToSharp(nodes, gen, PANEL_VIEW_MS);
+      }
       rememberPanelIntrinsicHeight(nodes.scroll);
       continue;
     }
 
     if (want === "solid") {
+      // Ring-next / wrap-ahead уже под cover — не сбиваем.
+      if (i === ringNextIdx && (have === "sharp" || have === "solid")) {
+        const cover = solidCoverOf(nodes.section);
+        if (cover && Number(cover.style.opacity || "1") > 0.5) {
+          nodes.section.style.opacity = "1";
+          nodes.section.style.visibility = "visible";
+          continue;
+        }
+      }
+      if (i === wrapAheadIdx && have === "blur") {
+        const cover = solidCoverOf(nodes.section);
+        if (cover) cover.style.opacity = "1";
+        nodes.section.style.opacity = "1";
+        nodes.section.style.visibility = "visible";
+        continue;
+      }
       if (have !== "solid") {
         void transitionToSolid(nodes, gen, PANEL_VIEW_MS);
-      } else {
-        forceSolidInstant(nodes);
       }
+      // Уже solid — не forceSolidInstant (cancel WAAPI = резкое мигание).
       continue;
     }
 
@@ -328,7 +370,7 @@ export async function settlePanelViewsAfterLand(
 
 /**
  * Кольцевая «следующая» на последней: первая в слоте N как залитый квадрат
- * (solid), контент под cover уже decode — на «Наверх» только fade cover.
+ * (sharp под cover), контент decode — на «Наверх» только fade cover.
  */
 export async function armHiddenRingNext(nodes: PanelNodesLike): Promise<void> {
   await prepareSharpUnderCover(nodes);
@@ -340,8 +382,20 @@ export async function armHiddenRingNext(nodes: PanelNodesLike): Promise<void> {
 }
 
 /**
+ * На последней заранее готовим вторую секцию как blur под cover —
+ * на wrap last→first только fade, без prepare/decode в кадре хода.
+ */
+export async function armWrapAheadBlur(nodes: PanelNodesLike): Promise<void> {
+  await prepareBlurUnderCover(nodes);
+  nodes.section.style.opacity = "1";
+  nodes.section.style.visibility = "visible";
+  const cover = solidCoverOf(nodes.section);
+  if (cover) cover.style.opacity = "1";
+}
+
+/**
  * Дооткрыть blur после посадки, только если ещё solid / под cover.
- * На последней — не blur, а скрытый ring-next (armHiddenRingNext).
+ * На последней — ring-next (первая) + wrap-ahead blur (вторая).
  */
 export async function revealNextBlurAfterLand(
   panels: Map<number, PanelNodesLike>,
@@ -354,6 +408,10 @@ export async function revealNextBlurAfterLand(
   if (activeIndex === sectionCount - 1 && sectionCount > 1) {
     const ringNext = panels.get(0);
     if (ringNext) await armHiddenRingNext(ringNext);
+    if (gen !== currentPanelViewGeneration()) return;
+    // Вторая секция: blur под cover, контуры на месте до «Наверх».
+    const wrapAhead = panels.get(1);
+    if (wrapAhead) await armWrapAheadBlur(wrapAhead);
     return;
   }
 

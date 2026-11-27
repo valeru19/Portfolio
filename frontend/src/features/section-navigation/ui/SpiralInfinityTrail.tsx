@@ -8,8 +8,10 @@ import { SPIRAL_DOM_ATTR } from "../model/panelStateAttrs";
 import styles from "./SpiralInfinityTrail.module.css";
 
 /**
- * Декоративный хвост спирали: solid-квадраты дальше последней секции,
- * цвета — основные `--panel` карточек по кругу.
+ * Декоративный хвост спирали: solid-квадраты дальше последней секции.
+ * Заливка = `--panel`, рамка = `--border` той же секции.
+ * Индекс цвета здесь — стартовый (слот N+i); `paintInfinityGhosts` перекрашивает
+ * по абсолютному слоту, чтобы на wrap last→first цвета не прыгали.
  */
 export function SpiralInfinityTrail() {
   const { isAccessible, sectionIds } = useSpiralNavigationApi();
@@ -17,18 +19,25 @@ export function SpiralInfinityTrail() {
 
   if (isAccessible || sectionIds.length === 0) return null;
 
+  const n = sectionIds.length;
+
   return (
     <>
       {Array.from({ length: SPIRAL_INFINITY_GHOST_COUNT }, (_, i) => {
-        const colorId = sectionIds[i % sectionIds.length] as SectionId;
-        const panel = sectionPaletteForId(theme, colorId).panel;
+        // Стартовый слот = N+i (пока ring-next не занял N).
+        const colorId = sectionIds[(n + i) % n] as SectionId;
+        const palette = sectionPaletteForId(theme, colorId);
         return (
           <div
             key={i}
             className={styles.ghost}
             aria-hidden="true"
             {...{ [SPIRAL_DOM_ATTR.ghost]: String(i) }}
-            style={{ background: panel, borderColor: panel }}
+            style={{
+              background: palette.panel,
+              borderColor: palette.border,
+              color: palette.border,
+            }}
           />
         );
       })}

@@ -258,12 +258,16 @@
 }
 
 /*
-  Hover: blur — veil→0 + радиус. Solid — только радиус.
+  Hover: скругление у всех неактивных квадратов спирали (data-ahead = любая плитка кроме active),
+  включая прошедшие solid и ring-next на последней. Blur-veil→0 — у blur.
 */
 @media (hover: hover) and (pointer: fine) {
-  :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="blur"] .panelFrame,
-  :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="solid"] .panelFrame {
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead] .panelFrame {
     transition: --panel-radius 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :global(body:not(.is-spinning)) .spiralSection[data-ahead]:hover {
+    z-index: 6;
   }
 
   :global(body:not(.is-spinning)) .spiralSection[data-ahead]:hover .panelFrame {
@@ -277,7 +281,7 @@
     transition: opacity 0.45s ease-in-out;
   }
 
-  /* Плавное снятие blur при наведении на следующую (единственную blur) секцию */
+  /* Плавное снятие blur при наведении на blur-секцию */
   :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="blur"]:hover {
     --panel-veil: 0;
   }

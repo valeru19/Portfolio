@@ -142,6 +142,7 @@ export async function transitionSolidToSharp(
   nodes: PanelNodesLike,
   gen: number,
   durationMs: number,
+  opts?: { /** Контент уже decode под cover (ring-next) — fade сразу, без 2 кадров паузы. */ ready?: boolean },
 ): Promise<void> {
   if (gen !== viewGen) return;
   const { section, scroll } = nodes;
@@ -156,12 +157,16 @@ export async function transitionSolidToSharp(
   setPanelViewAttr(section, "sharp");
   paintViewRadius(section);
   clearVeilInline(section);
-  await nextFrame();
-  if (gen !== viewGen) return;
-  decodePanelImages(section);
-  rememberPanelIntrinsicHeight(scroll);
-  await nextFrame();
-  if (gen !== viewGen) return;
+  if (!opts?.ready) {
+    await nextFrame();
+    if (gen !== viewGen) return;
+    decodePanelImages(section);
+    rememberPanelIntrinsicHeight(scroll);
+    await nextFrame();
+    if (gen !== viewGen) return;
+  } else {
+    rememberPanelIntrinsicHeight(scroll);
+  }
   await animateLayerOpacity(cover, 0, durationMs);
 }
 

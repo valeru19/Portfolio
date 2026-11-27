@@ -106,18 +106,25 @@ export function applySpiralLayoutToPanels(
     }
   });
 
-  paintInfinityGhosts(spiral, sectionIds.length, layoutIndexById);
+  paintInfinityGhosts(spiral, sectionIds, panels, layoutIndexById);
 }
 
 /**
  * Хвост «бесконечной» спирали: ghost-квадраты после реальных секций.
  * Если первая заняла слот N (кольцо на последней) — ghosts с N+1.
+ *
+ * Цвет/рамка по абсолютному слоту (slot % N), не по индексу ghost —
+ * иначе на wrap last→first весь хвост сдвигается и квадраты перекрашиваются.
  */
 export function paintInfinityGhosts(
   spiral: HTMLElement,
-  sectionCount: number,
+  sectionIds: readonly SectionId[],
+  panels: Map<SectionId, PanelNodes>,
   layoutIndexById?: ReadonlyMap<SectionId, number>,
 ): void {
+  const sectionCount = sectionIds.length;
+  if (sectionCount <= 0) return;
+
   const layout = computeSpiralLayout(window.innerWidth, window.innerHeight);
   const widthPx = `${layout.panelWidth}px`;
   const heightPx = `${layout.panelHeight}px`;
@@ -135,6 +142,21 @@ export function paintInfinityGhosts(
     if (el.style.transformOrigin !== layout.transformOrigin) {
       el.style.transformOrigin = layout.transformOrigin;
     }
+    // Контуры всегда на месте — без opacity/visibility вспышек на wrap rebase.
+    if (el.style.opacity !== "1") el.style.opacity = "1";
+    if (el.style.visibility !== "visible") el.style.visibility = "visible";
+
+    // Статичный цвет слота: тот же sectionId, что у панели в этом «витке».
+    const colorId = sectionIds[((slot % sectionCount) + sectionCount) % sectionCount];
+    const source = colorId ? panels.get(colorId)?.section : undefined;
+    const fill = source?.style.getPropertyValue("--panel").trim() || el.style.background;
+    const frame = source?.style.getPropertyValue("--border").trim() || fill;
+    if (fill && el.style.background !== fill) el.style.background = fill;
+    if (frame) {
+      if (el.style.borderColor !== frame) el.style.borderColor = frame;
+      if (el.style.color !== frame) el.style.color = frame;
+    }
+
     const pose = `rotate(${panelRotationAtIndex(slot)}deg) scale(${panelScaleAtIndex(slot)}) translate3d(0,0,0)`;
     if (el.style.transform !== pose) el.style.transform = pose;
   });

@@ -1,5 +1,7 @@
 import type { SectionPalette } from "@/shared/content/sectionPalettes";
 
+import { SPIRAL_DOM_ATTR } from "../model/panelStateAttrs";
+
 function setVar(el: HTMLElement, name: string, value: string): void {
   if (el.style.getPropertyValue(name) !== value) {
     el.style.setProperty(name, value);
@@ -29,4 +31,21 @@ export function applyPaletteToDocument(palette: SectionPalette, sectionId: strin
   if (document.body.getAttribute("data-section") !== sectionId) {
     document.body.setAttribute("data-section", sectionId);
   }
+}
+
+/**
+ * Смена --stage-bg без CSS-transition на .stage (wrap last→first / посадка без мигания).
+ */
+export function withStageBgTransitionDisabled(fn: () => void): void {
+  const stage = document.querySelector<HTMLElement>(`[${SPIRAL_DOM_ATTR.stage}]`);
+  if (!stage) {
+    fn();
+    return;
+  }
+  const prev = stage.style.transition;
+  stage.style.transition = "none";
+  fn();
+  // Commit цвета в том же кадре, иначе transition:none снимется до paint.
+  void stage.offsetHeight;
+  stage.style.transition = prev;
 }

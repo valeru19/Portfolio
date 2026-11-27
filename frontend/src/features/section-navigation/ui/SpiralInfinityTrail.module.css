@@ -1,13 +1,38 @@
 .ghost {
+  --panel-radius: 0.01px;
   position: absolute;
   top: 0;
   left: 0;
   z-index: 0;
-  pointer-events: none;
-  border-radius: var(--panel-radius, 18%);
-  border: 1px solid transparent;
+  /* Hover-скругление как у панелей; клики не перехватываем у секций выше по z-index. */
+  pointer-events: auto;
+  cursor: pointer;
+  /* Рамка как у panelFrame: --frame + цвет --border секции (не заливка). */
+  border-radius: var(--panel-radius);
+  border: var(--frame) solid currentColor;
   box-sizing: border-box;
+  background-clip: padding-box;
   transform-origin: 0 0;
   will-change: auto;
   contain: strict;
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :global(body:not(.is-spinning)) .ghost {
+    transition: --panel-radius 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :global(body:not(.is-spinning)) .ghost:hover {
+    z-index: 3;
+    --panel-radius: 22%;
+    transition: --panel-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost {
+    transition: none;
+  }
 }
