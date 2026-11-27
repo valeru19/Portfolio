@@ -127,7 +127,12 @@ async function main() {
   const layerTree = [];
   for (const e of traceEvents) {
     if (!e) continue;
-    if (e.name === "UpdateLayer" || e.name === "Paint" || e.name === "RasterTask" || e.name === "LayerTreeHost::UpdateLayers") {
+    if (
+      e.name === "UpdateLayer" ||
+      e.name === "Paint" ||
+      e.name === "RasterTask" ||
+      e.name === "LayerTreeHost::UpdateLayers"
+    ) {
       if ((e.dur || 0) >= 8000) {
         layerTree.push({
           name: e.name,

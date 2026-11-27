@@ -60,7 +60,12 @@ async function measureFrames(page, label, action) {
     return window.__pf || [];
   });
   const s = stats(frames);
-  return { label, startDelayMs: Number((performance.now() - t0).toFixed(1)), frames: frames.length, ...s };
+  return {
+    label,
+    startDelayMs: Number((performance.now() - t0).toFixed(1)),
+    frames: frames.length,
+    ...s,
+  };
 }
 
 async function goTo(page, index, label) {
@@ -126,7 +131,13 @@ async function main() {
     { key: "none", path: "" },
     { key: "contacts", path: "#contacts" },
   ];
-  const report = { createdAt: new Date().toISOString(), base: baseArg, runs: RUNS, rows: [], failures: 0 };
+  const report = {
+    createdAt: new Date().toISOString(),
+    base: baseArg,
+    runs: RUNS,
+    rows: [],
+    failures: 0,
+  };
   const browser = await chromium.launch({
     headless: true,
     channel: "chrome",
