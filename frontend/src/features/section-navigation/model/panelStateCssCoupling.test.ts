@@ -35,6 +35,8 @@ describe("panel state CSS coupling", () => {
     const cssBundle = collectCssSources();
     expect(cssBundle).toMatch(/data-panel-view="solid"[\s\S]*?border:\s*none/);
     expect(cssBundle).toMatch(/data-panel-view="solid"[\s\S]*?content-visibility:\s*hidden/);
-    expect(cssBundle).toMatch(/data-panel-view="blur"[\s\S]*?backdrop-filter:\s*blur/);
+    expect(cssBundle).toMatch(
+      /data-panel-view="blur"[\s\S]*?\.panelScroll[\s\S]*?filter:\s*blur\(var\(--panel-blur-radius\)\)/,
+    );
   });
 });

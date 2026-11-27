@@ -121,7 +121,7 @@
 }
 
 .spiralSection {
-  /* --panel-veil 0 = резкая, 1 = под вуалью. Радиус backdrop статичен. */
+  /* --panel-veil 0 = резкая, 1 = tint-вуаль. Радиус filter на контенте статичен. */
   --panel-veil: 0;
   --panel-blur-radius: 16px;
   position: absolute;
@@ -160,8 +160,8 @@
 }
 
 /*
-  Вуаль: backdrop только у data-panel-view=blur (бюджет ≤1).
-  z-index ниже solid cover.
+  Tint-вуаль (без backdrop-filter): размытие — filter на .panelScroll у blur.
+  z-index ниже solid cover. overflow frame клипит кайму filter.
 */
 .panelBlurVeil {
   position: absolute;
@@ -172,6 +172,7 @@
   background: color-mix(in srgb, var(--panel) 22%, transparent);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+  filter: none;
   opacity: 0;
   transition: opacity 0.45s var(--spiral-flip-ease);
   will-change: auto;
@@ -205,6 +206,10 @@
   cursor: default;
 }
 
+.spiralSection[data-panel-view="sharp"] .panelScroll {
+  filter: none;
+}
+
 .spiralSection[data-panel-view="sharp"] .panelBlurVeil {
   opacity: 0;
   -webkit-backdrop-filter: none;
@@ -215,15 +220,19 @@
   opacity: 0;
 }
 
-/* blur — единственная панель с backdrop-filter */
+/* blur — статичный filter на контенте + tint-вуаль (без live backdrop) */
 .spiralSection[data-panel-view="blur"] {
   --panel-veil: 1;
 }
 
+.spiralSection[data-panel-view="blur"] .panelScroll {
+  filter: blur(var(--panel-blur-radius));
+}
+
 .spiralSection[data-panel-view="blur"] .panelBlurVeil {
   opacity: var(--panel-veil, 1);
-  -webkit-backdrop-filter: blur(var(--panel-blur-radius));
-  backdrop-filter: blur(var(--panel-blur-radius));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .spiralSection[data-panel-view="blur"] .panelSolidCover {
@@ -297,6 +306,13 @@
   :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="blur"]:hover .panelFrame {
     --panel-radius: 22%;
     transition: --panel-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Hover: снимаем filter без анимации радиуса (дорого); tint гасим opacity. */
+  :global(body:not(.is-spinning))
+    .spiralSection[data-ahead][data-panel-view="blur"]:hover
+    .panelScroll {
+    filter: none;
   }
 
   :global(body:not(.is-spinning))
