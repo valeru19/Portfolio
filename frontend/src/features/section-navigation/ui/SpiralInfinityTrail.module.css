@@ -4,11 +4,12 @@
   top: 0;
   left: 0;
   z-index: 0;
-  /* Шаг 17: hover только у next-секции — ghost декоративны, без pointer. */
-  pointer-events: none;
-  /* Рамка как у panelFrame: --frame + цвет --border секции (не заливка). */
+  /* Hover-скругление; клик ничего не делает (нет handler). */
+  pointer-events: auto;
+  cursor: default;
   border-radius: var(--panel-radius);
-  border: var(--frame) solid currentColor;
+  /* Solid: без рамки, полная заливка --panel (как flat-панели). */
+  border: none;
   box-sizing: border-box;
   background-clip: padding-box;
   transform-origin: 0 0;
@@ -16,5 +17,19 @@
   contain: strict;
   opacity: 1;
   visibility: visible;
+  transition: border-radius 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+@media (hover: hover) and (pointer: fine) {
+  :global(body:not(.is-spinning)) .ghost:hover {
+    --panel-radius: 22%;
+    border-radius: 22%;
+    transition: border-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost {
+    transition: none;
+  }
+}

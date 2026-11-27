@@ -142,20 +142,15 @@ export function paintInfinityGhosts(
     if (el.style.transformOrigin !== layout.transformOrigin) {
       el.style.transformOrigin = layout.transformOrigin;
     }
-    // Контуры всегда на месте — без opacity/visibility вспышек на wrap rebase.
     if (el.style.opacity !== "1") el.style.opacity = "1";
     if (el.style.visibility !== "visible") el.style.visibility = "visible";
 
-    // Статичный цвет слота: тот же sectionId, что у панели в этом «витке».
+    // Полная заливка слота (как flat-панель): цвет --panel, без видимой рамки.
     const colorId = sectionIds[((slot % sectionCount) + sectionCount) % sectionCount];
     const source = colorId ? panels.get(colorId)?.section : undefined;
     const fill = source?.style.getPropertyValue("--panel").trim() || el.style.background;
-    const frame = source?.style.getPropertyValue("--border").trim() || fill;
     if (fill && el.style.background !== fill) el.style.background = fill;
-    if (frame) {
-      if (el.style.borderColor !== frame) el.style.borderColor = frame;
-      if (el.style.color !== frame) el.style.color = frame;
-    }
+    if (el.style.borderStyle !== "none") el.style.border = "none";
 
     const pose = `rotate(${panelRotationAtIndex(slot)}deg) scale(${panelScaleAtIndex(slot)}) translate3d(0,0,0)`;
     if (el.style.transform !== pose) el.style.transform = pose;

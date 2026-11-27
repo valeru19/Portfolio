@@ -289,7 +289,8 @@
 }
 
 /*
-  Hover (шаг 17): скругление и unblur только у next (data-ahead + blur).
+  Hover: next (blur) — unblur + скругление; дальние solid — только скругление,
+  без включения контента/blur.
 */
 @media (hover: hover) and (pointer: fine) {
   :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="blur"] .panelFrame {
@@ -303,7 +304,9 @@
     --panel-veil: 0;
   }
 
-  :global(body:not(.is-spinning)) .spiralSection[data-ahead][data-panel-view="blur"]:hover .panelFrame {
+  :global(body:not(.is-spinning))
+    .spiralSection[data-ahead][data-panel-view="blur"]:hover
+    .panelFrame {
     --panel-radius: 22%;
     transition: --panel-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -325,6 +328,15 @@
     .spiralSection[data-ahead][data-panel-view="blur"]:hover
     .panelBlurVeil {
     opacity: 0;
+  }
+
+  :global(body:not(.is-spinning)) .spiralSection[data-panel-view="solid"] .panelFrame {
+    transition: --panel-radius 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :global(body:not(.is-spinning)) .spiralSection[data-panel-view="solid"]:hover .panelFrame {
+    --panel-radius: 22%;
+    transition: --panel-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
