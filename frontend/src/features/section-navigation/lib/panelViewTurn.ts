@@ -157,8 +157,23 @@ export function beginPanelViewTurn(plan: TurnPlan): TurnHandle {
     for (const h of handles) h.cancel();
   };
 
-  // ——— Wrap / длинный ход: все flat; dest+next в onNearLand (Наверх — главная цель). ———
-  if (wrapsRing || longJump) {
+  // ——— Wrap через круг: dest/next уже под cover (prepareRingWrapViews); остальные → flat. ———
+  if (wrapsRing) {
+    const prepMs = Math.min(PANEL_VIEW_MS, Math.max(150, Math.round(durationMs * 0.12)));
+    const skip = new Set<number>([destIdx]);
+    if (nextBlurIdx >= 0) skip.add(nextBlurIdx);
+    void flattenPanelsBatched(panels, gen, prepMs, skip);
+    return {
+      gen,
+      cancel,
+      onNearLand: () => {
+        revealLongJumpLanding(panels, destIdx, nextBlurIdx, gen, viewMs, handles);
+      },
+    };
+  }
+
+  // ——— Длинный ход без wrap: все flat; dest+next в onNearLand. ———
+  if (longJump) {
     const prepMs = Math.min(PANEL_VIEW_MS, Math.max(150, Math.round(durationMs * 0.12)));
     void flattenPanelsBatched(panels, gen, prepMs);
     return {
@@ -239,7 +254,7 @@ export function beginPanelViewTurn(plan: TurnPlan): TurnHandle {
 
 /**
  * После посадки: idle-виды.
- * На Наверх / если dest+1 уже blur с cover=0 — ничего не меняем.
+ * Если dest+1 уже blur с cover=0 — ничего не меняем.
  */
 export async function settlePanelViewsAfterLand(
   panels: Map<number, PanelNodesLike>,
@@ -249,10 +264,6 @@ export async function settlePanelViewsAfterLand(
   // Не bump gen: иначе отменится fade cover i+2 / dest+1, начатый со стартом хода.
   const gen = currentPanelViewGeneration();
   const blurIdx = activeIndex + 1 < sectionCount ? activeIndex + 1 : -1;
-  const onLast = sectionCount > 1 && activeIndex === sectionCount - 1;
-  // На последней: слот N = первая под cover; вторая = blur под cover к wrap.
-  const ringNextIdx = onLast ? 0 : -1;
-  const wrapAheadIdx = onLast && sectionCount > 2 ? 1 : -1;
 
   for (let i = 0; i < sectionCount; i += 1) {
     if (gen !== currentPanelViewGeneration()) return gen;
@@ -262,7 +273,6 @@ export async function settlePanelViewsAfterLand(
     const have = readPanelViewAttr(nodes.section);
 
     if (want === "sharp") {
-      // Уже sharp / cover доигрывает — не cancel WAAPI (мигание после Наверх).
       if (have !== "sharp") {
         void transitionSolidToSharp(nodes, gen, PANEL_VIEW_MS);
       }
@@ -271,34 +281,16 @@ export async function settlePanelViewsAfterLand(
     }
 
     if (want === "solid") {
-      // Ring-next / wrap-ahead уже под cover — не сбиваем.
-      if (i === ringNextIdx && (have === "sharp" || have === "solid")) {
-        const cover = solidCoverOf(nodes.section);
-        if (cover && Number(cover.style.opacity || "1") > 0.5) {
-          nodes.section.style.opacity = "1";
-          nodes.section.style.visibility = "visible";
-          continue;
-        }
-      }
-      if (i === wrapAheadIdx && have === "blur") {
-        const cover = solidCoverOf(nodes.section);
-        if (cover) cover.style.opacity = "1";
-        nodes.section.style.opacity = "1";
-        nodes.section.style.visibility = "visible";
-        continue;
-      }
       if (have !== "solid") {
         void transitionToSolid(nodes, gen, PANEL_VIEW_MS);
       }
-      // Уже solid — не forceSolidInstant (cancel WAAPI = резкое мигание).
       continue;
     }
 
-    // want blur — если уже blur с открытым cover, не трогаем (Наверх / i+2 с начала хода).
+    // want blur — если уже blur с открытым cover, не трогаем.
     if (i === blurIdx && have === "blur") {
       const cover = solidCoverOf(nodes.section);
       if (cover) {
-        // Если cover ещё анимируется — пусть доиграет; иначе оставить 0.
         const op = Number(getComputedStyle(cover).opacity);
         if (Number.isFinite(op) && op < 0.05) {
           cover.style.opacity = "0";
@@ -312,33 +304,24 @@ export async function settlePanelViewsAfterLand(
 }
 
 /**
- * Кольцевая «следующая» на последней: первая в слоте N как залитый квадрат
- * (sharp под cover), контент decode — на «Наверх» только fade cover.
+ * Перед wrap last→first / HUD-кругом: dest sharp и next blur под cover
+ * (decode + готовый кадр). Остальные панели не включаются.
  */
-export async function armHiddenRingNext(nodes: PanelNodesLike): Promise<void> {
-  await prepareSharpUnderCover(nodes);
-  // Виден только solid cover; контент уже в дереве под ним.
-  const cover = solidCoverOf(nodes.section);
-  if (cover) cover.style.opacity = "1";
-  nodes.section.style.opacity = "1";
-  nodes.section.style.visibility = "visible";
-}
-
-/**
- * На последней заранее готовим вторую секцию как blur под cover —
- * на wrap last→first только fade, без prepare/decode в кадре хода.
- */
-export async function armWrapAheadBlur(nodes: PanelNodesLike): Promise<void> {
-  await prepareBlurUnderCover(nodes);
-  nodes.section.style.opacity = "1";
-  nodes.section.style.visibility = "visible";
-  const cover = solidCoverOf(nodes.section);
-  if (cover) cover.style.opacity = "1";
+export async function prepareRingWrapViews(
+  panels: Map<number, PanelNodesLike>,
+  destIdx: number,
+  sectionCount: number,
+): Promise<void> {
+  const nextBlurIdx = destIdx + 1 < sectionCount ? destIdx + 1 : -1;
+  const dest = panels.get(destIdx);
+  const next = nextBlurIdx >= 0 ? panels.get(nextBlurIdx) : undefined;
+  if (dest) await prepareSharpUnderCover(dest);
+  if (next) await prepareBlurUnderCover(next);
 }
 
 /**
  * Дооткрыть blur после посадки, только если ещё solid / под cover.
- * На последней — ring-next (первая) + wrap-ahead blur (вторая).
+ * На последней next нет — только solid впереди (ghosts).
  */
 export async function revealNextBlurAfterLand(
   panels: Map<number, PanelNodesLike>,
@@ -348,15 +331,8 @@ export async function revealNextBlurAfterLand(
 ): Promise<void> {
   if (gen !== currentPanelViewGeneration()) return;
 
-  if (activeIndex === sectionCount - 1 && sectionCount > 1) {
-    const ringNext = panels.get(0);
-    if (ringNext) await armHiddenRingNext(ringNext);
-    if (gen !== currentPanelViewGeneration()) return;
-    // Вторая секция: blur под cover, контуры на месте до «Наверх».
-    const wrapAhead = panels.get(1);
-    if (wrapAhead) await armWrapAheadBlur(wrapAhead);
-    return;
-  }
+  // На последней нет live-blur next.
+  if (activeIndex >= sectionCount - 1) return;
 
   const blurIdx = activeIndex + 1;
   if (blurIdx >= sectionCount) return;

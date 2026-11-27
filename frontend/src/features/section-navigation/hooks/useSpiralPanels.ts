@@ -79,23 +79,24 @@ export function useSpiralPanels({
     (index: number) => {
       // Сначала все чтения индексов / attrs, потом записи (без getComputedStyle).
       const writes: Array<() => void> = [];
-      const lastIdx = sectionIds.length - 1;
       sectionIds.forEach((id, i) => {
         const nodes = panelsRef.current.get(id);
         if (!nodes) return;
         const isOn = i === index;
-        // Кольцевая первая на последней: залитый квадрат в слоте N.
-        const isRingNextSolid = index === lastIdx && lastIdx > 0 && i === 0;
         writes.push(() => {
           setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.active, isOn);
-          // Шаг 17: ahead только у next (active+1) — hover-unblur / скругление.
-          setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.ahead, !isOn && i === index + 1);
+          // ahead только у next (active+1), на последней next нет.
+          setPanelStateAttr(
+            nodes.section,
+            PANEL_STATE_ATTR.ahead,
+            !isOn && i === index + 1 && index + 1 < sectionIds.length,
+          );
           if (nodes.section.style.opacity !== "1") nodes.section.style.opacity = "1";
           if (nodes.section.style.visibility !== "visible") {
             nodes.section.style.visibility = "visible";
           }
           if (nodes.section.style.clipPath) nodes.section.style.clipPath = "";
-          const z = isOn ? "5" : isRingNextSolid ? "2" : "1";
+          const z = isOn ? "5" : "1";
           if (nodes.section.style.zIndex !== z) nodes.section.style.zIndex = z;
         });
       });
@@ -176,11 +177,6 @@ export function useSpiralPanels({
       warmSection(index);
       if (index > 0) warmSection(index - 1);
       if (index < sectionIds.length - 1) warmSection(index + 1);
-      else if (sectionIds.length > 1) {
-        // На последней: кольцевая первая + вторая (blur после wrap).
-        warmSection(0);
-        if (sectionIds.length > 2) warmSection(1);
-      }
     },
     [sectionIds.length, warmSection],
   );

@@ -32,6 +32,5 @@ export {
   settlePanelViewsAfterLand,
   revealNextBlurAfterLand,
   prepareLongJumpViews,
-  armHiddenRingNext,
-  armWrapAheadBlur,
+  prepareRingWrapViews,
 } from "./panelViewTurn";

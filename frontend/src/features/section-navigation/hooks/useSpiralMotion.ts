@@ -4,19 +4,24 @@ import type { SectionId } from "@/shared/content";
 
 import { withStageBgTransitionDisabled } from "../lib/applyPaletteToDocument";
 import { loadGsap } from "../lib/loadGsap";
-import { beginPanelViewTurn, bumpPanelViewGeneration } from "../lib/panelViewController";
+import {
+  beginPanelViewTurn,
+  bumpPanelViewGeneration,
+  prepareRingWrapViews,
+} from "../lib/panelViewController";
 import {
   animationDurationMs,
   animationEase,
   applySpiralLayoutToPanels,
   paintSpiralElement,
   paintSpiralElementWithGsap,
+  resetSpiralPaintCache,
 } from "../lib/spiralTransform";
 import { LONG_JUMP_REVEAL_REMAINING_DEG } from "../model/constants";
 import { rotationForSectionIndex, snapRotationToSection } from "../model/geometry";
 import { setBlurTurnAttr } from "../model/panelStateAttrs";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
-import { planMoveFromSection, ringLayoutIndexBySectionIds } from "../model/ringNavigation";
+import { planMoveFromSection } from "../model/ringNavigation";
 import { clampSectionIndex } from "../model/sectionIndex";
 
 import type { PanelNodes } from "./useSpiralPanels";
@@ -64,15 +69,6 @@ export function useSpiralMotion({
   const warmIdleRef = useRef(0);
   const warmIdleKindRef = useRef<"timeout" | "idle">("timeout");
   const viewTurnCancelRef = useRef<(() => void) | null>(null);
-  /**
-   * После wrap last→first: визуал ещё на endR + dest в слоте N.
-   * Identity-rebase сразу после хода мигает периферией — откладываем до следующего хода.
-   */
-  const wrapVisualRef = useRef<{
-    endR: number;
-    destIdx: number;
-    destSlot: number;
-  } | null>(null);
 
   /** Прерывание хода: отмена отложенных шагов вида + сброс маркеров. */
   const abortViewTurn = useCallback(() => {
@@ -119,51 +115,12 @@ export function useSpiralMotion({
     [spiralRef],
   );
 
-  /** Тихий canonical rebase перед следующим ходом (центр уже dest — без мигания посадки). */
-  const consumeWrapVisualRebase = useCallback(() => {
-    const pending = wrapVisualRef.current;
-    if (!pending) return;
-    wrapVisualRef.current = null;
-    const spiral = spiralRef.current;
-    rotationRef.current = 0;
-    if (!spiral) return;
-    if (gsapRef.current) {
-      paintSpiralElementWithGsap(gsapRef.current, spiral, 0);
-    } else {
-      paintSpiralElement(spiral, 0);
-    }
-    applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
-  }, [panelsRef, sectionIds, spiralRef]);
-
   const buildSpiral = useCallback(() => {
     if (isAccessible) return;
     const spiral = spiralRef.current;
     if (!spiral) return;
-    const wrap = wrapVisualRef.current;
-    if (wrap) {
-      const layoutIndexById = new Map<SectionId, number>();
-      sectionIds.forEach((id, i) => layoutIndexById.set(id, i));
-      const destId = sectionIds[wrap.destIdx];
-      if (destId) layoutIndexById.set(destId, wrap.destSlot);
-      applySpiralLayoutToPanels(
-        spiral,
-        sectionIds,
-        panelsRef.current,
-        gsapRef.current,
-        layoutIndexById,
-      );
-      if (gsapRef.current) {
-        paintSpiralElementWithGsap(gsapRef.current, spiral, wrap.endR);
-      } else {
-        paintSpiralElement(spiral, wrap.endR);
-      }
-      rotationRef.current = wrap.endR;
-      return;
-    }
-    const active = clampSectionIndex(Math.round(-rotationRef.current / 90), sectionCount);
-    const ringLayout = ringLayoutIndexBySectionIds(sectionIds, active);
-    applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current, ringLayout);
-  }, [isAccessible, panelsRef, sectionCount, sectionIds, spiralRef]);
+    applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
+  }, [isAccessible, panelsRef, sectionIds, spiralRef]);
 
   const ensureGsap = useCallback(async () => {
     if (prefersReducedMotion()) return null;
@@ -200,24 +157,16 @@ export function useSpiralMotion({
       const snapped = snapRotationToSection(targetRotation, sectionCount);
       const index = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
 
-      // Сначала угол спирали (через GSAP, если он вёл твин), потом слоты панелей —
-      // иначе gsap.set(transformOrigin) в layout вернёт старый rotation и вспыхнет кадр.
+      // Посадка: CSS transform (как при первой загрузке). clearProps — иначе GSAP
+      // оставляет свой matrix, и style.transform не совпадает с cold start.
       const spiral = spiralRef.current;
       if (spiral && gsapRef.current) {
-        paintSpiralElementWithGsap(gsapRef.current, spiral, snapped);
-        rotationRef.current = snapped;
-      } else {
-        paintSpiralTransform(snapped);
+        gsapRef.current.set(spiral, { clearProps: "transform" });
       }
-      // На последней — первая уже в слоте N (кольцевой blur), готова к «Наверх».
+      resetSpiralPaintCache();
+      paintSpiralTransform(snapped);
       if (spiral) {
-        applySpiralLayoutToPanels(
-          spiral,
-          sectionIds,
-          panelsRef.current,
-          gsapRef.current,
-          ringLayoutIndexBySectionIds(sectionIds, index),
-        );
+        applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
       }
 
       const runPanelAttrs = () => {
@@ -281,8 +230,6 @@ export function useSpiralMotion({
   const animateToRotation = useCallback(
     async (targetRotation: number) => {
       if (isAccessible) return;
-      // Сначала снять wrap-позу, иначе startR = -N*90 и план/твин едут не туда.
-      consumeWrapVisualRebase();
       const snapped = snapRotationToSection(targetRotation, sectionCount);
       const alreadyThere = Math.abs(snapped - rotationRef.current) < 0.05;
 
@@ -430,7 +377,6 @@ export function useSpiralMotion({
       applyColors,
       abortViewTurn,
       clearScrollable,
-      consumeWrapVisualRebase,
       ensureGsap,
       finishScroll,
       isAccessible,
@@ -445,13 +391,12 @@ export function useSpiralMotion({
   );
 
   /**
-   * Вперёд через край: dest уже в слоте N (на последней — первая как blur).
-   * Без await prep / hide — старт как обычный шаг вперёд.
+   * Ход через круг: dest и next под cover до старта, во время полёта в слотах
+   * from+steps / from+steps+1; на посадке — canonical R и слоты (как первая загрузка).
    */
   const animateRingWrap = useCallback(
     async (fromIdx: number, destIdx: number, steps: number) => {
       if (isAccessible || steps <= 0) return;
-      consumeWrapVisualRebase();
       const gen = ++motionGenRef.current;
       tweenRef.current?.kill();
       tweenRef.current = null;
@@ -467,15 +412,28 @@ export function useSpiralMotion({
       const distanceDeg = Math.abs(endR - startR);
       const duration = animationDurationMs(distanceDeg, false);
       const destId = sectionIds[destIdx];
+      const nextBlurIdx = destIdx + 1 < sectionCount ? destIdx + 1 : -1;
+      const nextId = nextBlurIdx >= 0 ? sectionIds[nextBlurIdx] : undefined;
       const spiral = spiralRef.current;
       const destSlot = fromIdx + steps;
 
-      // Если ещё не на кольцевом layout (напр. HUD wrap не с последней) — слот dest.
-      const alreadyRing = fromIdx === sectionCount - 1 && destIdx === 0 && steps === 1;
-      if (!alreadyRing && destId && spiral) {
+      const byIndex = new Map<number, PanelNodes>();
+      sectionIds.forEach((id, i) => {
+        const nodes = panelsRef.current.get(id);
+        if (nodes) byIndex.set(i, nodes);
+      });
+
+      if (!prefersReducedMotion()) {
+        await prepareRingWrapViews(byIndex, destIdx, sectionCount);
+        if (gen !== motionGenRef.current) return;
+      }
+
+      // Временные слоты полёта: dest и next впереди; остальные — свои индексы (solid).
+      if (destId && spiral) {
         const layoutIndexById = new Map<SectionId, number>();
         sectionIds.forEach((id, i) => layoutIndexById.set(id, i));
         layoutIndexById.set(destId, destSlot);
+        if (nextId) layoutIndexById.set(nextId, destSlot + 1);
         applySpiralLayoutToPanels(
           spiral,
           sectionIds,
@@ -490,76 +448,16 @@ export function useSpiralMotion({
       if (fromSection) fromSection.style.willChange = "transform";
       if (destSection) destSection.style.willChange = "transform";
 
-      // Сразу в ход. Stage-цвет — с CSS transition (как обычный шаг), не snap.
-      setSpinning(true, destIdx === 0 ? "nasp" : "long");
-      applyColors(destIdx);
-      lastProgressIdxRef.current = fromIdx;
-
-      const landWrapWithoutRebase = () => {
-        sectionIds.forEach((id) => {
-          const section = panelsRef.current.get(id)?.section;
-          if (section?.style.willChange) section.style.willChange = "";
-        });
-        // Держим endR + dest в destSlot — identity rebase здесь мигает всей периферией.
-        wrapVisualRef.current = { endR, destIdx, destSlot };
-        rotationRef.current = endR;
-        const sp = spiralRef.current;
-        if (sp) {
-          if (gsapRef.current) {
-            paintSpiralElementWithGsap(gsapRef.current, sp, endR);
-          } else {
-            paintSpiralElement(sp, endR);
-          }
-          const layoutIndexById = new Map<SectionId, number>();
-          sectionIds.forEach((id, i) => layoutIndexById.set(id, i));
-          if (destId) layoutIndexById.set(destId, destSlot);
-          applySpiralLayoutToPanels(
-            sp,
-            sectionIds,
-            panelsRef.current,
-            gsapRef.current,
-            layoutIndexById,
-          );
-        }
-
-        clearBlurTurnAttrs();
-        if (lastProgressIdxRef.current !== destIdx) {
-          lastProgressIdxRef.current = destIdx;
-          onProgress?.(destIdx);
-        }
-        markActive(destIdx);
-
-        if (settleRafRef.current) cancelAnimationFrame(settleRafRef.current);
-        settleRafRef.current = requestAnimationFrame(() => {
-          setSpinning(false);
-          // Цвет уже сменился плавно со старта хода — не snap'аем stage.
-          applyColors(destIdx);
-          onSettled(destIdx);
-          settleRafRef.current = 0;
-          requestAnimationFrame(() => {
-            panelsRef.current.forEach(({ section }) => {
-              if (section.style.willChange) section.style.willChange = "";
-              setBlurTurnAttr(section, null);
-            });
-            scheduleWarm(destIdx);
-            settleActivePanel(destIdx);
-          });
-        });
-      };
-
       if (prefersReducedMotion()) {
         if (gen !== motionGenRef.current) return;
-        // Reduced: сразу canonical, без wrap-позы.
-        wrapVisualRef.current = null;
         finishScroll(rotationForSectionIndex(destIdx), { instantStageColor: true });
         return;
       }
 
-      const byIndex = new Map<number, PanelNodes>();
-      sectionIds.forEach((id, i) => {
-        const nodes = panelsRef.current.get(id);
-        if (nodes) byIndex.set(i, nodes);
-      });
+      setSpinning(true, destIdx === 0 ? "nasp" : "long");
+      applyColors(destIdx);
+      lastProgressIdxRef.current = fromIdx;
+
       if (fromSection) setBlurTurnAttr(fromSection, "from");
       if (destSection) setBlurTurnAttr(destSection, "dest");
       const turn = beginPanelViewTurn({
@@ -578,15 +476,20 @@ export function useSpiralMotion({
       const revealDeg =
         steps > 1 ? LONG_JUMP_REVEAL_REMAINING_DEG : Math.min(24, LONG_JUMP_REVEAL_REMAINING_DEG);
 
-      const restoreAndFinish = () => {
-        landWrapWithoutRebase();
+      const landCanonical = () => {
+        sectionIds.forEach((id) => {
+          const section = panelsRef.current.get(id)?.section;
+          if (section?.style.willChange) section.style.willChange = "";
+        });
+        // Один кадр: R и слоты как при первой загрузке на dest.
+        finishScroll(rotationForSectionIndex(destIdx), { instantStageColor: true });
       };
 
       const runTween = (gsap: NonNullable<GsapLike>) => {
         if (gen !== motionGenRef.current) return;
         const sp = spiralRef.current;
         if (!sp) {
-          restoreAndFinish();
+          landCanonical();
           return;
         }
         const state = { r: startR };
@@ -602,7 +505,6 @@ export function useSpiralMotion({
             if (gen !== motionGenRef.current) return;
             paintSpiralElementWithGsap(gsap, sp, state.r);
             rotationRef.current = state.r;
-            // HUD не прыгает на старте — смена индекса после половины хода.
             const t = (startR - state.r) / span;
             if (t >= 0.5 && lastProgressIdxRef.current !== destIdx) {
               lastProgressIdxRef.current = destIdx;
@@ -623,7 +525,7 @@ export function useSpiralMotion({
               nearLandDone = true;
               onNearLand();
             }
-            restoreAndFinish();
+            landCanonical();
           },
         });
       };
@@ -635,7 +537,7 @@ export function useSpiralMotion({
       const gsap = await ensureGsap();
       if (gen !== motionGenRef.current) return;
       if (!gsap) {
-        restoreAndFinish();
+        landCanonical();
         return;
       }
       runTween(gsap);
@@ -643,21 +545,15 @@ export function useSpiralMotion({
     [
       abortViewTurn,
       applyColors,
-      clearBlurTurnAttrs,
       clearScrollable,
-      consumeWrapVisualRebase,
       ensureGsap,
       finishScroll,
       isAccessible,
-      markActive,
       onProgress,
-      onSettled,
       panelsRef,
-      scheduleWarm,
       sectionCount,
       sectionIds,
       setSpinning,
-      settleActivePanel,
       spiralRef,
     ],
   );
@@ -666,8 +562,6 @@ export function useSpiralMotion({
   const animateToSection = useCallback(
     async (targetIndex: number) => {
       if (isAccessible) return;
-      // Важно до fromIdx: иначе после wrap rotation=-N*90 → fromIdx=last.
-      consumeWrapVisualRebase();
       const fromIdx = clampSectionIndex(Math.round(-rotationRef.current / 90), sectionCount);
       const plan = planMoveFromSection(fromIdx, targetIndex, sectionCount);
       if (plan.direction === "noop") {
@@ -680,14 +574,7 @@ export function useSpiralMotion({
       }
       await animateToRotation(rotationForSectionIndex(plan.targetSection));
     },
-    [
-      animateRingWrap,
-      animateToRotation,
-      consumeWrapVisualRebase,
-      finishScroll,
-      isAccessible,
-      sectionCount,
-    ],
+    [animateRingWrap, animateToRotation, finishScroll, isAccessible, sectionCount],
   );
 
   const killMotion = useCallback(() => {
@@ -702,7 +589,6 @@ export function useSpiralMotion({
     cancelWarm();
     abortViewTurn();
     setSpinning(false);
-    wrapVisualRef.current = null;
     rotationRef.current = 0;
     // На случай убитого wrap — вернуть видимость панелей.
     panelsRef.current.forEach(({ section }) => {
