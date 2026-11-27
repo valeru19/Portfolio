@@ -3,7 +3,7 @@
  * Реализация разбита: animator, DOM, transitions, turn, idle.
  */
 export type { PanelNodesLike } from "./panelViewDom";
-export type { TurnPlan } from "./panelViewTurn";
+export type { TurnPlan, TurnHandle } from "./panelViewTurn";
 export type { LayerAnimHandle as AnimHandle } from "./panelLayerAnimator";
 
 export { PANEL_VIEW_MS, PANEL_BLUR_HANDOFF_MS, PANEL_VIEW_EASE } from "./panelLayerAnimator";

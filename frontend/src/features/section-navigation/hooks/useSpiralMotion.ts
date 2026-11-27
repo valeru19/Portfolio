@@ -12,6 +12,7 @@ import {
   paintSpiralElement,
   paintSpiralElementWithGsap,
 } from "../lib/spiralTransform";
+import { LONG_JUMP_REVEAL_REMAINING_DEG } from "../model/constants";
 import { rotationForSectionIndex, snapRotationToSection } from "../model/geometry";
 import { setBlurTurnAttr } from "../model/panelStateAttrs";
 import { prefersReducedMotion } from "../model/prefersReducedMotion";
@@ -342,6 +343,7 @@ export function useSpiralMotion({
         return;
       }
 
+      let onNearLand: (() => void) | undefined;
       if (fromIdx !== destIdx) {
         const byIndex = new Map<number, PanelNodes>();
         sectionIds.forEach((id, i) => {
@@ -362,6 +364,7 @@ export function useSpiralMotion({
           panels: byIndex,
         });
         viewTurnCancelRef.current = turn.cancel;
+        onNearLand = turn.onNearLand;
       }
 
       const runTween = (gsap: NonNullable<GsapLike>) => {
@@ -374,6 +377,7 @@ export function useSpiralMotion({
         const state = { r: startR };
         const ease = animationEase(distanceDeg, goingBack);
         lastProgressIdxRef.current = null;
+        let nearLandDone = false;
 
         tweenRef.current = gsap.to(state, {
           r: snapped,
@@ -389,10 +393,21 @@ export function useSpiralMotion({
               lastProgressIdxRef.current = idx;
               onProgress?.(idx);
             }
+            if (longJump && onNearLand && !nearLandDone) {
+              const remaining = Math.abs(snapped - state.r);
+              if (remaining <= LONG_JUMP_REVEAL_REMAINING_DEG) {
+                nearLandDone = true;
+                onNearLand();
+              }
+            }
           },
           onComplete: () => {
             if (gen !== motionGenRef.current) return;
             tweenRef.current = null;
+            if (longJump && onNearLand && !nearLandDone) {
+              nearLandDone = true;
+              onNearLand();
+            }
             finishScroll(snapped);
           },
         });
@@ -558,6 +573,10 @@ export function useSpiralMotion({
         wrapsRing: true,
       });
       viewTurnCancelRef.current = turn.cancel;
+      const onNearLand = turn.onNearLand;
+      // 1-шаговый wrap: reveal ближе к концу (иначе remaining≤90 срабатывает сразу).
+      const revealDeg =
+        steps > 1 ? LONG_JUMP_REVEAL_REMAINING_DEG : Math.min(24, LONG_JUMP_REVEAL_REMAINING_DEG);
 
       const restoreAndFinish = () => {
         landWrapWithoutRebase();
@@ -573,6 +592,7 @@ export function useSpiralMotion({
         const state = { r: startR };
         const ease = animationEase(distanceDeg, false);
         const span = startR - endR || 1;
+        let nearLandDone = false;
         tweenRef.current = gsap.to(state, {
           r: endR,
           duration,
@@ -588,10 +608,21 @@ export function useSpiralMotion({
               lastProgressIdxRef.current = destIdx;
               onProgress?.(destIdx);
             }
+            if (onNearLand && !nearLandDone) {
+              const remaining = Math.abs(endR - state.r);
+              if (remaining <= revealDeg) {
+                nearLandDone = true;
+                onNearLand();
+              }
+            }
           },
           onComplete: () => {
             if (gen !== motionGenRef.current) return;
             tweenRef.current = null;
+            if (onNearLand && !nearLandDone) {
+              nearLandDone = true;
+              onNearLand();
+            }
             restoreAndFinish();
           },
         });

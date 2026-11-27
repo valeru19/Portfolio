@@ -175,11 +175,10 @@ export function animationDurationMs(distanceDeg: number, goingBack: boolean): nu
     const floor = goingBack ? 0.55 : 0.52;
     return Math.min(ceiling, Math.max(floor, 0.48 + distanceDeg / 500));
   }
-  // Прыжок через несколько секций. Reverse длиннее: разгон до середины пути,
-  // затем торможение (sine.inOut), без укорочения длительности.
-  const perStep = goingBack ? 0.34 : 0.22;
-  const floor = goingBack ? 1.35 : 0.9;
-  const ceiling = goingBack ? 2.7 : 1.7;
+  // Длинный ход (шаг 17): reverse ~2.0–2.2 с, ровный sine.inOut.
+  const perStep = goingBack ? 0.28 : 0.22;
+  const floor = goingBack ? 1.6 : 0.9;
+  const ceiling = goingBack ? 2.2 : 1.7;
   return Math.min(ceiling, Math.max(floor, 0.55 + steps * perStep));
 }
 

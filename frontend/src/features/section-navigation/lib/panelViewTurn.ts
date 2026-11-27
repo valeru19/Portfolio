@@ -25,9 +25,8 @@ import {
   transitionSharpToBlur,
   transitionSolidToSharp,
   transitionToSolid,
-  transitionToSolidContentFirst,
 } from "./panelViewTransitions";
-import { rememberPanelIntrinsicHeight } from "./panelReveal";
+import { decodePanelImages, rememberPanelIntrinsicHeight } from "./panelReveal";
 
 export type TurnPlan = {
   fromIdx: number;
@@ -44,6 +43,73 @@ export type TurnPlan = {
    */
   wrapsRing?: boolean;
 };
+
+export type TurnHandle = {
+  gen: number;
+  cancel: () => void;
+  /**
+   * Длинный ход: вызвать, когда осталось ≤90° — проявить dest (active) и next (blur).
+   * До этого все панели flat.
+   */
+  onNearLand?: () => void;
+};
+
+/** Батч 1–2 панели → flat (solid), без мгновенного force на всех сразу. */
+async function flattenPanelsBatched(
+  panels: Map<number, PanelNodesLike>,
+  gen: number,
+  durationMs: number,
+  skip?: ReadonlySet<number>,
+): Promise<void> {
+  const indices = [...panels.keys()].sort((a, b) => a - b);
+  for (let i = 0; i < indices.length; i += 2) {
+    if (gen !== currentPanelViewGeneration()) return;
+    const batch = [indices[i], indices[i + 1]].filter(
+      (idx): idx is number => idx != null && !(skip?.has(idx) ?? false),
+    );
+    await Promise.all(
+      batch.map(async (idx) => {
+        const nodes = panels.get(idx);
+        if (!nodes) return;
+        if (readPanelViewAttr(nodes.section) === "solid") return;
+        await transitionToSolid(nodes, gen, durationMs);
+      }),
+    );
+  }
+}
+
+/** Проявление посадки длинного хода: dest → active, dest+1 → next. */
+function revealLongJumpLanding(
+  panels: Map<number, PanelNodesLike>,
+  destIdx: number,
+  nextBlurIdx: number,
+  gen: number,
+  viewMs: number,
+  handles: LayerAnimHandle[],
+): void {
+  if (gen !== currentPanelViewGeneration()) return;
+  const destNodes = panels.get(destIdx);
+  const nextNodes = nextBlurIdx >= 0 ? panels.get(nextBlurIdx) : undefined;
+
+  void (async () => {
+    if (destNodes) {
+      const was = readPanelViewAttr(destNodes.section);
+      if (was === "blur") {
+        handles.push(transitionBlurToSharp(destNodes.section, viewMs));
+      } else {
+        await transitionSolidToSharp(destNodes, gen, viewMs, { ready: was === "sharp" });
+      }
+    }
+    if (gen !== currentPanelViewGeneration()) return;
+    if (nextNodes) {
+      if (readPanelViewAttr(nextNodes.section) !== "blur") {
+        await prepareBlurUnderCover(nextNodes);
+      }
+      if (gen !== currentPanelViewGeneration()) return;
+      void fadeCoverToReveal(nextNodes.section, gen, viewMs);
+    }
+  })();
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -73,7 +139,7 @@ async function waitDestVeilLow(destSection: HTMLElement | undefined, gen: number
  * Старт хода по спецификации 1.2.
  * Вперёд i+2: готовка под cover сразу; fade cover во время хода (не после посадки).
  */
-export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () => void } {
+export function beginPanelViewTurn(plan: TurnPlan): TurnHandle {
   const gen = bumpPanelViewGeneration();
   const durationMs = Math.max(PANEL_VIEW_MS, plan.durationSec * 1000);
   const viewMs = Math.min(PANEL_VIEW_MS, durationMs);
@@ -86,131 +152,20 @@ export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () =>
   const fromNodes = panels.get(fromIdx);
   const destNodes = panels.get(destIdx);
 
-  // ——— Wrap: всё плавно — без forceSolidInstant / applyViewInstant. ———
-  if (wrapsRing) {
-    // N=2: dest+1 === from — blur после посадки, не во время хода.
-    const wrapBlurIdx =
-      destIdx + 1 < sectionCount && destIdx + 1 !== fromIdx ? destIdx + 1 : -1;
+  const cancel = () => {
+    bumpPanelViewGeneration();
+    for (const h of handles) h.cancel();
+  };
 
-    for (let i = 0; i < sectionCount; i += 1) {
-      const nodes = panels.get(i);
-      if (!nodes) continue;
-      if (i === fromIdx || i === destIdx || i === wrapBlurIdx) continue;
-      // Плавный уход в solid вместо мгновенного выключения.
-      if (readPanelViewAttr(nodes.section) !== "solid") {
-        void transitionToSolid(nodes, gen, durationMs);
-      }
-    }
-    if (fromNodes) void transitionToSolid(fromNodes, gen, durationMs);
-    if (destNodes) {
-      destNodes.section.style.opacity = "1";
-      destNodes.section.style.visibility = "visible";
-      // Ring-next уже decode под cover — fade сразу, синхронно с твином.
-      void transitionSolidToSharp(destNodes, gen, durationMs, { ready: true });
-    }
-    if (wrapBlurIdx >= 0) {
-      const wrapBlur = panels.get(wrapBlurIdx);
-      if (wrapBlur) {
-        void (async () => {
-          if (readPanelViewAttr(wrapBlur.section) !== "blur") {
-            await prepareBlurUnderCover(wrapBlur);
-          }
-          if (gen !== currentPanelViewGeneration()) return;
-          // Не ждём veil dest (sharp без вуали) — плавный fade cover со старта хода.
-          void fadeCoverToReveal(wrapBlur.section, gen, viewMs);
-        })();
-      }
-    }
+  // ——— Wrap / длинный ход: все flat; dest+next в onNearLand (Наверх — главная цель). ———
+  if (wrapsRing || longJump) {
+    const prepMs = Math.min(PANEL_VIEW_MS, Math.max(150, Math.round(durationMs * 0.12)));
+    void flattenPanelsBatched(panels, gen, prepMs);
     return {
       gen,
-      cancel: () => {
-        bumpPanelViewGeneration();
-        for (const h of handles) h.cancel();
-      },
-    };
-  }
-
-  // ——— Длинный reverse (legacy Наверх): dest/dest+1 уже под cover в prepareJump ———
-  if (longJump && goingBack) {
-    for (let i = 0; i < sectionCount; i += 1) {
-      const nodes = panels.get(i);
-      if (!nodes) continue;
-      if (i === destIdx || i === nextBlurIdx) continue;
-      if (i === fromIdx) {
-        // Стартовая: контент выкл сразу, заливка за первую половину полёта.
-        void transitionToSolidContentFirst(nodes, gen, durationMs / 2);
-        continue;
-      }
-      forceSolidInstant(nodes);
-    }
-
-    if (destNodes) {
-      // Cover спадает сразу со стартом: секция 1 резкая во время полёта.
-      void fadeCoverToReveal(destNodes.section, gen, viewMs);
-    }
-    if (nextBlurIdx >= 0) {
-      const nextNodes = panels.get(nextBlurIdx);
-      if (nextNodes) {
-        void fadeCoverToReveal(nextNodes.section, gen, viewMs);
-      }
-    }
-
-    return {
-      gen,
-      cancel: () => {
-        bumpPanelViewGeneration();
-        for (const h of handles) h.cancel();
-      },
-    };
-  }
-
-  // ——— Длинный вперёд (HUD / клавиши): готовятся dest и dest+1 ———
-  if (longJump && !goingBack) {
-    const run = async () => {
-      // Если перед стартом жива другая blur — уходит в solid, потом открываем dest+1.
-      if (oldBlurIdx >= 0 && oldBlurIdx !== nextBlurIdx && oldBlurIdx !== destIdx) {
-        const oldBlur = panels.get(oldBlurIdx);
-        if (oldBlur && readPanelViewAttr(oldBlur.section) === "blur") {
-          await transitionToSolid(oldBlur, gen, PANEL_BLUR_HANDOFF_MS);
-        }
-      }
-      if (gen !== currentPanelViewGeneration()) return;
-
-      for (let i = 0; i < sectionCount; i += 1) {
-        const nodes = panels.get(i);
-        if (!nodes) continue;
-        if (i === fromIdx || i === destIdx || i === nextBlurIdx) continue;
-        forceSolidInstant(nodes);
-      }
-
-      if (fromNodes && fromIdx !== destIdx) {
-        void transitionToSolid(fromNodes, gen, durationMs);
-      }
-      if (destNodes && fromIdx !== destIdx) {
-        const destWas = readPanelViewAttr(destNodes.section);
-        if (destWas === "blur") {
-          handles.push(transitionBlurToSharp(destNodes.section, durationMs));
-        } else {
-          void transitionSolidToSharp(destNodes, gen, durationMs);
-        }
-      }
-      if (nextBlurIdx >= 0) {
-        const nextNodes = panels.get(nextBlurIdx);
-        if (nextNodes) {
-          await prepareBlurUnderCover(nextNodes);
-          if (gen !== currentPanelViewGeneration()) return;
-          await waitDestVeilLow(destNodes?.section, gen);
-          if (gen !== currentPanelViewGeneration()) return;
-          void fadeCoverToReveal(nextNodes.section, gen, viewMs);
-        }
-      }
-    };
-    void run();
-    return {
-      gen,
-      cancel: () => {
-        bumpPanelViewGeneration();
-        for (const h of handles) h.cancel();
+      cancel,
+      onNearLand: () => {
+        revealLongJumpLanding(panels, destIdx, nextBlurIdx, gen, viewMs, handles);
       },
     };
   }
@@ -244,13 +199,7 @@ export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () =>
       }
     };
     void run();
-    return {
-      gen,
-      cancel: () => {
-        bumpPanelViewGeneration();
-        for (const h of handles) h.cancel();
-      },
-    };
+    return { gen, cancel };
   }
 
   // ——— Один шаг вперёд ———
@@ -285,13 +234,7 @@ export function beginPanelViewTurn(plan: TurnPlan): { gen: number; cancel: () =>
     }
   }
 
-  return {
-    gen,
-    cancel: () => {
-      bumpPanelViewGeneration();
-      for (const h of handles) h.cancel();
-    },
-  };
+  return { gen, cancel };
 }
 
 /**
@@ -440,9 +383,9 @@ export async function revealNextBlurAfterLand(
 }
 
 /**
- * Перед длинным ходом: только dest и dest+1 под непрозрачной заливкой.
- * Наверх: dest=sharp, dest+1=blur под cover; decode + кадр.
- * Бюджет ~2–3 кадра / ≤150 мс — дальше поворот стартует.
+ * Перед длинным ходом (шаг 17): только прогрев dest/dest+1 (decode),
+ * вид остаётся flat — эффекты включаются в onNearLand (≤90°).
+ * Бюджет ≤150 мс, кадры прогрева не должны быть >50 мс.
  */
 export async function prepareLongJumpViews(
   panels: Map<number, PanelNodesLike>,
@@ -453,31 +396,21 @@ export async function prepareLongJumpViews(
   const deadline = performance.now() + 150;
   const nextBlur = destIndex + 1 < sectionCount ? destIndex + 1 : -1;
 
-  // Старая blur (если не dest/dest+1) — быстро в solid до старта.
-  for (const [i, nodes] of panels) {
-    if (i === destIndex || i === nextBlur) continue;
-    if (readPanelViewAttr(nodes.section) === "blur") {
-      forceSolidInstant(nodes);
-    }
-  }
-
   const prep = async () => {
-    const destNodes = panels.get(destIndex);
-    if (destNodes) await prepareSharpUnderCover(destNodes);
-    if (nextBlur >= 0) {
-      const nextNodes = panels.get(nextBlur);
-      if (nextNodes) await prepareBlurUnderCover(nextNodes);
-    }
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => resolve());
-      });
-    });
+    const warm = async (nodes: PanelNodesLike | undefined) => {
+      if (!nodes) return;
+      decodePanelImages(nodes.section);
+      rememberPanelIntrinsicHeight(nodes.scroll);
+      // Остаёмся flat: не prepareSharp/BlurUnderCover (не включаем эффекты).
+      if (readPanelViewAttr(nodes.section) !== "solid") {
+        forceSolidInstant(nodes);
+      }
+    };
+    await warm(panels.get(destIndex));
+    if (nextBlur >= 0) await warm(panels.get(nextBlur));
+    await nextFrame();
   };
 
-  // Жёсткий потолок 150 мс: поворот стартует даже если decode не успел.
   await Promise.race([prep(), sleep(Math.max(0, deadline - performance.now()))]);
-
-  // goingBack не влияет на набор панелей (только dest/dest+1) — параметр для API.
   void goingBack;
 }
