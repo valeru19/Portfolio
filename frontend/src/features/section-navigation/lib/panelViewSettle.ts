@@ -34,7 +34,12 @@ export async function settlePanelViewsAfterLand(
 
     if (want === "sharp") {
       if (have !== "sharp") {
-        void transitionSolidToSharp(nodes, gen, PANEL_VIEW_MS);
+        // Нет attr (первая загрузка) — сразу sharp, без анимации.
+        if (have == null || prefersReducedMotion()) {
+          applyViewInstant(nodes.section, "sharp");
+        } else {
+          void transitionSolidToSharp(nodes, gen, PANEL_VIEW_MS);
+        }
       }
       rememberPanelIntrinsicHeight(nodes.scroll);
       continue;
@@ -42,21 +47,28 @@ export async function settlePanelViewsAfterLand(
 
     if (want === "solid") {
       if (have !== "solid") {
-        void transitionToSolid(nodes, gen, PANEL_VIEW_MS);
+        if (have == null || prefersReducedMotion()) {
+          applyViewInstant(nodes.section, "solid");
+        } else {
+          void transitionToSolid(nodes, gen, PANEL_VIEW_MS);
+        }
       }
       continue;
     }
 
-    // want blur — если уже blur с открытым cover, не трогаем.
-    if (i === blurIdx && have === "blur") {
-      const cover = solidCoverOf(nodes.section);
-      if (cover) {
-        const op = Number(getComputedStyle(cover).opacity);
-        if (Number.isFinite(op) && op < 0.05) {
-          cover.style.opacity = "0";
+    // want blur
+    if (i === blurIdx) {
+      if (have === "blur") {
+        const cover = solidCoverOf(nodes.section);
+        if (cover) {
+          const op = Number(getComputedStyle(cover).opacity);
+          if (Number.isFinite(op) && op < 0.05) {
+            cover.style.opacity = "0";
+          }
         }
+        rememberPanelIntrinsicHeight(nodes.scroll);
       }
-      rememberPanelIntrinsicHeight(nodes.scroll);
+      // have == null | solid — дооткроет revealNextBlurAfterLand
     }
   }
 

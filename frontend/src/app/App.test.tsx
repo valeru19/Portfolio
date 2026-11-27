@@ -20,9 +20,10 @@ describe("App", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: content.meta.name.ru }),
     ).toBeInTheDocument();
+    // about = blur (в a11y); дальние solid — content-visibility:hidden, ищем в DOM.
     expect(screen.getByRole("heading", { name: content.about.title.ru })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: content.stack.title.ru })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /GitHub/i })).toBeInTheDocument();
+    expect(document.querySelector("#stack")).toBeTruthy();
+    expect(document.querySelector("#contacts")).toBeTruthy();
     expect(screen.getByRole("link", { name: content.a11y.skipToContent.ru })).toHaveAttribute(
       "href",
       "#main",

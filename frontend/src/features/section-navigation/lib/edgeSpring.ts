@@ -50,23 +50,25 @@ export function playEdgeSpringAnimation(opts: {
   };
   anim.onfinish = finish;
   anim.oncancel = () => {
+    // Только сброс ссылки: paint делает cancelEdgeSpringAnimation
+    // (иначе sync cancel → busy=false → paint пропускается).
     if (controller.anim === anim) controller.anim = null;
-    controller.busy = false;
   };
 }
 
-/** Отмена пружины и возврат transform к baseRotation (если busy). */
+/** Отмена пружины и возврат transform к baseRotation. */
 export function cancelEdgeSpringAnimation(
   controller: EdgeSpringController,
   spiral: HTMLElement | null,
   baseRotation: number,
 ): void {
+  const wasActive = controller.busy || controller.anim != null;
   if (controller.anim) {
     controller.anim.cancel();
     controller.anim = null;
   }
-  if (!controller.busy) return;
   controller.busy = false;
+  if (!wasActive) return;
   if (spiral) {
     resetSpiralPaintCache();
     paintSpiralElement(spiral, baseRotation);

@@ -103,7 +103,15 @@ export function useSpiralPanels({
       for (const write of writes) write();
 
       const byIndex = indexMap(sectionIds, panelsRef.current);
-      // Посадка: sharp/solid сразу; blur — отдельным кадром (не в кадре land).
+      // Sync idle attrs сразу (clearSpiralInlineStyles снимает data-panel-view).
+      const list = [...byIndex.entries()].map(([panelIndex, nodes]) => ({
+        index: panelIndex,
+        nodes,
+      }));
+      if (list.length > 0) {
+        applyPanelViewsInstant(list, index, sectionIds.length);
+      }
+      // Blur next дооткрываем отдельным кадром (не в кадре land).
       void settlePanelViewsAfterLand(byIndex, index, sectionIds.length).then((gen) => {
         viewLandGenRef.current = gen;
         requestAnimationFrame(() => {
@@ -240,13 +248,38 @@ export function useSpiralPanels({
           scrollEl.style.pointerEvents = isOn ? "auto" : "none";
         }
       } else {
-        // Сразу idle-вид для этой панели + полный проход, когда все на месте.
+        // Idle-вид сразу; когда все панели в map — ещё раз sync (Strict Mode /
+        // порядок mount иначе оставлял дальние без data-panel-view).
+        const syncIdleViews = () => {
+          const active = currentIndexRef.current;
+          const byIndex = indexMap(sectionIds, panelsRef.current);
+          if (byIndex.size < sectionIds.length) return;
+          const list = [...byIndex.entries()].map(([index, nodes]) => ({ index, nodes }));
+          applyPanelViewsInstant(list, active, sectionIds.length);
+          sectionIds.forEach((sectionId, index) => {
+            const nodes = panelsRef.current.get(sectionId);
+            if (!nodes) return;
+            setPanelStateAttr(nodes.section, PANEL_STATE_ATTR.active, index === active);
+            setPanelStateAttr(
+              nodes.section,
+              PANEL_STATE_ATTR.ahead,
+              index === active + 1 && active + 1 < sectionIds.length,
+            );
+          });
+        };
         const active = currentIndexRef.current;
         const byIndex = indexMap(sectionIds, panelsRef.current);
         const list = [...byIndex.entries()].map(([index, nodes]) => ({ index, nodes }));
         applyPanelViewsInstant(list, active, sectionIds.length);
         setPanelStateAttr(sectionEl, PANEL_STATE_ATTR.active, sectionIds.indexOf(id) === active);
-        setPanelStateAttr(sectionEl, PANEL_STATE_ATTR.ahead, sectionIds.indexOf(id) === active + 1);
+        setPanelStateAttr(
+          sectionEl,
+          PANEL_STATE_ATTR.ahead,
+          sectionIds.indexOf(id) === active + 1 && active + 1 < sectionIds.length,
+        );
+        if (panelsRef.current.size >= sectionIds.length) {
+          queueMicrotask(syncIdleViews);
+        }
       }
       return () => {
         panelsRef.current.delete(id);

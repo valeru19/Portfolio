@@ -70,7 +70,7 @@ async function go(page, index) {
 }
 
 async function main() {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, channel: "chrome" });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   await page.goto(base, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForTimeout(1200);

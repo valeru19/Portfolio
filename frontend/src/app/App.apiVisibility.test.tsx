@@ -77,8 +77,9 @@ describe("App API section visibility", () => {
     );
     renderApp();
 
-    expect(screen.getByRole("heading", { name: content.reviews.title.en })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: content.apply.title.en })).toBeInTheDocument();
+    // Секции в DOM; заголовки solid-панелей скрыты content-visibility.
+    expect(document.querySelector("#reviews")).toBeTruthy();
+    expect(document.querySelector("#apply")).toBeTruthy();
     expect(screen.getByRole("button", { name: content.nav.reviews.en })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: content.nav.apply.en })).toBeInTheDocument();
   });

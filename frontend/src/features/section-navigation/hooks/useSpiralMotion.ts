@@ -127,7 +127,8 @@ export function useSpiralMotion({
     if (isAccessible) return;
     const spiral = spiralRef.current;
     if (!spiral) return;
-    applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
+    // Холодный layout без GSAP — та же поза, что после canonical land.
+    applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, null);
   }, [isAccessible, panelsRef, sectionIds, spiralRef]);
 
   const ensureGsap = useCallback(async () => {
@@ -165,8 +166,9 @@ export function useSpiralMotion({
       const snapped = snapRotationToSection(targetRotation, sectionCount);
       const index = clampSectionIndex(Math.round(-snapped / 90), sectionCount);
 
-      // Посадка: CSS transform (как при первой загрузке). clearProps — иначе GSAP
-      // оставляет свой matrix, и style.transform не совпадает с cold start.
+      // Посадка = cold: только CSS transform. GSAP clearProps + без gsap.set на
+      // раскладке/позе — иначе style.transform уходит в skew(360deg) и ломает
+      // pixel-compare с первой загрузкой.
       const spiral = spiralRef.current;
       if (spiral && gsapRef.current) {
         gsapRef.current.set(spiral, { clearProps: "transform" });
@@ -174,7 +176,7 @@ export function useSpiralMotion({
       resetSpiralPaintCache();
       paintSpiralTransform(snapped);
       if (spiral) {
-        applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, gsapRef.current);
+        applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, null);
       }
 
       const runPanelAttrs = () => {
@@ -185,11 +187,10 @@ export function useSpiralMotion({
       const runSettle = () => {
         setSpinning(false);
         if (spiral && gsapRef.current) {
-          paintSpiralElementWithGsap(gsapRef.current, spiral, snapped);
-          rotationRef.current = snapped;
-        } else {
-          paintSpiralTransform(snapped);
+          gsapRef.current.set(spiral, { clearProps: "transform" });
         }
+        resetSpiralPaintCache();
+        paintSpiralTransform(snapped);
         if (opts?.instantStageColor) {
           withStageBgTransitionDisabled(() => applyColors(index));
         } else {
