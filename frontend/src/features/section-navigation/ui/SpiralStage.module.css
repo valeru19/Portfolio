@@ -31,7 +31,9 @@
   overflow: hidden;
 }
 
-/* Как legacy: will-change только на спине — меньше layer thrash в покое. */
-:global(body.is-spinning) .spiral:not(.spiralAccessible) {
-  will-change: transform;
-}
+/*
+  Не ставить will-change: transform на .spiral (ни на спине, ни постоянно).
+  Переключение на is-spinning давало фризы 0.3–14 с; постоянный will-change
+  при загрузке с #contacts ломал растеризацию (слой в масштабе ~x18).
+  См. chrome re-rastering composite; шаг 22.2.
+*/
