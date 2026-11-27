@@ -270,7 +270,11 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
   useKeyboardStep({ enabled: inputEnabled, onStep });
 
   useEffect(() => {
-    applyColors(currentIndexRef.current, true);
+    // Во время хода красим цель (pending), не промежуточный current.
+    const idx = spinningRef.current ? pendingIndexRef.current : currentIndexRef.current;
+    applyColors(idx, true);
+    // spinningRef — стабильный ref; читать .current на смене theme.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- намеренно только theme/applyColors
   }, [theme, applyColors]);
 
   useEffect(() => {
@@ -302,6 +306,15 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     }
 
     document.documentElement.classList.add("is-mode-switching");
+    // Приземление на цель хода (pending), не на промежуточный current.
+    const landIdx = clampSectionIndex(pendingIndexRef.current, sectionCount);
+    currentIndexRef.current = landIdx;
+    pendingIndexRef.current = landIdx;
+    targetIndexRef.current = landIdx;
+    setCurrentIndex(landIdx);
+    setTargetIndex(landIdx);
+    const landId = sectionIds[landIdx];
+    if (landId) replaceSectionHash(landId);
     spinningFlagRef.current = false;
     killMotion();
 
@@ -334,10 +347,21 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
       setModeTransitionPhase("enter");
       modeTimerRef.current = window.setTimeout(unlock, MODE_TRANSITION_ENTER_MS);
     }, MODE_TRANSITION_EXIT_MS);
-  }, [isAccessible, killMotion, modeTransitionPhase, setAccessible, setStageModePhase]);
+  }, [
+    isAccessible,
+    killMotion,
+    modeTransitionPhase,
+    sectionCount,
+    sectionIds,
+    setAccessible,
+    setCurrentIndex,
+    setStageModePhase,
+    setTargetIndex,
+  ]);
 
   useSpiralDomEffects({
     isAccessible,
+    sectionIds,
     spiralRef,
     panelsRef,
     rotationRef,
@@ -352,6 +376,7 @@ export function useSpiralNavigation({ sectionIds }: Options): SpiralNavigationVa
     applyColors,
     settleActivePanel,
     setIsSpinning,
+    setCurrentIndex,
     setTargetIndex,
     spinningFlagRef,
     pendingIndexRef,

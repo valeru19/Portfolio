@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, type MutableRefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, type MutableRefObject } from "react";
 
 import type { SectionId } from "@/shared/content";
 
+import { replaceSectionHash } from "../lib/sectionHash";
 import { rotationForSectionIndex } from "../model/geometry";
 import { PANEL_STATE_ATTR, setPanelStateAttr } from "../model/panelStateAttrs";
 
@@ -12,6 +13,7 @@ type PanelNodes = {
 
 type Options = {
   isAccessible: boolean;
+  sectionIds: SectionId[];
   spiralRef: MutableRefObject<HTMLDivElement | null>;
   panelsRef: MutableRefObject<Map<SectionId, PanelNodes>>;
   rotationRef: MutableRefObject<number>;
@@ -26,6 +28,7 @@ type Options = {
   applyColors: (index: number, force?: boolean) => void;
   settleActivePanel: (forIndex?: number) => void;
   setIsSpinning: (value: boolean) => void;
+  setCurrentIndex: (value: number) => void;
   setTargetIndex: (value: number) => void;
   spinningFlagRef: MutableRefObject<boolean>;
   pendingIndexRef: MutableRefObject<number>;
@@ -53,9 +56,10 @@ function clearSpiralInlineStyles(
   });
 }
 
-/** Смена режима, rebuild на resize. */
+/** Смена режима и resize. Колбэки — через ref: смена темы/языка не убивает ход. */
 export function useSpiralDomEffects({
   isAccessible,
+  sectionIds,
   spiralRef,
   panelsRef,
   rotationRef,
@@ -70,63 +74,15 @@ export function useSpiralDomEffects({
   applyColors,
   settleActivePanel,
   setIsSpinning,
+  setCurrentIndex,
   setTargetIndex,
   spinningFlagRef,
   pendingIndexRef,
 }: Options): void {
-  // layout: первый paint уже в целевом режиме (без вспышки spiral→card).
-  // Unlock mode-fade делает toggleAccessible (exit→swap→enter).
-  useLayoutEffect(() => {
-    killMotion();
-    spinningFlagRef.current = false;
-    setIsSpinning(false);
+  const sectionIdsRef = useRef(sectionIds);
+  sectionIdsRef.current = sectionIds;
 
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-
-    const idx = currentIndexRef.current;
-    pendingIndexRef.current = idx;
-    setTargetIndex(idx);
-
-    if (isAccessible) {
-      // Узлы те же (без remount) — сбрасываем spiral inline, ставим card-delta.
-      clearSpiralInlineStyles(spiralRef.current, panelsRef.current);
-      markAccessibleCards(idx);
-      // Палитра уже на месте — не force-paint всех панелей.
-      applyColors(idx, false);
-      return;
-    }
-
-    // Сбрасываем card-delta / inline от accessible, затем spiral layout.
-    clearSpiralInlineStyles(spiralRef.current, panelsRef.current);
-    panelsRef.current.forEach(({ section }) => {
-      setPanelStateAttr(section, PANEL_STATE_ATTR.active, false);
-      if (section.hasAttribute(PANEL_STATE_ATTR.cardDelta)) {
-        section.removeAttribute(PANEL_STATE_ATTR.cardDelta);
-      }
-    });
-    const rot = rotationForSectionIndex(idx);
-    // Sync rebuild+paint: await ensureGsap() оставлял кадр с пустым transform.
-    buildSpiral();
-    paintSpiralTransform(rot);
-    markActive(idx);
-    applyColors(idx, false);
-
-    let cancelled = false;
-    void (async () => {
-      await ensureGsap();
-      if (cancelled) return;
-      buildSpiral();
-      paintSpiralTransform(rot);
-      markActive(idx);
-      settleActivePanel(idx);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    isAccessible,
+  const apiRef = useRef({
     killMotion,
     ensureGsap,
     buildSpiral,
@@ -136,29 +92,88 @@ export function useSpiralDomEffects({
     applyColors,
     settleActivePanel,
     setIsSpinning,
+    setCurrentIndex,
     setTargetIndex,
-    spiralRef,
-    panelsRef,
-    currentIndexRef,
-    spinningFlagRef,
-    pendingIndexRef,
-  ]);
+  });
+  apiRef.current = {
+    killMotion,
+    ensureGsap,
+    buildSpiral,
+    paintSpiralTransform,
+    markActive,
+    markAccessibleCards,
+    applyColors,
+    settleActivePanel,
+    setIsSpinning,
+    setCurrentIndex,
+    setTargetIndex,
+  };
+
+  // Только смена режима spiral↔accessible. Не зависит от identity колбэков/theme.
+  useLayoutEffect(() => {
+    const api = apiRef.current;
+    api.killMotion();
+    spinningFlagRef.current = false;
+    api.setIsSpinning(false);
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    // Цель хода (pending), не промежуточный current — иначе язык/тема/режим
+    // во время спина сажают на «05 из 07».
+    const idx = pendingIndexRef.current;
+    currentIndexRef.current = idx;
+    api.setCurrentIndex(idx);
+    api.setTargetIndex(idx);
+    const landId = sectionIdsRef.current[idx];
+    if (landId) replaceSectionHash(landId);
+
+    if (isAccessible) {
+      clearSpiralInlineStyles(spiralRef.current, panelsRef.current);
+      api.markAccessibleCards(idx);
+      api.applyColors(idx, false);
+      return;
+    }
+
+    clearSpiralInlineStyles(spiralRef.current, panelsRef.current);
+    panelsRef.current.forEach(({ section }) => {
+      setPanelStateAttr(section, PANEL_STATE_ATTR.active, false);
+      if (section.hasAttribute(PANEL_STATE_ATTR.cardDelta)) {
+        section.removeAttribute(PANEL_STATE_ATTR.cardDelta);
+      }
+    });
+    const rot = rotationForSectionIndex(idx);
+    rotationRef.current = rot;
+    api.buildSpiral();
+    api.paintSpiralTransform(rot);
+    api.markActive(idx);
+    api.applyColors(idx, false);
+
+    let cancelled = false;
+    void (async () => {
+      await api.ensureGsap();
+      if (cancelled) return;
+      api.buildSpiral();
+      api.paintSpiralTransform(rot);
+      api.markActive(idx);
+      api.settleActivePanel(idx);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- только isAccessible; остальное через ref
+  }, [isAccessible]);
 
   useEffect(() => {
     const onResize = () => {
       if (isAccessible) return;
-      buildSpiral();
-      paintSpiralTransform(rotationRef.current);
-      if (!spinningRef.current) settleActivePanel();
+      const api = apiRef.current;
+      api.buildSpiral();
+      api.paintSpiralTransform(rotationRef.current);
+      if (!spinningRef.current) api.settleActivePanel();
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [
-    isAccessible,
-    buildSpiral,
-    paintSpiralTransform,
-    rotationRef,
-    spinningRef,
-    settleActivePanel,
-  ]);
+  }, [isAccessible, rotationRef, spinningRef]);
 }

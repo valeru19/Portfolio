@@ -1,9 +1,12 @@
+import { useMemo } from "react";
+
 import {
   SpiralHud,
   SpiralNavigationProvider,
   SpiralPerfOverlay,
   SpiralStage,
 } from "@/features/section-navigation";
+import { hasPrivacyContactChannel, isApiConfigured } from "@/shared/config";
 import { content, getVisibleSectionIds } from "@/shared/content";
 import { useT } from "@/shared/i18n";
 import { About } from "@/widgets/about";
@@ -22,7 +25,13 @@ import styles from "./App.module.css";
 
 export function App() {
   const t = useT();
-  const sectionIds = getVisibleSectionIds();
+  // Стабильный identity: иначе каждый рендер (язык) → новый массив → killMotion.
+  const apiEnabled = isApiConfigured();
+  const contactChannel = hasPrivacyContactChannel();
+  const sectionIds = useMemo(
+    () => getVisibleSectionIds({ apiEnabled, hasContactChannel: contactChannel }),
+    [apiEnabled, contactChannel],
+  );
   const showFormSections = sectionIds.includes("apply");
 
   return (
