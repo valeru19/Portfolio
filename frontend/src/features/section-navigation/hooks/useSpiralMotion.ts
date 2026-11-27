@@ -286,12 +286,11 @@ export function useSpiralMotion({
       const longJump = distanceDeg > 95;
       const spinKind = longJump ? (goingBack ? "nasp" : "long") : "step";
 
-      if (longJump && !prefersReducedMotion()) {
-        await prepareJump(fromIdx, destIdx, goingBack);
-        if (gen !== motionGenRef.current) return;
-      }
-
+      // Спин сразу: prep dest не блокирует старт (иначе «Наверх» = пауза + рывок).
       setSpinning(true, spinKind);
+      if (longJump && !prefersReducedMotion()) {
+        void prepareJump(fromIdx, destIdx, goingBack);
+      }
       // На длинном reverse не гоняем stage-color transition весь ход —
       // это полный перекрас экрана на каждом кадре + и так тяжёлый scale-up.
       // Цвет применится в finishScroll. Вперёд / шаг — как раньше.
@@ -445,6 +444,14 @@ export function useSpiralMotion({
         if (nodes) byIndex.set(i, nodes);
       });
 
+      if (prefersReducedMotion()) {
+        if (gen !== motionGenRef.current) return;
+        finishScroll(rotationForSectionIndex(destIdx), { instantStageColor: true });
+        return;
+      }
+
+      // Спин сразу — prep под cover не блокирует старт поворота.
+      setSpinning(true, destIdx === 0 ? "nasp" : "long");
       if (!prefersReducedMotion()) {
         await prepareRingWrapViews(byIndex, destIdx, sectionCount);
         if (gen !== motionGenRef.current) return;
@@ -456,13 +463,8 @@ export function useSpiralMotion({
         sectionIds.forEach((id, i) => layoutIndexById.set(id, i));
         layoutIndexById.set(destId, destSlot);
         if (nextId) layoutIndexById.set(nextId, destSlot + 1);
-        applySpiralLayoutToPanels(
-          spiral,
-          sectionIds,
-          panelsRef.current,
-          gsapRef.current,
-          layoutIndexById,
-        );
+        // null gsap: не трогаем spiral transformOrigin через gsap.set перед твином.
+        applySpiralLayoutToPanels(spiral, sectionIds, panelsRef.current, null, layoutIndexById);
       }
 
       const fromSection = panelsRef.current.get(sectionIds[fromIdx] ?? "")?.section;
@@ -470,13 +472,6 @@ export function useSpiralMotion({
       if (fromSection) fromSection.style.willChange = "transform";
       if (destSection) destSection.style.willChange = "transform";
 
-      if (prefersReducedMotion()) {
-        if (gen !== motionGenRef.current) return;
-        finishScroll(rotationForSectionIndex(destIdx), { instantStageColor: true });
-        return;
-      }
-
-      setSpinning(true, destIdx === 0 ? "nasp" : "long");
       applyColors(destIdx);
       lastProgressIdxRef.current = fromIdx;
 

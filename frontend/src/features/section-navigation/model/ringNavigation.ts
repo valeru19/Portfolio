@@ -65,6 +65,18 @@ export function planMove(
 
   // target < current
   const backSteps = current - target;
+
+  // «Наверх» / первая секция: всегда назад по спирали (привычный reverse),
+  // без 1-step wrap last→first и snap R→0 (это читалось как задержка + телепорт).
+  if (target === 0) {
+    return {
+      direction: "back",
+      steps: backSteps,
+      wrapsRing: false,
+      targetSection: 0,
+    };
+  }
+
   if (backSteps <= backThreshold) {
     return {
       direction: "back",
@@ -74,7 +86,7 @@ export function planMove(
     };
   }
 
-  // Далёкий «назад» → вперёд через конец круга.
+  // Далёкий «назад» на середину ленты → вперёд через конец круга.
   return {
     direction: "forward",
     steps: N - current + target,

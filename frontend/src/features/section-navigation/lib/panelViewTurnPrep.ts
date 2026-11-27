@@ -116,8 +116,14 @@ export async function prepareRingWrapViews(
   const nextBlurIdx = destIdx + 1 < sectionCount ? destIdx + 1 : -1;
   const dest = panels.get(destIdx);
   const next = nextBlurIdx >= 0 ? panels.get(nextBlurIdx) : undefined;
-  if (dest) await prepareSharpUnderCover(dest);
-  if (next) await prepareBlurUnderCover(next);
+  // Параллельно и с бюджетом — не держать спин до двух nextFrame подряд.
+  await Promise.race([
+    Promise.all([
+      dest ? prepareSharpUnderCover(dest) : Promise.resolve(),
+      next ? prepareBlurUnderCover(next) : Promise.resolve(),
+    ]),
+    sleep(48),
+  ]);
 }
 
 /**
