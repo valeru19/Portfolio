@@ -143,6 +143,7 @@ async function main() {
   console.log(`[measure] base=${base} software=${software} runs=${RUNS} postSpin=${POST_SPIN_MS}`);
   const browser = await chromium.launch({
     headless: true,
+    channel: "chrome",
     args: software ? ["--disable-gpu", "--use-gl=swiftshader"] : [],
   });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
